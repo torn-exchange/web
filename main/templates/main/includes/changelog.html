@@ -1,0 +1,22 @@
+<div class="container">
+    <div class="card mt-3"  style="height:250px">
+        <div class="card-header text-center bg-dark text-white">
+            <i class="fas fa-cogs"></i> Recent Changes  
+        </div>
+        <div class="card-body scrollable-div overflow-auto">
+            
+            {% for change in changelog%}
+            <div class="row small">
+                <div class="col-12 small pb-2">
+                   {{change.description}}
+                   <p class="small m-0 pb-2">
+                    {{change.created_at}}
+                   </p>
+                </div>
+                <hr>
+            </div>
+            <hr class="m-0 p-0">
+            {% endfor %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+{% load humanize %}
+<div class="card">
+    <div class="card-header bg-dark text-white">
+      Receipt History
+    </div>
+    <div class="card-body overflow-auto small" style="height: 245px;">
+      <div class=" font-weight-bold text-center text-responsive">
+        <div class='row '>
+          <div class='col-2 text-center'>
+            Link
+          </div>
+          <div class='col-2 text-center'>
+            Name
+          </div>
+          <div class='col-2 text-center'>
+           Date
+          </div>
+          <div class='col-2 text-center'>
+            Price
+          </div>
+          <div class='col-2 text-center'>
+            Profit
+          </div>
+          <div class='col-2 text-center'>
+            
+          </div>
+
+        </div>
+      </div>
+      <hr>
+        {% for receipt in receipts%}
+          <div class=" text-center  text-responsive">
+            <div class='row  '>
+              <div class='col-2 p-sm-0 m-sm-0'>
+                <a href="{% url 'receipt_view' receipt.receipt_url_string%}"> <u>View</u> </a>
+              </div>
+              <div class='col-2 p-sm-0 m-sm-0'>
+                {{receipt.seller}}
+              </div>
+              <div class='col-2 p-sm-0 m-sm-0'>
+                {{receipt.created_at}} 
+              </div>
+              <div class='col-2 p-sm-0 m-sm-0'>
+                ${{receipt.total|intcomma}}
+              </div>
+              <div class='col-2 p-sm-0 m-sm-0'>
+                ${{receipt.profit|intcomma}}
+              </div>
+              <div class='col-2'>
+                <form action="{% url 'delete_receipt' receipt.id %}" method="POST">
+                  {% csrf_token %}
+                  <button type="button btn btn-primary" class="btn btn-default btn-sm">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </form>
+              </div>
+
+            </div>
+          </div>
+          <hr>
+        {% endfor %}
+    </div>
+  </div>

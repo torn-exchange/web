@@ -1,0 +1,146 @@
+{% extends "main/base.html" %}
+{% block content %}
+{%load crispy_forms_tags %}
+{% load humanize %}
+{% load static %}
+{% load custom_tags %}
+<div class='container'>
+    <div class='row'>
+        <div class='col-md-3 col-sm-12'>
+            <div class="p-2">
+                <form method="GET">
+                    {{myFilter.form|crispy}}
+                    <button class='btn btn-primary'> Search </button>
+                </form>
+            </div>
+        </div>
+        <div class='col-md-9 col-sm-12'>
+            <div class='row'>
+                <div class="text-center col-12">
+                    <h4 class="m-4 allerta-font text-center"> 
+                        Employee's Looking for Jobs
+                    </h4>
+                </div>
+                <div>
+                    {% if not listings.object_list%}
+                        <p>
+                            Sorry no listings were found!
+                        </p>
+                    {% else %}
+                        <p class="ml-5 p-0 m-0 text-center pb-2">
+                            Here are the employee job listings of all of the Torn Exchange players who are looking for new work. If you are an employer, filter the search to the employee profile you need and then message the user(s) with your proposal. Happy employment!
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="offset-md-4  col-4 offset-4 col-md-4 btn btn-primary align-content-center text-center">
+                    <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a> 
+                </div>
+                <hr>
+                <br>
+                <div class='col-12'>
+                    <p>
+                        <small class="text-muted ml-4"> {% if number_of_items == 1%}
+                            {{number_of_items}} employee found in your search.
+                            {% else %}
+                            {{number_of_items}} employees found in your search.
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                {% for listing in listings%}
+                <div class='col-12'>
+                    <div class='card listing-card  m-0 mb-1 p-0'>
+                        <div class="card-header m-0 p-0">
+                            <div class="row pl-1">  
+                                <div class="col mb-0">
+                                    <div class='row'>
+
+                                        <div class="pl-4 p-1 ml-2 col-2 text-center">
+                                            {% if listing.activity_status == 'Online' %}
+                                            <img src="{% static '/main/images/crown-online.png' %}" style="width:20%;">
+                                            {% elif listing.activity_status == 'Idle' %}
+                                            <img src="{% static '/main/images/crown-idle.png' %}" style="width: 20%;">
+                                            {% elif listing.activity_status == 'Offline' %}
+                                            <img src="{% static '/main/images/crown-offline.png' %}" style="width: 20%;">
+                                            {% endif %}                                            
+                                        </div>
+                                        <div class="col text-left m-auto">
+                                            <div class="pl-3 text-left">
+                                                {{listing.name}}[{{listing.torn_id}}]
+                                            </div>
+                                        </div>
+                                        <div class=" col m-auto mr-3 text-right pr-4">
+                                                <a target="_blank"  href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}" class="text-black pl-2 pr-2 badge badge-light" style= "background-color: rgb(223, 239,243);">Message Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-text">
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Manual Labor: </b>
+                                    <b class="text-center">&nbsp;{{listing.work_stats_man|intcomma}}</b>
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Intelligence: </b>
+                                    <b class="text-center">&nbsp;{{listing.work_stats_int|intcomma}}</b>
+                                </div>   
+                                <div class="col">
+                                    <b class="float-left">Endurance: </b>
+                                    <b class="text-center">&nbsp;{{listing.work_stats_end|intcomma}}</b>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class=" text ml-2 p-1">
+                                {{listing.settings.job_message}}
+                            </div>
+                            
+                            
+                        </div>
+                        <div class="card-footer mt-0">
+                            <div class="row">
+                                <div class="col">
+                                    Added: {{listing.settings.job_post_start_date|naturaltime}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pagination text-center justify-content-center align-items-center"  >
+                {% if listings.has_previous %}
+                    
+                    <a href="?{% param_replace page=1 %}"><<&nbsp;</a>
+                    <a href="?{% param_replace page=listings.previous_page_number %}"> <</a>
+                {% endif %}
+              
+                {% for num in listings.paginator.page_range%}
+                    {% if listings.number == num %}
+                    <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
+                    {% elif num > listings.number|add:'-8' and num < listings.number|add:'8'  %}
+                    <a href="?{% param_replace page=num %}" class="p-1">{{num}}</a>
+                    {%endif%}
+                {% endfor %}
+                {% if listings.has_next %}
+                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
+                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        $('#id_man_range_0').parent().addClass("row");
+        $('#id_int_range_0').parent().addClass("row");
+        $('#id_end_range_0').parent().addClass("row");
+        $('#id_man_range_1').removeClass("offset-1");
+        $('#id_int_range_1').removeClass("offset-1");
+        $('#id_end_range_1').removeClass("offset-1");
+    });
+
+</script>
+{% endblock %}

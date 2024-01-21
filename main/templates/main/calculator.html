@@ -1,0 +1,299 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class='container' id='main-container'>
+    {% if user_settings.tutorial == True%}
+    <div class="card bg-info small mt-3">
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center'>
+                Tutorial: Welcome to your Trade Calculator
+            </h5>
+        </div>
+        <div class="card-body m-0 p-1">
+            <ul>
+                <li>
+                    Once you have received a trade request from a user, copy the text found in the trade log as shown in
+                    the placeholder text in the input box and press the Calculate button.
+                </li>
+                <li>
+                    Torn Exchange will then fetch your buy prices from your Price List to pre-fill a trade which will
+                    appear on the right hand side of the screen.
+                </li>
+                <li>
+                    You can adjust any of the prices that appear should you have made any discounts or negotiations with
+                    the user.
+                    Any items which haven't yet got a set buy price in your listings will appear as '0' which you must
+                    change to the correct price.
+                </li>
+                <li>
+                    When you are happy with the trade and the total amount, simply click Confirm Trade and your receipt
+                    will be generated for you to send to the seller. Congratulations on your trade!
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer p-1 m-0">
+            <small class="text-muted text-center">To turn off help messages go to your <a
+                    href="{% url 'settings' %}">Settings</a>.</small>
+        </div>
+    </div>
+    {% endif %}
+    <div class='row'>
+        <div class='col-md-6 col-sm-12'>
+            <div class='card mt-3'>
+                <div class='card-header bg-dark text-white text-center '>
+                    Trade Calculator
+                </div>
+                <form id="text-input-form" method="POST">
+                    <div class="card-body">
+                        <h3>
+                        </h3>
+                        {% csrf_token %}
+
+                        <div class="form-group col-sm-12">
+                            <label for="textarea1">Paste your trade log here as in the example below</label>
+                            <textarea class="form-control" id="textarea1" rows="5"
+                                placeholder='Duke added 900x Chamois Plushie to the trade.'></textarea>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-dark">
+                        <button class='btn btn-primary border-white text-white ml-3' type="submit">Calculate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class='col-md-6 col-sm-12 mt-3' id='table-div' class='card bg-dark b-1 text-white'>
+        </div>
+        <div id='output_area'>
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on('submit', '#text-input-form', function (e) {
+            e.preventDefault();
+            console.log('eh')
+            var owner_username = '{{user.profile.name}}'
+            $.ajax({
+                type: 'POST',
+                url: '{% url "trade_paste" %}',
+                data: {
+                    'prompt': $('#textarea1').val(),
+                    'profile': owner_username,
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (json) {
+                    $('#table-div').empty()
+                    $('#table-div').html(`
+                    <div class='card'>
+                    <div class='card-header bg-dark text-white text-center'>Trade with <strong id='seller-name'>`+ json.name + `</strong></div>
+                    <table class='table table-hover table-sm small' id='output-table'>
+                        <thead>
+                          <tr>
+                            <th scope="col" class='text-center' style='width: 20%;'></th>
+                            <th scope="col" class='text-center' style='width: 15%;'>Item</th>
+                            <th scope="col" class='text-center' style='width: 5%;'>Qty</th>
+                            <th scope="col" class='text-center' style='width: 15%;'>Market $</th>
+                            <th scope="col" class='text-center' style='width: 25%;'>Price</th>
+                            <th scope="col" class='text-center' style='width: 15%;'>Profit</th>
+                            <th scope="col" class='text-center' style='width: 20%;'>Subtotal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+                          </tfoot>
+                      </table>`);
+                    var total_price = 0
+                    console.log(json.market_prices)
+                    window.market_values = json.market_prices;
+                    window.items = json.items
+                    window.qty = json.qty
+                    var profit_from_trade = 0
+                    $(json.items).each(function (i, item) {
+                        total_price += json.price[i] * json.qty[i]
+                        profit_from_trade += (json.market_prices[i] - json.price[i]) * json.qty[i]
+                        $('<tbody>').html("<tr class='text-center row-striped input-row'><td '><img style='max-width:90%;'src='" + json.img_url[i] + "'></td>" +
+                            "<td class='text-center name_input'>" + json.items[i] + "</td>" +
+                            "<td class='text-center quantity quantity_input' >" + numberWithCommas(json.qty[i]) + "</td>" +
+                            "<td class='text-center market-price'>$" + numberWithCommas(json.market_prices[i]) + "</td>" +
+                            "<td ><input class='text-center small form-control price price_input input-sm' style='padding: 0.05rem !important; font-size: 0.8rem;' value='" + numberWithCommas(json.price[i]) + "'></input></td>" +
+                            "<td class='text-center profit-per-item'>$" + numberWithCommas((json.market_prices[i] - json.price[i]) * json.qty[i]) + "</td>" +
+                            "<td class='total'>$" + numberWithCommas(json.qty[i] * json.price[i]) + "</td>/tr></div>").appendTo('#output-table');
+                    })
+                    $('#table-div').append("<div class='card-footer bg-dark'><button class='btn btn-primary border-white' id='confirmtrade'>Confirm Trade</button></div></div>")
+
+
+                    $('tfoot').append(`<tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><strong>Grand Total: </strong></td>
+                            <td><strong>$`+ numberWithCommas(total_price) + `</strong></td>
+                            </tr>
+                            <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><strong>Total Profit: </strong></td>
+                            <td><strong>$`+ numberWithCommas(profit_from_trade) + `</strong></td>
+                            </tr>
+                            
+                    
+                            `)
+
+                    //$('#textarea1').html(json.prompt_data);
+                    //var promptText = document.getElementById('textarea1');
+                    //var promptInput = document.getElementById('textarea1');
+                    //promptText.style.display = 'block';
+                    //promptInput.style.display = 'none';
+                },
+                error: function (json) {
+                alert('Make sure to paste the trade log message on the textbox, including the sellers name, and to include a valid price');
+                }});
+        });
+        function updated_profit(itemname, newprice) {
+
+
+
+            var index_ = window.items.findIndex(name => name == itemname);
+            var market_price = window.market_values[index_]
+            var qty = window.qty[index_]
+            var newprofit = (market_price - newprice) * qty
+            console.log(index_, market_values, qty, newprofit)
+            return (market_price - newprice) * qty
+        };
+        $('body').on('change', '.price', function () {
+            console.log('changed')
+            var parent = $(this).closest('tr');
+            parent.find('.total').html('$' + numberWithCommas(numberWOCommas(parent.find('.quantity').html()) * parseFloat(numberWOCommas(parent.find('.price').val()))))
+            parent.find('.profit-per-item').html('$' + numberWithCommas(updated_profit(parent.find('.name_input').html(), parseFloat(numberWOCommas(parent.find('.price').val())))))
+            console.log(parseFloat(parent.find('.price').val()))
+            console.log(window.market_values)
+            grand_total = $('.total').toArray().map(x => numberWOCommas(removeDollar(x.innerHTML))).reduce((sum, x) => sum + x);
+
+            total_profit = $('.profit-per-item').toArray().map(x => numberWOCommas(removeDollar(x.innerHTML))).reduce((sum, x) => sum + x);
+            //console.log(arr1.reduce(function(r,a,i){return r+a*arr2[i]},0));
+
+            $('tfoot').html(`<tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><strong>Grand Total: </strong></td>
+                <td><strong>$`+ numberWithCommas(numberWOCommas(grand_total)) + `</strong></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><strong>Total Profit: </strong></td>
+                <td><strong>$`+ numberWithCommas(numberWOCommas(total_profit)) + `</strong></td>
+              </tr>
+              
+              `)
+        });
+    });
+    $(document).on('click', '#confirmtrade', function (e) {
+        e.preventDefault();
+        var owner_username = '{{user.profile.name}}';
+        var seller_username = $('#seller-name').html();
+        console.log(owner_username)
+
+        var item_names = $('.input-row').get().map(function (row) {
+            return $(row).find('.name_input').get().map(function (cell) {
+                return $(cell).html();
+            });
+        });
+        var item_quantities = $('.input-row').get().map(function (row) {
+            return $(row).find('.quantity_input').get().map(function (cell) {
+                return numberWOCommas($(cell).html());
+            });
+        });
+        var item_prices = $('.input-row').get().map(function (row) {
+            return $(row).find('.price_input').get().map(function (cell) {
+                return numberWOCommas($(cell, 'input').val());
+            });
+        });
+
+        console.log(item_prices)
+        $.ajax({
+            type: 'POST',
+            url: '{% url "create_receipt" %}',
+            data: {
+                'item_names': JSON.stringify(item_names),
+                'item_quantities': JSON.stringify(item_quantities),
+                'item_prices': JSON.stringify(item_prices),
+                'owner_username': owner_username,
+                'seller_username': seller_username,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (json) {
+                $("#textarea1").val('')
+                $("#table-div").empty()
+                window.scrollTo(0, 0);
+                console.log(json.receipt_id)
+                var origin = window.location.origin;
+                var receipt_url_path = origin + '/receipt/' + json.receipt_id
+                $('.alert-success').remove()
+
+                $('#main-container').prepend(
+                    `<div class="alert alert-success">
+                Your receipt has been created successfully, you can view it <a href="`+ receipt_url_path + `"> here!</a>
+                </div>`
+                )
+                alertTimeout(8000);
+
+            },
+            error: function (json) {
+                alert('Make sure to paste the trade on the textbox, including the sellers name, and to include a valid price');
+            }
+
+        });
+
+
+    });
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    function removeDollar(x) {
+        return x.toString().replace('$', "");
+    }
+    function numberWOCommas(x) {
+        return parseFloat(x.toString().replace(/,/g, ''));
+    }
+    function alertTimeout(wait) {
+        setTimeout(function () {
+            $('#main-container').children('.alert:first-child').remove();
+        }, wait);
+    }
+</script>
+
+<style>
+    #table-div {
+        background-color: white;
+        margin-top: 20px;
+        border: black;
+        border-radius: 1px;
+    }
+
+    table {
+        background-color: #ffffff !important;
+        border: black;
+    }
+
+    table td {
+        background-color: #ffffff !important;
+        border: black;
+        border-radius: 1px;
+    }
+</style>
+{%endblock%}

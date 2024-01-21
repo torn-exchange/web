@@ -1,0 +1,66 @@
+{% load humanize %}
+<div class="card mb-3">
+        
+    <div class="card-header bg-dark text-white">
+    <p class='allerta-font m-0'>
+      {{profile.name}}
+    </p>
+    </div>  
+    <div class="statistics-card card-body small m-2 p-2">
+      <p>
+        Trader upvote ranking
+         <a class="float-right">
+
+           #{{your_rank}} out of {{out_of}}
+          </a>
+        </p>
+        <hr>
+        <p>
+          Number of trades
+          <a class="float-right">
+          {{receipts|length}}
+          </a>
+        </p>
+        <hr>
+      <p>
+        Total profit
+        <a class="float-right">
+          ${{total_profit|intcomma}}
+        </a>
+      </p>
+      <hr>
+      <p>
+        Average profit per trade
+         <a class="float-right">
+
+           ${{average_profit|intcomma}}
+          </a> 
+          <hr>
+      </p>
+  
+
+      <p>
+        Number of unique sellers
+         <a class="float-right">
+
+           {{number_of_sellers|intcomma}}
+          </a> 
+          <hr>
+      </p>
+      <p>
+        Number of items bought
+         <a class="float-right">
+           {{number_of_items_bought|intcomma}}
+          </a> 
+          <hr>
+      </p>
+      <p>
+        Unique price list views
+         <a class="float-right">
+
+           {{hits}}
+          </a>
+      </p>
+
+    </div>
+  </div>

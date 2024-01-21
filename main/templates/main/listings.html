@@ -1,0 +1,144 @@
+{% extends "main/base.html" %}
+{% block content %}
+{%load crispy_forms_tags %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<div class='container'>
+    <div class='row'>
+        <div class='col-md-3 col-sm-12'>
+            <div class="p-2">
+                <form method="GET">
+                    {{myFilter.form|crispy}}
+                    <button class='btn btn-primary'> Search </button>
+                </form>
+            </div>
+        </div>
+        <div class='col-md-9 col-sm-12'>
+            <div class='row'>
+                <div class="text-center col-12">
+                    <h4 class="m-4 allerta-font text-center"> 
+                        Item Buy Price Listings
+                    </h4>
+                </div>
+                <div>
+                    {% if not listings.object_list%}
+                        <p>
+                            Sorry no listings were found!
+                        </p>
+                    {% else %}
+                        <p class="ml-5 p-0 m-0 text-center pb-2">
+                            Here are all of the items that traders in Torn Exchange are buying.
+                            If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
+                        </p>
+                    {% endif %}
+                </div>
+                <hr>
+                <br>
+                <small class="text-muted ml-4"> {{number_of_items}} items found in your search.</small>
+                {% for listing in listings%}
+                <div class='col-12'>
+                    <div class='card listing-card  m-0 mb-1 p-0'>
+                        <div class="card-header m-0 p-0">
+                            <div class="row pl-1 m-auto">  
+                                <div class="col-9 mb-0">
+                                    <div class='row m-auto'>
+
+                                        <div class="p-2 col-2 text-left">
+                                            {% if listing.owner.activity_status == 'Online' %}
+                                            <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;">
+                                            {% elif listing.owner.activity_status == 'Idle' %}
+                                            <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;">
+                                            {% elif listing.owner.activity_status == 'Offline' %}
+                                            <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;">
+                                            {% endif %}                                            
+                                        </div>
+                                        <div class="col text-left">
+                                            <div class="pl-3 text-left">
+                                                {{listing.owner.name}}[{{listing.owner.torn_id}}]
+                                            </div>
+                                        </div>
+                                        <div class="pl-1 col">
+                                            <i class="fas fa-star small mr-2 mb-2 size-2x"> </i>{{listing.owner.vote_score}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+
+                                        
+                                        <div class="col">
+                                        <a target="_blank"  href="{% url 'price_list' listing.owner.name%}" class="badge badge-light text-black pl-2 pr-2" style="background-color: rgb(223, 239,243);"> Price List</a> 
+                                    </div>
+                                    <div class="col">
+                                        <a target="_blank"  href="https://www.torn.com/trade.php#step=start&userID={{listing.owner.torn_id}}" class="badge badge-light text-black pl-2 pr-2" style="background-color: rgb(235, 244,225);"> Trade Now</a> 
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-text">
+                            <div class='row'>
+                                <div class="pl-4 col-8">
+                                    <div class='row'>
+                                        <div class="col">
+                                            <strong>
+                                                Item Name:
+                                            </strong>  {{listing.item.name}}
+                                            <p class="mb-0">
+                                                <strong>
+                                                    Buy Price: 
+                                                </strong>
+                                                <a class=' badge badge-success text-black'>
+                                                    ${{listing.effective_price|intcomma}} 
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class=" offset-2 col-2 pt-2 pr-4 pb-0 mb-0 text-right">
+                                    <img src="{{listing.item.image_url}}" style="height:50%; width:auto;">
+                                </div>
+                            </div>
+                           
+                            
+                            
+                            
+                        </div>
+                        <div class="card-footer mt-0">
+                            <div class="row">
+                                <div class="col">
+                                    Last updated: {{listing.last_updated|naturaltime}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="pagination text-center justify-content-center align-items-center"  >
+                {% if listings.has_previous %}
+                    
+                    <a href="?{% param_replace page=1 %}"><<&nbsp;</a>
+                    <a href="?{% param_replace page=listings.previous_page_number %}"> <</a>
+                {% endif %}
+              
+                {% for num in listings.paginator.page_range%}
+                    {% if listings.number == num %}
+                    <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
+                    {% elif num > listings.number|add:'-8' and num < listings.number|add:'8'  %}
+                    <a href="?{% param_replace page=num %}" class="p-1">{{num}}</a>
+                    {%endif%}
+                {% endfor %}
+                {% if listings.has_next %}
+                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
+                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+  <button class="navbar-toggler navbar-toggler-right float-left" type="button" data-toggle="collapse"
+    data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false"
+    aria-label="Toggle navigation">
+    <i class='fas fa-ellipsis-h'></i>
+  </button>
+
+  <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}"><img
+      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="" class="mainlogo-small  ml-3"></a>
+
+  <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}"><img
+      src="{% static '/main/images/mainlogo.png'%}" alt="" class="mainlogo ml-sm-0" style="max-width: 300px;"></a>
+  <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">
+    {% if user.is_authenticated%}
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          Listings
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href='{% url "listings" %}'>Item Prices</a>
+          <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
+          <a class="dropdown-item" href='{% url "revives_listings" %}'>Revivers</a>
+          <a class="dropdown-item" href='{% url "losses_listings" %}'>Loss Sellers</a>
+          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies for Sale</a>
+          <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          {{ user.profile.name }}
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href='{% url "price_list" %}'>My Price List</a>
+          <a class="dropdown-item" href='{% url "calculator" %}'>Calculator</a>
+          <a class="dropdown-item" href='{% url "analytics" %}'>Analytics</a>
+          <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>
+        </div>
+      </li>
+      <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
+          href='{% url "about" %}'>About</a></li>
+      <li class='{% if request.path == "/logout/"%} active {% endif %} nav-item float-right'><a class="nav-link"
+          href='{% url "logout" %}'>Log Out</a></li>
+
+    </ul>
+    {% else %}
+
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          Listings
+        </a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+          <a class="dropdown-item" href='{% url "listings" %}'>Item Prices</a>
+          <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
+          <a class="dropdown-item" href='{% url "revives_listings" %}'>Revivers</a>
+          <a class="dropdown-item" href='{% url "losses_listings" %}'>Loss Sellers</a>
+          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies for Sale</a>
+          <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
+        </div>
+      </li>
+      <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
+          href='{% url "about" %}'>About</a></li>
+      <li class='{% if request.path == "/login/" %} active {% endif %} nav-item float-right'><a
+          class="nav-link float-right" href='{% url "login" %}'>Log in</a></li>
+    </ul>
+    {% endif %}
+  </div>
+</nav>

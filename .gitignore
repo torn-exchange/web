@@ -1,0 +1,10 @@
+.venv/
+.vscode/
+static/
+.env
+update.txt
+main/__pycache__/
+main/templatetags/__pycache__/
+main/management/commands/__pycache__/
+torntrades/__pycache__/
+users/__pycache__/
