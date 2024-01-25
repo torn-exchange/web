@@ -60,18 +60,26 @@ def test(request):
 def listings(request):
     queryset = Listing.objects.all().order_by('-last_updated')
     myFilter = ListingFilter(request.GET,queryset=queryset, )
-    query_set = myFilter.qs
-    number_of_items = query_set.count()
+
     try:
+        query_set = myFilter.qs
+        number_of_items = query_set.count()
+
+        # Attempt to get the user's profile
         profile = Profile.objects.filter(user = request.user).get()
         user_settings = Settings.objects.filter(owner=profile).get()
+
+        paginator = Paginator(query_set,6)
+        page = request.GET.get('page')
+        results = paginator.get_page(page)
 
     except:
         profile = None
         user_settings = None
-    paginator = Paginator(query_set,6)
-    page = request.GET.get('page')
-    results = paginator.get_page(page)
+        results = None
+        page = None
+        number_of_items = None
+
     context = {
         'user_settings':user_settings,
         'listings':results,
@@ -79,7 +87,10 @@ def listings(request):
         'myFilter':myFilter,
         'number_of_items':number_of_items,
     }
+
     return render(request, 'main/listings.html', context)
+    
+
 
 def employee_listings(request):
     try:

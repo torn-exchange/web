@@ -24,7 +24,11 @@
                 <div>
                     {% if not listings.object_list%}
                         <p>
-                            Sorry no listings were found!
+                            {% if error %}
+                                {{error}}
+                            {% else %}
+                                Sorry no listings were found!
+                            {% endif %}
                         </p>
                     {% else %}
                         <p class="ml-5 p-0 m-0 text-center pb-2">
