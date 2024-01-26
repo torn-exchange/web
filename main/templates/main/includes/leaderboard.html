@@ -1,14 +1,14 @@
 <div class="container">
     <div class="card mt-3" style="height:250px">
         <div class="card-header text-center bg-dark text-white">
-            <i class="fas fa-award"></i> Top Traders  
+            <i class="fas fa-award"></i> Top Traders
         </div>
         <div class="card-body overflow-auto pt-3">
-            
+
             {% for profile in top_20%}
             <div class="row small pl-1 pr-1">
                 <div class="col-3 small pl-0 pr-0">
-                    <strong>#{{forloop.counter}} </strong> 
+                    <strong>#{{forloop.counter}} </strong>
                 </div>
                 <div class="col-6 small pl-0 pr-0">
                     <a href="{% url 'price_list' profile.name %}"> {{profile.name}} </a>

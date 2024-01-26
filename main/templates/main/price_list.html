@@ -7,38 +7,42 @@
     {% if owner_profile.torn_id == user_profile.torn_id %}
     {% if user_settings.tutorial == True%}
     <div class="card bg-info small mt-3">
-            <div class="card-header p-0 m-0">
-                <h5 class='text-center'>
-                    Tutorial: Welcome to your Price List
-                </h5> 
-            </div>
-            <div class="card-body m-0 p-1">
-                <ul>
-                    <li>
-                        Set your buying prices by clicking on the 'Change Prices' button.
-                    </li>
-                    <li>
-                        Once your prices have been set, you can share the URL of this page to other Torn players, and they will be able to view your prices and trade with you.    
-                    </li>
-                    <li>
-                        If you have set a profit margin, your prices will automatically update every 10 minutes to match the market value. Otherwise they will remain the fixed prices which you originally set.
-                    </li>
-                    <li>
-                        You can add a link to your trades forum thread and customise the message displayed in the textbox at the top of your price list by visiting your <a href="{% url 'settings' %}">settings</a>.
-                    </li>
-                </ul>
-            </div>
-            <div class="card-footer p-0 pb-1">
-                <small class="text-muted text-center pl-2">To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
-
-            </div>
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center'>
+                Tutorial: Welcome to your Price List
+            </h5>
         </div>
+        <div class="card-body m-0 p-1">
+            <ul>
+                <li>
+                    Set your buying prices by clicking on the 'Change Prices' button.
+                </li>
+                <li>
+                    Once your prices have been set, you can share the URL of this page to other Torn players, and they
+                    will be able to view your prices and trade with you.
+                </li>
+                <li>
+                    If you have set a profit margin, your prices will automatically update every 10 minutes to match the
+                    market value. Otherwise they will remain the fixed prices which you originally set.
+                </li>
+                <li>
+                    You can add a link to your trades forum thread and customise the message displayed in the textbox at
+                    the top of your price list by visiting your <a href="{% url 'settings' %}">settings</a>.
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer p-0 pb-1">
+            <small class="text-muted text-center pl-2">To turn off help messages go to your <a
+                    href="{% url 'settings' %}">Settings</a>.</small>
 
-        {% endif %}
-        {% endif %}
-        <br>
+        </div>
+    </div>
+
+    {% endif %}
+    {% endif %}
+    <br>
     <div class=row>
-        
+
 
         <div class='col'>
             <div class="card">
@@ -48,7 +52,7 @@
                             <div class="m-auto bg-white text-left voting-div p-3 pl-0 ml-0 m-0  d-block text-left ">
                                 {% csrf_token %}
                                 <div class="row up text-left" id="vote-up"></div>
-                                <div class="text-center m-auto" id = "vote-score">{{vote_score}}</div>
+                                <div class="text-center m-auto" id="vote-score">{{vote_score}}</div>
                                 <div class="row down text-left" id="vote-down"></div>
                             </div>
                             <!--
@@ -61,44 +65,50 @@
                             </div>
                             -->
                         </div>
-                        
+
                         <div class="col-md-6 col-6 pt-2 mt-2 pl-4 ml-2 text-center">
                             &nbsp;&nbsp;&nbsp;&nbsp;
                             <h3 class="text-left float-right mt-3 m-0 p-0 allerta-font">
                                 {% if owner_profile.activity_status == 'Online' %}
-                                <img src="{% static '/main/images/crown-online.png' %}" class='mb-2' style="height:20px; width:auto;">
+                                <img src="{% static '/main/images/crown-online.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
                                 {% elif owner_profile.activity_status == 'Idle' %}
-                                <img src="{% static '/main/images/crown-idle.png' %}" class='mb-2' style="height:20px; width:auto;">
+                                <img src="{% static '/main/images/crown-idle.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
                                 {% elif owner_profile.activity_status == 'Offline' %}
-                                <img src="{% static '/main/images/crown-offline.png' %}" class='mb-2' style="height:20px; width:auto;">
-                                {% endif %}    
-                                    {{owner_profile.name}}'s Trading List
-                            </h3>                                        
+                                <img src="{% static '/main/images/crown-offline.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
+                                {% endif %}
+                                {{owner_profile.name}}'s Trading List
+                            </h3>
                         </div>
                         <div class="col text-right">
                             <div class='row justify-content-end m-1 p-1 pt-0 mt-0 float-right'>
                                 {% if not owner_settings.link_to_forum_post%}
-                                
+
                                 {% else %}
                                 <div class='m-1 ml-0'>
-                                    <a class ='btn btn-primary' target="_blank" href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">Reviews</a>
+                                    <a class='btn btn-primary' target="_blank"
+                                        href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">Reviews</a>
                                 </div>
                                 {% endif %}
                                 <div class='m-1 ml-0'>
-                                    <a class ='btn btn-primary' target="_blank" href="https://www.torn.com/trade.php#step=start&userID={{owner_profile.torn_id}}">Start Trade</a>
-                                </div >
+                                    <a class='btn btn-primary' target="_blank"
+                                        href="https://www.torn.com/trade.php#step=start&userID={{owner_profile.torn_id}}">Start
+                                        Trade</a>
+                                </div>
                                 {% if owner_profile.torn_id == user_profile.torn_id %}
                                 <div class='m-1 ml-0'>
                                     <a class='btn btn-primary ' href="{% url 'edit_price_list' %}">Change Prices</a>
-                                </div> 
+                                </div>
                                 <div class='m-1 ml-0'>
                                     <a class='btn btn-primary' href="{% url 'calculator' %}">Trade Calculator</a>
-                                </div> 
-                            {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-text"></div>
+                    <div class="card-text"></div>
                     <div class='col-12 row text-center p-2'>
                         <div class="col text-center p-1 ml-2">
                             {% if owner_settings.trade_list_description == None %}
@@ -115,8 +125,9 @@
                 </div>
                 <div class="card-footer small text-center text-muted m-0 p-0">
                     <small class="pl-2">
-        
-                        Don't forget to rate your experience with this trader, vote using the up and down arrows! NOTE: You must log in with your API to register a vote to prohibit rigged rankings.
+
+                        Don't forget to rate your experience with this trader, vote using the up and down arrows! NOTE:
+                        You must log in with your API to register a vote to prohibit rigged rankings.
                     </small>
                 </div>
             </div>
@@ -132,158 +143,159 @@
         {% for itype in item_types %}
 
 
-            {% if forloop.counter0|divisibleby:4 %}
-                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                <!-- TE-SquareAds -->
-                <ins class="adsbygoogle"
-                    style="display:block"
-                    data-ad-client="ca-pub-5083091252165465"
-                    data-ad-slot="4187308828"
-                    data-ad-format="auto"
-                    data-full-width-responsive="true"></ins>
-                <script>
-                    (adsbygoogle = window.adsbygoogle || []).push({});
-                </script>
-            {% endif %}
-            <div class="col-sm-12 col-md-4 col-lg-4">
-                <div class='card price_table'>
-                    <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
-                        <h5 class="text-white allerta-font ">
-                            {{itype|item_plurals}}
-                        </h5>
-                    </div>
-                    <table class="table table-hover header-fixed table-sm table-responsive">
-                        <thead>
-                            <tr>
-                                <th style="width: 30%;" scope="col" class="p-0 m-0">Image</th>
-                                <th style="width: 40%;" scope="col" class="p-0 m-0">Item Name</th>
-                                <th style="width: 30%;" scope="col" class="p-0 m-0">Buy Price</th>
-                            </tr>
-                        </thead>
-                        <tbody class="my_tbody">
-                            {%for item in items%}
-                            {% if item.item_type == itype%}
-                            <tr class="row-striped p-0"></td>
-                                <td style="width: 30%;" class="p-0 m-0 pl-1" ><img src="{{item.image_url}}" style="width: 100%;"></td>
-                                <td style="width: 40%;" class="p-0 m-0" >{{item.name}}</td>
-                                <td style="width: 30%;" class="p-0 m-0" >${{item|buy_price:owner_profile|intcomma}}</td>
-                            </tr>
-                            {% endif%}
-                            {%endfor%}
-                        </tbody>
-                        
-                    </table>    
+        {% if forloop.counter0|divisibleby:4 %}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+        <!-- TE-SquareAds -->
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5083091252165465"
+            data-ad-slot="4187308828" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+        {% endif %}
+        <div class="col-sm-12 col-md-4 col-lg-4">
+            <div class='card price_table'>
+                <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
+                    <h5 class="text-white allerta-font ">
+                        {{itype|item_plurals}}
+                    </h5>
                 </div>
+                <table class="table table-hover header-fixed table-sm table-responsive">
+                    <thead>
+                        <tr>
+                            <th style="width: 30%;" scope="col" class="p-0 m-0">Image</th>
+                            <th style="width: 40%;" scope="col" class="p-0 m-0">Item Name</th>
+                            <th style="width: 30%;" scope="col" class="p-0 m-0">Buy Price</th>
+                        </tr>
+                    </thead>
+                    <tbody class="my_tbody">
+                        {%for item in items%}
+                        {% if item.item_type == itype%}
+                        <tr class="row-striped p-0">
+                            </td>
+                            <td style="width: 30%;" class="p-0 m-0 pl-1"><img src="{{item.image_url}}"
+                                    style="width: 100%;"></td>
+                            <td style="width: 40%;" class="p-0 m-0">{{item.name}}</td>
+                            <td style="width: 30%;" class="p-0 m-0">${{item|buy_price:owner_profile|intcomma}}</td>
+                        </tr>
+                        {% endif%}
+                        {%endfor%}
+                    </tbody>
+
+                </table>
             </div>
-            <br>
+        </div>
+        <br>
         {% endfor %}
     </div>
 </div>
-<script> 
-$(document).on('click', '#vote-down', function(e) {
-    e.preventDefault();
-    
-    var voter_username = '{{user.profile.name}}'
-    var owner_username = '{{owner_profile.name}}'
-    console.log(owner_username)
-    console.log(voter_username)
-    $.ajax({
-        type: 'POST',
-        url: '{% url "vote_view" %}',
-        data: {
-            'direction':'down',
-            'owner_username':owner_username,
-            'voter_username':voter_username,
-            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-        },
-        success: function(json) {
-            $('#vote-score').empty()
-            $('#vote-score').html(''+json.vote_score+'')
-            $('#vote-count').empty()
-            if (json.vote_count == 1){
-                $('#vote-count').html(''+json.vote_count+' vote')
+<script>
+    $(document).on('click', '#vote-down', function (e) {
+        e.preventDefault();
+
+        var voter_username = '{{user.profile.name}}'
+        var owner_username = '{{owner_profile.name}}'
+        console.log(owner_username)
+        console.log(voter_username)
+        $.ajax({
+            type: 'POST',
+            url: '{% url "vote_view" %}',
+            data: {
+                'direction': 'down',
+                'owner_username': owner_username,
+                'voter_username': voter_username,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (json) {
+                $('#vote-score').empty()
+                $('#vote-score').html('' + json.vote_score + '')
+                $('#vote-count').empty()
+                if (json.vote_count == 1) {
+                    $('#vote-count').html('' + json.vote_count + ' vote')
+                }
+                else {
+                    $('#vote-count').html('' + json.vote_count + ' votes')
+                }
             }
-            else {
-                $('#vote-count').html(''+json.vote_count+' votes')
-            }
-        }
             //$('#textarea1').html(json.prompt_data);
             //var promptText = document.getElementById('textarea1');
             //var promptInput = document.getElementById('textarea1');
             //promptText.style.display = 'block';
             //promptInput.style.display = 'none';
+        });
     });
-});
-$(document).on('click', '#vote-up', function(e) {
-    e.preventDefault();
-    
-    var voter_username = '{{user.profile.name}}'
-    var owner_username = '{{owner_profile.name}}'
-    console.log(owner_username)
-    console.log(voter_username)
-    $.ajax({
-        type: 'POST',
-        url: '{% url "vote_view" %}',
-        data: {
-            'direction':'up',
-            'owner_username':owner_username,
-            'voter_username':voter_username,
-            csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-        },
-        success: function(json) {
-            $('#vote-score').empty()
-            $('#vote-score').html(''+json.vote_score+'')
-            $('#vote-count').empty()
-            if (json.vote_count == 1){
-                $('#vote-count').html(''+json.vote_count+' vote')
+    $(document).on('click', '#vote-up', function (e) {
+        e.preventDefault();
+
+        var voter_username = '{{user.profile.name}}'
+        var owner_username = '{{owner_profile.name}}'
+        console.log(owner_username)
+        console.log(voter_username)
+        $.ajax({
+            type: 'POST',
+            url: '{% url "vote_view" %}',
+            data: {
+                'direction': 'up',
+                'owner_username': owner_username,
+                'voter_username': voter_username,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (json) {
+                $('#vote-score').empty()
+                $('#vote-score').html('' + json.vote_score + '')
+                $('#vote-count').empty()
+                if (json.vote_count == 1) {
+                    $('#vote-count').html('' + json.vote_count + ' vote')
+                }
+                else {
+                    $('#vote-count').html('' + json.vote_count + ' votes')
+                }
             }
-            else {
-                $('#vote-count').html(''+json.vote_count+' votes')
-            }
-        }
+        });
     });
-});
 </script>
 
 <style>
-    
-    .voting-div{
-        height:90px;
-        width:60px;
+    .voting-div {
+        height: 90px;
+        width: 60px;
     }
-    #vote-up{
+
+    #vote-up {
         margin: 0 auto;
         padding-left: 20px;
         background-image:url("{% static '/main/images/upvote.png'%}");
         background-repeat: no-repeat;
-        background-size:contain;
+        background-size: contain;
         display: block;
         height: 20%;
         width: auto;
         object-fit: contain;
-     }
-     #vote-up:hover{
+    }
+
+    #vote-up:hover {
         background-image:url("{% static '/main/images/upvote-hover.png'%}");
 
     }
-     #vote-down{
+
+    #vote-down {
         margin: 0 auto;
         align-content: center;
         background-repeat: no-repeat;
-        background-size:contain;
+        background-size: contain;
         height: 20%;
         width: auto;
         display: block;
         object-fit: contain;
         background-image:url("{% static '/main/images/downvote.png'%}");
-     }
-     #vote-count{
-         height: 20px;
+    }
 
-     }
-     #vote-down:hover{
+    #vote-count {
+        height: 20px;
+
+    }
+
+    #vote-down:hover {
         background-image:url("{% static '/main/images/downvote-hover.png'%}");
-     }
-    
+    }
 </style>
 {% endblock content %}
