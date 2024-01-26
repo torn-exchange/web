@@ -19,7 +19,6 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -27,8 +26,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
+ENV_DEBUG = os.getenv('DEBUG_ENABLE', '').upper()
+DEBUG = ENV_DEBUG == "YES"
 
 ALLOWED_HOSTS = [
     'tornexchange.com',
@@ -40,7 +39,8 @@ ALLOWED_HOSTS = [
     '0.0.0.0:8000'
 ]
 
-# CORS_ORIGIN_WHITELIST = ['http://www.torn.com','https://www.torn.com','http://*','chrome-extension://*']
+# CORS_ORIGIN_WHITELIST = ['http://www.torn.com',
+#                          'https://www.torn.com', 'http://*', 'chrome-extension://*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
