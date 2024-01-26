@@ -1,112 +1,120 @@
-.price_table{
+.price_table {
     background: rgb(218, 218, 218);
     border: 0;
     color: rgb(0, 0, 0);
     margin-bottom: 20px;
     font-size: 12px;
-  }
+}
 
-.price_table img{
+.price_table img {
     width: 50% !important;
 }
-.price_table th{
+
+.price_table th {
     border: 0px !important;
     margin: 0px;
     padding: 4px;
 }
-.price_table td{
-    margin:2px;
-    border:0px !important;
-    padding:2px;
+
+.price_table td {
+    margin: 2px;
+    border: 0px !important;
+    padding: 2px;
 }
-.row-striped:nth-of-type(odd){
+
+.row-striped:nth-of-type(odd) {
     background-color: #efefef !important;
 }
 
-.row-striped:nth-of-type(even){
+.row-striped:nth-of-type(even) {
     background-color: #ffffff !important;
 }
 
 .header-fixed {
-    width: 100% 
+    width: 100%
 }
 
-.header-fixed > thead,
-.header-fixed > tbody,
-.header-fixed > thead > tr,
-.header-fixed > tbody > tr,
-.header-fixed > thead > tr > th,
-.header-fixed > tbody > tr > td {
+.header-fixed>thead,
+.header-fixed>tbody,
+.header-fixed>thead>tr,
+.header-fixed>tbody>tr,
+.header-fixed>thead>tr>th,
+.header-fixed>tbody>tr>td {
     display: block;
 }
 
-.header-fixed > tbody > tr:after,
-.header-fixed > thead > tr:after {
+.header-fixed>tbody>tr:after,
+.header-fixed>thead>tr:after {
     content: ' ';
     display: block;
     visibility: hidden;
     clear: both;
 }
 
-.header-fixed > tbody {
+.header-fixed>tbody {
     overflow-y: auto;
     height: 400px;
 }
 
-.scrollable-div{
-    overflow-y:auto;
+.scrollable-div {
+    overflow-y: auto;
 }
 
-.header-fixed > tbody > tr > td,
-.header-fixed > thead > tr > th {
+.header-fixed>tbody>tr>td,
+.header-fixed>thead>tr>th {
     width: 19%;
     float: left;
 }
 
 
-.edit_table td{
-    padding:2px;
+.edit_table td {
+    padding: 2px;
 }
-.edit_table img{
+
+.edit_table img {
     width: 80%;
 }
 
 
 .edit_table {
-    width: 100% 
+    width: 100%
 }
 
 .btn-square {
     border-radius: 0px !important;
 }
 
-.btn-primary:focus, .btn-primary.focus {
-	-webkit-box-shadow: 0 0 0 0.2rem rgba(111, 139, 205, 0.5) !important;
-	box-shadow: 0 0 0 0.2rem rgba(39, 40, 40, 0.5) !important;
+.btn-primary:focus,
+.btn-primary.focus {
+    -webkit-box-shadow: 0 0 0 0.2rem rgba(111, 139, 205, 0.5) !important;
+    box-shadow: 0 0 0 0.2rem rgba(39, 40, 40, 0.5) !important;
 }
 
-.dropdown-menu{
+.dropdown-menu {
     border-radius: 0px !important
 }
-.logocentral{
+
+.logocentral {
     margin-top: 10px;
     max-width: 50% !important;
 }
 
 .listing-card {
     margin-bottom: 15px !important;
-    
+
 }
-.listing-card .card-header{
-    background-color:rgb(31, 39, 57);
+
+.listing-card .card-header {
+    background-color: rgb(31, 39, 57);
     color: white;
 }
 
-.listing-card .card-footer{
+.listing-card .card-footer {
     padding: 5px;
     font-size: 0.8rem;
 }
-.listing-card img{
+
+.listing-card img {
     width: 100%;
 }
 
@@ -117,31 +125,33 @@
 
 
 
-.receipt-table{
+.receipt-table {
     background: rgb(255, 255, 255);
     border: 0;
     color: rgb(0, 0, 0);
     margin-bottom: 20px;
     font-size: 12px;
-  }
+}
 
-.receipt-table img{
+.receipt-table img {
     width: 40%;
 }
-.receipt-table th{
+
+.receipt-table th {
     border: 0px !important;
     margin: 0px;
     padding: 0px;
     text-justify: justify !important;
 }
 
-.text-shadow{
+.text-shadow {
     text-shadow: 0 1px 0 rgb(5, 0, 0)
 }
-.receipt-table td{
-    margin:0px;
-    border:0px !important;
-    padding:0px !important;
+
+.receipt-table td {
+    margin: 0px;
+    border: 0px !important;
+    padding: 0px !important;
     text-align: center !important;
     display: inline-block;
 }
@@ -152,178 +162,197 @@
 
 * {
     margin: 0;
-  }
-  html, body {
+}
+
+html,
+body {
     height: 100%;
-  }
-  .page-wrap {
+}
+
+.page-wrap {
     min-height: 100%;
     /* equal to footer height */
-    margin-bottom: -50px; 
-  }
-  .page-wrap:after {
+    margin-bottom: -50px;
+}
+
+.page-wrap:after {
     content: "";
     display: block;
-  }
-  .site-footer, .page-wrap:after {
-    height: 60px; 
-  }
-  .site-footer {
-    background: orange;
-  }
+}
 
-.statistics-card{
+.site-footer,
+.page-wrap:after {
+    height: 60px;
+}
+
+.site-footer {
+    background: orange;
+}
+
+.statistics-card {
     margin: 0%;
 }
-.statistics-card p{
+
+.statistics-card p {
     margin: 0px;
 }
-.statistics-card p hr{
+
+.statistics-card p hr {
     margin-top: 2px !important;
     margin-bottom: 2px !important;
 }
 
-.mainlogo{
+.mainlogo {
     max-width: 20%;
     height: auto;
     justify-content: start !important;
-}   
+}
 
-.mainlogo-small   {
+.mainlogo-small {
     max-width: 30%;
     display: inline-block;
     /* send it right */
     float: right;
 }
 
-.navbar{
+.navbar {
     justify-content: space-evenly !important;
 }
-.navbar-brand{
+
+.navbar-brand {
     margin-right: -16rem;
 }
 
 
-<style>
 /* Popup container - can be anything you want */
 .popup {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 /* The actual popup */
 .popup .popuptext {
-  visibility: hidden;
-  width: 250px;
-  background-color: rgba(85, 85, 85, 0.95);
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 8px 0;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  font-size:12px;
-  margin-left: -80px;
-  padding: 4px;
+    visibility: hidden;
+    width: 250px;
+    background-color: rgba(85, 85, 85, 0.95);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    font-size: 12px;
+    margin-left: -80px;
+    padding: 4px;
 }
 
-body { 
-    background: url("/static/main/images/background-test3.png") no-repeat center center fixed !important; 
+body {
+    background: url("/static/main/images/background-test3.png") no-repeat center center fixed !important;
     -webkit-background-size: cover !important;
     -moz-background-size: cover !important;
     -o-background-size: cover !important;
     background-size: cover !important;
-  }
+}
 
 .vertical-center {
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
 }
+
 .numberCircle {
     display: inline-block;
     justify-content: center;
     border-radius: 50%;
     width: 36px;
     height: 36px;
-    padding-top:4px;
+    padding-top: 4px;
 
     background: #fff;
     border: 2px solid #666;
     color: #666;
     text-align: center;
 }
-.btn-square{
+
+.btn-square {
     border-radius: 0px !important;
 }
+
 @media (max-width: 576px) {
-.text-responsive {
-    font-size: calc(2% + 0.95vw + 0.95vh) !important;
+    .text-responsive {
+        font-size: calc(2% + 0.95vw + 0.95vh) !important;
     }
 }
 
 .card {
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     border-radius: 0px;
 }
-.card-header:first-child{
+
+.card-header:first-child {
     border-radius: 0px;
 }
-  
+
 .btn-primary {
     border-radius: 0px;
 }
+
 /* Popup arrow */
 .popup .popuptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #555 transparent transparent transparent;
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 
-.price_table{
+.price_table {
     padding: 0px;
     background-color: white;
 }
-.price_table th{
+
+.price_table th {
     padding: 2px !important;
 }
-.my_tbody{
-    
+
+.my_tbody {
+
     border: black;
 }
-.voting-div{
-    margin-left:20px !important;
+
+.voting-div {
+    margin-left: 20px !important;
 }
 
 input {
-    border-radius: 0px!important; 
+    border-radius: 0px !important;
     background-color: white;
     padding: 10px;
 }
+
 select {
-    border-radius: 0px!important; 
+    border-radius: 0px !important;
     background-color: white;
     padding: 10px;
 }
+
 /* Toggle this class - hide and show the popup */
 .popup .show {
-  visibility: visible;
-  -webkit-animation: fadeIn 1s;
-  animation: fadeIn 1s;
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
 }
 
 :root {
@@ -333,12 +362,21 @@ select {
 
 /* Add animation (fade in the popup) */
 @-webkit-keyframes fadeIn {
-  from {opacity: 0;} 
-  to {opacity: 1;}
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity:1 ;}
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
-</style>

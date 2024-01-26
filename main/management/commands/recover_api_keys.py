@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     def _recover(self):
-        with open('old_profiles.json','r') as file:
+        with open('old_profiles.json', 'r') as file:
             data = json.load(file)
         for item in data:
             name = (item.get('fields').get('name'))
@@ -14,5 +14,6 @@ class Command(BaseCommand):
             print(user)
             user.api_key = api_key
             user.save()
+
     def handle(self, *args, **options):
         self._recover()

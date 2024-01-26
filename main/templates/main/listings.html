@@ -17,24 +17,25 @@
         <div class='col-md-9 col-sm-12'>
             <div class='row'>
                 <div class="text-center col-12">
-                    <h4 class="m-4 allerta-font text-center"> 
+                    <h4 class="m-4 allerta-font text-center">
                         Item Buy Price Listings
                     </h4>
                 </div>
                 <div>
                     {% if not listings.object_list%}
-                        <p>
-                            {% if error %}
-                                {{error}}
-                            {% else %}
-                                Sorry no listings were found!
-                            {% endif %}
-                        </p>
+                    <p>
+                        {% if error %}
+                        {{error}}
+                        {% else %}
+                        Sorry no listings were found!
+                        {% endif %}
+                    </p>
                     {% else %}
-                        <p class="ml-5 p-0 m-0 text-center pb-2">
-                            Here are all of the items that traders in Torn Exchange are buying.
-                            If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
-                        </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        Here are all of the items that traders in Torn Exchange are buying.
+                        If you are a seller, filter the search by item name, price or rating, to find the best deal for
+                        you!
+                    </p>
                     {% endif %}
                 </div>
                 <hr>
@@ -44,7 +45,7 @@
                 <div class='col-12'>
                     <div class='card listing-card  m-0 mb-1 p-0'>
                         <div class="card-header m-0 p-0">
-                            <div class="row pl-1 m-auto">  
+                            <div class="row pl-1 m-auto">
                                 <div class="col-9 mb-0">
                                     <div class='row m-auto'>
 
@@ -54,8 +55,9 @@
                                             {% elif listing.owner.activity_status == 'Idle' %}
                                             <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;">
                                             {% elif listing.owner.activity_status == 'Offline' %}
-                                            <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;">
-                                            {% endif %}                                            
+                                            <img src="{% static '/main/images/crown-offline.png' %}"
+                                                style="width: 30%;">
+                                            {% endif %}
                                         </div>
                                         <div class="col text-left">
                                             <div class="pl-3 text-left">
@@ -63,20 +65,26 @@
                                             </div>
                                         </div>
                                         <div class="pl-1 col">
-                                            <i class="fas fa-star small mr-2 mb-2 size-2x"> </i>{{listing.owner.vote_score}}
+                                            <i class="fas fa-star small mr-2 mb-2 size-2x">
+                                            </i>{{listing.owner.vote_score}}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col">
                                     <div class="row">
 
-                                        
+
                                         <div class="col">
-                                        <a target="_blank"  href="{% url 'price_list' listing.owner.name%}" class="badge badge-light text-black pl-2 pr-2" style="background-color: rgb(223, 239,243);"> Price List</a> 
-                                    </div>
-                                    <div class="col">
-                                        <a target="_blank"  href="https://www.torn.com/trade.php#step=start&userID={{listing.owner.torn_id}}" class="badge badge-light text-black pl-2 pr-2" style="background-color: rgb(235, 244,225);"> Trade Now</a> 
-                                    </div>
+                                            <a target="_blank" href="{% url 'price_list' listing.owner.name%}"
+                                                class="badge badge-light text-black pl-2 pr-2"
+                                                style="background-color: rgb(223, 239,243);"> Price List</a>
+                                        </div>
+                                        <div class="col">
+                                            <a target="_blank"
+                                                href="https://www.torn.com/trade.php#step=start&userID={{listing.owner.torn_id}}"
+                                                class="badge badge-light text-black pl-2 pr-2"
+                                                style="background-color: rgb(235, 244,225);"> Trade Now</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -88,13 +96,13 @@
                                         <div class="col">
                                             <strong>
                                                 Item Name:
-                                            </strong>  {{listing.item.name}}
+                                            </strong> {{listing.item.name}}
                                             <p class="mb-0">
                                                 <strong>
-                                                    Buy Price: 
+                                                    Buy Price:
                                                 </strong>
                                                 <a class=' badge badge-success text-black'>
-                                                    ${{listing.effective_price|intcomma}} 
+                                                    ${{listing.effective_price|intcomma}}
                                                 </a>
                                             </p>
                                         </div>
@@ -104,10 +112,10 @@
                                     <img src="{{listing.item.image_url}}" style="height:50%; width:auto;">
                                 </div>
                             </div>
-                           
-                            
-                            
-                            
+
+
+
+
                         </div>
                         <div class="card-footer mt-0">
                             <div class="row">
@@ -120,24 +128,27 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="pagination text-center justify-content-center align-items-center"  >
+            <div class="pagination text-center justify-content-center align-items-center">
                 {% if listings.has_previous %}
-                    
-                    <a href="?{% param_replace page=1 %}"><<&nbsp;</a>
-                    <a href="?{% param_replace page=listings.previous_page_number %}"> <</a>
-                {% endif %}
-              
-                {% for num in listings.paginator.page_range%}
-                    {% if listings.number == num %}
-                    <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-                    {% elif num > listings.number|add:'-8' and num < listings.number|add:'8'  %}
-                    <a href="?{% param_replace page=num %}" class="p-1">{{num}}</a>
-                    {%endif%}
-                {% endfor %}
-                {% if listings.has_next %}
-                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-                {% endif %}
+
+                <a href="?{% param_replace page=1 %}">
+                    <<&nbsp;< /a>
+                        <a href="?{% param_replace page=listings.previous_page_number %}">
+                            << /a>
+                                {% endif %}
+
+                                {% for num in listings.paginator.page_range%}
+                                {% if listings.number == num %}
+                                <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
+                                {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
+                                    href="?{% param_replace page=num %}" class="p-1">{{num}}
+                        </a>
+                        {%endif%}
+                        {% endfor %}
+                        {% if listings.has_next %}
+                        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
+                        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                        {% endif %}
             </div>
         </div>
 

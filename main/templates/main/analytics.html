@@ -7,33 +7,36 @@
 
   {% if user_settings.tutorial == True%}
   <div class="card bg-info small mt-3">
-      <div class="card-header p-0 m-0">
-          <h5 class='text-center'>
-              Tutorial: Welcome to your Analytics Dashboard
-          </h5> 
-      </div>
-      <div class="card-body m-0 p-1">
-          <ul>
-              <li>
-                Here you can view all of your trade statistics and graphs. 
-              </li>
-              <li>
-Once you have confirmed a trade and generated a receipt, the data will be formatted into a analytical summary for you to see. 
-              </li>
-              <li>
-If you need to remove any incorrect receipts, simply click the bin icon next to each one. 
-              </li>
-          </ul>
-      </div>
-  <div class="card-footer p-1 m-0">
-      <small class="text-muted text-center">To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
-  </div>
+    <div class="card-header p-0 m-0">
+      <h5 class='text-center'>
+        Tutorial: Welcome to your Analytics Dashboard
+      </h5>
+    </div>
+    <div class="card-body m-0 p-1">
+      <ul>
+        <li>
+          Here you can view all of your trade statistics and graphs.
+        </li>
+        <li>
+          Once you have confirmed a trade and generated a receipt, the data will be formatted into a analytical summary
+          for you to see.
+        </li>
+        <li>
+          If you need to remove any incorrect receipts, simply click the bin icon next to each one.
+        </li>
+      </ul>
+    </div>
+    <div class="card-footer p-1 m-0">
+      <small class="text-muted text-center">To turn off help messages go to your <a
+          href="{% url 'settings' %}">Settings</a>.</small>
+    </div>
   </div>
   {% endif %}
 
   {% if has_data == False%}
   <div class="container mt-2">
-    You have not yet registered any trades, try creating a trade using the <a href="{% url 'calculator' %}">calculator</a> tool
+    You have not yet registered any trades, try creating a trade using the <a
+      href="{% url 'calculator' %}">calculator</a> tool
   </div>
   {% endif %}
   <div class="row mt-5">
@@ -82,13 +85,13 @@ If you need to remove any incorrect receipts, simply click the bin icon next to 
     chart: {
       type: 'bar'
     },
-    series: [{ 
+    series: [{
       name: "Number of Trades",
-      data: {{data_graph_1|safe}}
+      data: {{ data_graph_1| safe}}
     }],
-    xaxis: {
-      type: "datetime"
-    }
+  xaxis: {
+    type: "datetime"
+  }
   }
 
 
@@ -99,16 +102,16 @@ If you need to remove any incorrect receipts, simply click the bin icon next to 
     chart: {
       type: 'line'
     },
-    series: [{ 
+    series: [{
       name: "Profits",
-      data: {{data_graph_2|safe}}
+      data: {{ data_graph_2| safe}}
     }],
-    dataLabels:{
-      formatter: numberWithCommas,
+  dataLabels: {
+    formatter: numberWithCommas,
     },
-    xaxis: {
-      type: "datetime"
-    }
+  xaxis: {
+    type: "datetime"
+  }
   }
 
 
@@ -148,29 +151,29 @@ If you need to remove any incorrect receipts, simply click the bin icon next to 
   //}
   //);
 
-  function format_values_list(values_list){
+  function format_values_list(values_list) {
     var output_list = []
-    values_list.forEach(function(entry) {
-      output_list.push('$'+numberWithCommas(entry))
+    values_list.forEach(function (entry) {
+      output_list.push('$' + numberWithCommas(entry))
     })
     return output_list
   }
-  function numberWithCommas(x){
+  function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-function shortenLargeNumber(num, digits) {
-  var units = ['k', 'M', 'B', 'T', 'Q', 'E', 'Z', 'Y'],
+  }
+  function shortenLargeNumber(num, digits) {
+    var units = ['k', 'M', 'B', 'T', 'Q', 'E', 'Z', 'Y'],
       decimal;
 
-  for(var i=units.length-1; i>=0; i--) {
-      decimal = Math.pow(1000, i+1);
+    for (var i = units.length - 1; i >= 0; i--) {
+      decimal = Math.pow(1000, i + 1);
 
-      if(num <= -decimal || num >= decimal) {
-          return +(num / decimal).toFixed(digits) + units[i];
+      if (num <= -decimal || num >= decimal) {
+        return +(num / decimal).toFixed(digits) + units[i];
       }
-  }
+    }
 
-  return num;
-}
-  </script>
-{% endblock content %} 
+    return num;
+  }
+</script>
+{% endblock content %}

@@ -4,40 +4,49 @@
 {% load custom_tags %}
 
 
-<div class = 'container'>
+<div class='container'>
 
     {% if user_settings.tutorial == True%}
     <div class="card bg-info small mt-3">
         <div class="card-header p-0 m-0">
             <h5 class='text-center'>
                 Tutorial: Welcome to the Change Prices page
-            </h5> 
+            </h5>
         </div>
         <div class="card-body m-0 p-1">
             <ul>
                 <li>
-                  Click on a category to open the dropdown of all of its items. Next to each item you buy, you can either add a set price or a discount value. 
+                    Click on a category to open the dropdown of all of its items. Next to each item you buy, you can
+                    either add a set price or a discount value.
                 </li>
                 <li>
-The discount value will output a price as a percentage of the market value (e.g. 2% profit margin means 98% of current market value).
+                    The discount value will output a price as a percentage of the market value (e.g. 2% profit margin
+                    means 98% of current market value).
                 </li>
                 <li>
-If you have both a set price and a profit margin value, the trade list will automatically pick the lower of the two prices.
+                    If you have both a set price and a profit margin value, the trade list will automatically pick the
+                    lower of the two prices.
                 </li>
                 <li>
-If you want to save time filling in all of your buy prices, you can simply enter a profit margin value in the Auto-fill profit margins box (NOTE: This will override all of your previous profit margin values).
+                    If you want to save time filling in all of your buy prices, you can simply enter a profit margin
+                    value in the Auto-fill profit margins box (NOTE: This will override all of your previous profit
+                    margin values).
                 </li>
                 <li>
-If you wish to remove item buy prices from your price list, you can either tick individual items you wish to remove, or simply tick the checkbox at the top of the page to remove every single item value (Use this at your own caution). 
+                    If you wish to remove item buy prices from your price list, you can either tick individual items you
+                    wish to remove, or simply tick the checkbox at the top of the page to remove every single item value
+                    (Use this at your own caution).
                 </li>
                 <li>
-Once you have made all of your changes, click Submit and voila, your price list has been successfully updated!
-                 </li>
+                    Once you have made all of your changes, click Submit and voila, your price list has been
+                    successfully updated!
+                </li>
             </ul>
         </div>
-    <div class="card-footer p-1 m-0">
-        <small class="text-muted text-center">To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
-    </div>
+        <div class="card-footer p-1 m-0">
+            <small class="text-muted text-center">To turn off help messages go to your <a
+                    href="{% url 'settings' %}">Settings</a>.</small>
+        </div>
     </div>
     {% endif %}
 
@@ -45,33 +54,37 @@ Once you have made all of your changes, click Submit and voila, your price list 
 
     <h2 class="text-center mt-3 allerta-font p-2"> Change your item buy prices below</h2>
     <div class="offset-1 col-10">
-            <div class="row">
-                <div class="col-4">
+        <div class="row">
+            <div class="col-4">
                 <label for="auto-fill-all">Auto-fill profit margin</label>
                 <div class="popup" onclick="popup_text()">
-                <div class='input-group  m-1'>
-                    <div class="input-group-append">
-                        <span class="input-group-text d-none d-md-flex">%</span>
-                    </div>
-                            <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to auto-fill your entire price list! Make sure you only list items you can afford to buy from sellers. Each category has its own seperate auto-fill option which we recommend.</span>
-                            <input type="text" class="form-control" id="auto-fill-all" name="auto_fill" oninput="validateNumber(this);"/>
-                            <button  type="button"  class="btn btn-primary auto_fill_button">
-                                Fill
-                            </button> 
+                    <div class='input-group  m-1'>
+                        <div class="input-group-append">
+                            <span class="input-group-text d-none d-md-flex">%</span>
                         </div>
+                        <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
+                            auto-fill your entire price list! Make sure you only list items you can afford to buy from
+                            sellers. Each category has its own seperate auto-fill option which we recommend.</span>
+                        <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
+                            oninput="validateNumber(this);" />
+                        <button type="button" class="btn btn-primary auto_fill_button">
+                            Fill
+                        </button>
                     </div>
-                </div> 
-                <div class="offset-4 col-4 text-center justify-content-center">
-                        Tick to remove all items from pricelist
-                        <div class="mt-1">
-                            <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>  
-                        </div> 
                 </div>
             </div>
+            <div class="offset-4 col-4 text-center justify-content-center">
+                Tick to remove all items from pricelist
+                <div class="mt-1">
+                    <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
+                </div>
+            </div>
+        </div>
     </div>
     <hr>
-    <form id='test_form' method="post"> 
-        <button class='btn btn-primary float-right sticky-top m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;" id="submit-prices"> Submit </button>
+    <form id='test_form' method="post">
+        <button class='btn btn-primary float-right sticky-top m-2 ml-4 d-none d-lg-block' type="submit"
+            style="margin-top: 20px;" id="submit-prices"> Submit </button>
         <div class="d-block d-lg-none ">
             <div class="row">
                 <div class="col-12">
@@ -87,232 +100,246 @@ Once you have made all of your changes, click Submit and voila, your price list 
                     {{item_category_name}}
                 </div>
                 <div class='card-body m-0 p-0 pb-2'>
-                {% for type in item_category_list %}
-                <div class="col-sm-12">
-                <a class="btn btn-primary btn-square m-0" data-toggle="collapse" href="#collapse_{{type|replace_spaces}}" role="button" aria-expanded="false" aria-controls="collapseExample" style="width: 100%;">
-                    {{type|item_plurals}}
-                </a>
-                <br>
-                <div class="collapse" id="collapse_{{type|replace_spaces}}">
-                    <div class="row">
-                        <div class="col-4">
-                        <label for="auto-fill-category">Auto-fill profit margin for category</label>
-                        <div class='input-group  m-1'>
-                            <div class="input-group-append">
-                                <span class="input-group-text  d-none d-md-flex">%</span>
+                    {% for type in item_category_list %}
+                    <div class="col-sm-12">
+                        <a class="btn btn-primary btn-square m-0" data-toggle="collapse"
+                            href="#collapse_{{type|replace_spaces}}" role="button" aria-expanded="false"
+                            aria-controls="collapseExample" style="width: 100%;">
+                            {{type|item_plurals}}
+                        </a>
+                        <br>
+                        <div class="collapse" id="collapse_{{type|replace_spaces}}">
+                            <div class="row">
+                                <div class="col-4">
+                                    <label for="auto-fill-category">Auto-fill profit margin for category</label>
+                                    <div class='input-group  m-1'>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text  d-none d-md-flex">%</span>
+                                        </div>
+                                        <input type="text" class="form-control auto-fill-category"
+                                            name="auto_fill_category" oninput="validateNumber(this);" />
+                                        <button type="button" class="btn btn-primary auto_fill_category_button">
+                                            Fill
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="offset-4 col-4 text-center justify-content-center">
+                                    Tick to remove all items from category
+                                    <div class="mt-1">
+                                        <i class="fas fa-trash-alt m-2"></i> <input type="checkbox"
+                                            class='mark_category_delete'>
+                                    </div>
+                                </div>
                             </div>
-                                <input type="text" class="form-control auto-fill-category" name="auto_fill_category" oninput="validateNumber(this);"/>
-                                <button type="button" class="btn btn-primary auto_fill_category_button">
-                                    Fill
-                                </button> 
-                            </div>
-                        </div> 
-                        <div class="offset-4 col-4 text-center justify-content-center">
-                                Tick to remove all items from category
-                                <div class="mt-1">
-                                    <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" class='mark_category_delete'>  
-                                </div> 
+                            <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class='text-center d-none d-md-table-row'></th>
+                                        <th scope="col" class='text-center'>Item Name</th>
+                                        <th scope="col" class='text-center'>Market Value</th>
+                                        <th scope="col" class='text-center'>Set Price</th>
+                                        <th scope="col" class='text-center'>Profit Margin</th>
+                                        <th scope="col" class='text-center'>Effective Price</th>
+                                        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% get_dict_entry data_dict type as items %}
+                                    {% for item in items %}
+                                    <tr class="m-0 p-0">
+                                        <td style='width:13%;' class='text-center d-none d-md-table-cell'><img
+                                                src="{{item.image_url}}" style="width:50%;"></td>
+                                        <td style='width:13%;' class='text-center'>{{item.name}}</td>
+                                        <td style='width:13%;' class='text-center market_value'>
+                                            ${{item.TE_value|intcomma}}</td>
+                                        <td style='width:13%;' class='text-center'>
+                                            <div class='input-group  mb-1'>
+                                                <input type="text" class="form-control listing_price text-responsive"
+                                                    value="{%listing_price item owner_profile%}" id="onlyNumbers"
+                                                    name="{{item.name}}_max_price" onkeypress="return isNumber(event)"
+                                                    onpaste="return false;" />
+                                            </div>
+                                        </td>
+                                        <td style='width:13%;' class='text-center'>
+                                            <div class='input-group  mb-1'>
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text d-none d-md-flex">%</span>
+                                                </div>
+                                                <input type="text" class="form-control listing_discount text-responsive"
+                                                    value="{%listing_discount item owner_profile%}" id="onlyNumbers"
+                                                    name="{{item.name}}_discount" oninput="validateNumber(this);"
+                                                    onpaste="return false;" />
+                                            </div>
+                                        </td>
+                                        <td style='width:13%;' class='text-center effective_price'>${%effective_price
+                                            item owner_profile as effective_p%} {{effective_p|intcomma}}</td>
+                                        <td style='width:1%;' class='text-center'>
+                                            <div class='input-group  mb-1'>
+                                                <input type="checkbox" class="form-control form-control-sm"
+                                                    name="{{item.name}}_checkbox" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
-                        <thead>
-                            <tr>
-                                    <th scope="col" class='text-center d-none d-md-table-row' ></th>
-                                    <th scope="col" class='text-center' >Item Name</th>
-                                    <th scope="col" class='text-center' >Market Value</th>
-                                    <th scope="col" class='text-center' >Set Price</th>
-                                    <th scope="col" class='text-center' >Profit Margin</th>
-                                    <th scope="col" class='text-center' >Effective Price</th>
-                                    <th scope="col" class='text-center' ><i class="fas fa-trash-alt"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% get_dict_entry data_dict type as items %}
-                                {% for item in items %}
-                                <tr class="m-0 p-0">
-                                    <td style='width:13%;' class='text-center d-none d-md-table-cell'><img src="{{item.image_url}}" style="width:50%;"></td>
-                                    <td style='width:13%;' class='text-center'>{{item.name}}</td>
-                                    <td style='width:13%;' class='text-center market_value'>${{item.TE_value|intcomma}}</td>
-                                    <td style='width:13%;' class='text-center'>
-                                        <div class='input-group  mb-1'>
-                                            <input type="text" class="form-control listing_price text-responsive" value="{%listing_price item owner_profile%}" id="onlyNumbers" name="{{item.name}}_max_price" onkeypress="return isNumber(event)" onpaste="return false;"/>
-                                        </div>         
-                                    </td>
-                                    <td style='width:13%;' class='text-center'>
-                                        <div class='input-group  mb-1'>
-                                            <div class="input-group-append">
-                                                <span class="input-group-text d-none d-md-flex">%</span>
-                                            </div>
-                                            <input type="text" class="form-control listing_discount text-responsive" value="{%listing_discount item owner_profile%}" id="onlyNumbers" name="{{item.name}}_discount" oninput="validateNumber(this);" onpaste="return false;"/>
-                                        </div>         
-                                    </td>
-                                    <td style='width:13%;' class='text-center effective_price'>${%effective_price item owner_profile as effective_p%} {{effective_p|intcomma}}</td>
-                                    <td style='width:1%;' class='text-center'>
-                                        <div class='input-group  mb-1'>
-                                            <input type="checkbox" class="form-control form-control-sm" name="{{item.name}}_checkbox" />
-                                        </div>         
-                                    </td>
-                                </tr>
-                                {%endfor%}
-                        </tbody>
-                    </table>    
-            </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
                 </div>
             </div>
             {% endfor %}
             <br>
         </div>
     </form>
-    
-    
-<br>
-<script type="text/javascript">  
-    $( document ).ready(function() {
-        console.log( "ready!" );
-    });   
-    $('body').on('change','.listing_price',function(){
-        var parent = $(this).closest('tr');
-        var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
-        var listing_price = numberWOCommas($(this).val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        console.log(profit_margin,listing_price,market_value)
-        parent.find('.effective_price').html('$'+numberWithCommas(effective_price(listing_price,profit_margin,market_value)))
-    });
-    $('body').on('change','.listing_discount',function(){
-        var parent = $(this).closest('tr');
-        var listing_price = numberWOCommas(parent.find('.listing_price').val());
-        var profit_margin = numberWOCommas($(this).val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        console.log(profit_margin,listing_price,market_value)
-        parent.find('.effective_price').html('$'+numberWithCommas(effective_price(listing_price,profit_margin,market_value)))
-    });
-
-    $('#submit-prices').click(function(){
-        document.body.style.cursor='wait'; return true
-    });
-
-    $(".auto_fill_button").click(function(event){
-        event.preventDefault();
-        var val = $('#auto-fill-all').val();
-        console.log(val)
-        console.log('test')
-        $( "input[name*='discount']" ).val(val);
-        $( "input[name*='discount']" ).val(val).change();
-   });
-
-   $('#mark_all_delete').click(function(){
-    if ($(this).is(':checked')) {
-        $('input[name*="_checkbox"').prop("checked", true);
-    } else {
-        $('input[name*="_checkbox"').prop("checked", false);
-    }
-   });
 
 
+    <br>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            console.log("ready!");
+        });
+        $('body').on('change', '.listing_price', function () {
+            var parent = $(this).closest('tr');
+            var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
+            var listing_price = numberWOCommas($(this).val());
+            var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
+            console.log(profit_margin, listing_price, market_value)
+            parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+        });
+        $('body').on('change', '.listing_discount', function () {
+            var parent = $(this).closest('tr');
+            var listing_price = numberWOCommas(parent.find('.listing_price').val());
+            var profit_margin = numberWOCommas($(this).val());
+            var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
+            console.log(profit_margin, listing_price, market_value)
+            parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+        });
+
+        $('#submit-prices').click(function () {
+            document.body.style.cursor = 'wait'; return true
+        });
+
+        $(".auto_fill_button").click(function (event) {
+            event.preventDefault();
+            var val = $('#auto-fill-all').val();
+            console.log(val)
+            console.log('test')
+            $("input[name*='discount']").val(val);
+            $("input[name*='discount']").val(val).change();
+        });
+
+        $('#mark_all_delete').click(function () {
+            if ($(this).is(':checked')) {
+                $('input[name*="_checkbox"').prop("checked", true);
+            } else {
+                $('input[name*="_checkbox"').prop("checked", false);
+            }
+        });
 
 
 
-   $('.mark_category_delete').click(function(){
-    var parent = $(this).closest('.collapse');
-    if ($(this).is(':checked')) {
-        parent.find('input[name*="_checkbox"').prop("checked", true);
-    } else {
-        parent.find('input[name*="_checkbox"').prop("checked", false);
-    }
-   });
-   $(".auto_fill_category_button").click(function(){
-    var parent = $(this).closest('.collapse');
-    var val = parent.find('.auto-fill-category').val();
-    parent.find( "input[name*='discount']" ).val(val);
-    parent.find( "input[name*='discount']" ).change();
-    });
 
-    function isNumber(evt) {
+
+        $('.mark_category_delete').click(function () {
+            var parent = $(this).closest('.collapse');
+            if ($(this).is(':checked')) {
+                parent.find('input[name*="_checkbox"').prop("checked", true);
+            } else {
+                parent.find('input[name*="_checkbox"').prop("checked", false);
+            }
+        });
+        $(".auto_fill_category_button").click(function () {
+            var parent = $(this).closest('.collapse');
+            var val = parent.find('.auto-fill-category').val();
+            parent.find("input[name*='discount']").val(val);
+            parent.find("input[name*='discount']").change();
+        });
+
+        function isNumber(evt) {
             evt = (evt) ? evt : window.event;
             var charCode = (evt.which) ? evt.which : evt.keyCode;
-            if ( (charCode > 31 && charCode < 48) || charCode > 57) {
+            if ((charCode > 31 && charCode < 48) || charCode > 57) {
                 return false;
             }
             return true;
         }
 
-    function isBlank(str) {
-        return (!str || /^\s*$/.test(str));
-    }
-
-    function effective_price(price,discount,market_value){
-        if ( (isNaN(discount)) && (isNaN(price)) ){
-            return '';
-        }
-        if ( (isNaN(discount)) && (!isNaN(price)) ){
-            return Math.round(price);
-        }
-        if ((!isNaN(discount)) && (isNaN(price))){
-            var discount_fraction = (100.0-(discount))/100;
-            var discount_price = Math.round(discount_fraction * market_value);
-            return Math.round(discount_price);
-        }
-        if ((!isNaN(discount)) && (!isNaN(price))){
-            var discount_fraction = (100.0-(discount))/100;
-            var discount_price = discount_fraction * Math.round(market_value);
-            console.log(discount_price,price, discount_fraction)
-            return Math.min.apply(null,[price,Math.round(discount_price)]);
-        }
-    }
-
-
-    function numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    function removeDollar(x) {
-        return x.toString().replace('$', "");
-    }
-    function numberWOCommas(x){
-        return parseFloat(x.toString().replace(/,/g, ''));
-    }
-    
-    var validNumber = new RegExp(/^-?\d*\.?\d*$/);
-    var lastValid = document.getElementById("test1").value;
-    function validateNumber(elem) {
-        if (validNumber.test(elem.value)) {
-        lastValid = elem.value;
-        } else {
-        elem.value = lastValid;
-        }
-    }
-
-    $(document).on("keypress", function(e){
-
-        if(e.which == 13){
-
-            var inputVal = $(this).val();
-
-            $('#test_form').submit();
-            event.preventDefault();
-            console.log($('#textbox').val())
-            console.log("form submitted!")  // sanity check
+        function isBlank(str) {
+            return (!str || /^\s*$/.test(str));
         }
 
-    });
-    
-    function getInputValue(){
+        function effective_price(price, discount, market_value) {
+            if ((isNaN(discount)) && (isNaN(price))) {
+                return '';
+            }
+            if ((isNaN(discount)) && (!isNaN(price))) {
+                return Math.round(price);
+            }
+            if ((!isNaN(discount)) && (isNaN(price))) {
+                var discount_fraction = (100.0 - (discount)) / 100;
+                var discount_price = Math.round(discount_fraction * market_value);
+                return Math.round(discount_price);
+            }
+            if ((!isNaN(discount)) && (!isNaN(price))) {
+                var discount_fraction = (100.0 - (discount)) / 100;
+                var discount_price = discount_fraction * Math.round(market_value);
+                console.log(discount_price, price, discount_fraction)
+                return Math.min.apply(null, [price, Math.round(discount_price)]);
+            }
+        }
+
+
+        function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        function removeDollar(x) {
+            return x.toString().replace('$', "");
+        }
+        function numberWOCommas(x) {
+            return parseFloat(x.toString().replace(/,/g, ''));
+        }
+
+        var validNumber = new RegExp(/^-?\d*\.?\d*$/);
+        var lastValid = document.getElementById("test1").value;
+        function validateNumber(elem) {
+            if (validNumber.test(elem.value)) {
+                lastValid = elem.value;
+            } else {
+                elem.value = lastValid;
+            }
+        }
+
+        $(document).on("keypress", function (e) {
+
+            if (e.which == 13) {
+
+                var inputVal = $(this).val();
+
+                $('#test_form').submit();
+                event.preventDefault();
+                console.log($('#textbox').val())
+                console.log("form submitted!")  // sanity check
+            }
+
+        });
+
+        function getInputValue() {
 
             // Selecting the input element and get its value 
 
             var inputVal = document.getElementById("onlyNumbers").value;
 
-            
+
 
             // Displaying the value
             console.log(inputVal)
         }
-    function popup_text() {
-        var popup = document.getElementById("myPopup");
-        popup.classList.toggle("show");
+        function popup_text() {
+            var popup = document.getElementById("myPopup");
+            popup.classList.toggle("show");
         }
     </script>
 
 
-{% endblock content %}
+    {% endblock content %}
