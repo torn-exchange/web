@@ -16,23 +16,24 @@
         <div class='col-md-9 col-sm-12'>
             <div class='row'>
                 <div class="text-center col-12">
-                    <h4 class="m-4 allerta-font text-center"> 
+                    <h4 class="m-4 allerta-font text-center">
                         Companies for Sale
                     </h4>
                 </div>
                 <div>
                     {% if not listings.object_list%}
-                        <p>
-                            Sorry no listings were found!
-                        </p>
+                    <p>
+                        Sorry no listings were found!
+                    </p>
                     {% else %}
-                        <p class="ml-5 p-0 m-0 text-center pb-2">
-                            Here are the companies for sale in Torn Exchange! If you own a company you can create an advert below:
-                        </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        Here are the companies for sale in Torn Exchange! If you own a company you can create an advert
+                        below:
+                    </p>
                     {% endif %}
                 </div>
                 <div class="offset-md-4  col-4 offset-4 col-md-4 btn btn-primary align-content-center text-center">
-                    <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a> 
+                    <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a>
                 </div>
                 <hr>
                 <br>
@@ -50,20 +51,22 @@
                 <div class='col-12'>
                     <div class='card listing-card  m-0 mb-1 p-0'>
                         <div class="card-header m-0 p-0">
-                            <div class="row pl-1">  
+                            <div class="row pl-1">
                                 <div class="col-9 mb-0">
                                     <div class='row'>
                                         <div class="pl-2 ml-3 col-7 text-center">
                                             <div class='row'>
                                                 <div class='col text-small'>
-                                                    <a target='blank' class = 'text-white' href="https://www.torn.com/joblist.php#/p=corpinfo&ID={{listing.company_id}}">
-                                                    {{listing.name}}
+                                                    <a target='blank' class='text-white'
+                                                        href="https://www.torn.com/joblist.php#/p=corpinfo&ID={{listing.company_id}}">
+                                                        {{listing.name}}
                                                     </a>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class ="col-4 text-right">
-                                            {{listing.rating}} &nbsp; <i class="fas fa-star small mr-2 mb-2 size-2x"> </i> {{listing.company_type}}
+                                        <div class="col-4 text-right">
+                                            {{listing.rating}} &nbsp; <i class="fas fa-star small mr-2 mb-2 size-2x">
+                                            </i> {{listing.company_type}}
                                         </div>
                                     </div>
                                 </div>
@@ -73,7 +76,8 @@
                             <div class="row ml-1 mr-1">
                                 <div class="col">
                                     <b class="float-left">Owner: </b>&nbsp;
-                                    <a target='blank' href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}">
+                                    <a target='blank'
+                                        href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}">
                                         <b class="float-right">{{listing.owner.name}}</b>
                                     </a>
                                 </div>
@@ -98,7 +102,7 @@
                                     <b class="float-right">
                                         {{listing.employees_hired}}/{{listing.employees_capacity}}
                                     </b>
-                                    
+
                                 </div>
                                 <div class="col">
                                     <b class="float-left">Popularity: </b>
@@ -109,11 +113,11 @@
                                 <div class="col">
                                     <b class="float-left">Weekly Income: </b>
                                     <b class="float-right">&nbsp;{{listing.weekly_income|intcomma}}</b>
-                                </div>   
+                                </div>
                                 <div class="col">
                                     <b class="float-left">Weekly Customers: </b>
                                     <b class="float-right">&nbsp;{{listing.weekly_customers|intcomma}}</b>
-                                </div>   
+                                </div>
                             </div>
                             <div class="row ml-1 mr-1">
                                 <div class="col">
@@ -129,7 +133,7 @@
                             <div class=" text ml-2 p-1">
                                 {{listing.description}}
                             </div>
-                            
+
                         </div>
                         <div class="card-footer mt-0  bg-dark text-white">
                             <div class="row">
@@ -138,15 +142,16 @@
 
                                         <strong>
                                             <span class="h6 font-weight-bold">
-                                            Price: <span class=" h6 badge badge-light">
-                                                ${{listing.asking_price|intcomma}}M
+                                                Price: <span class=" h6 badge badge-light">
+                                                    ${{listing.asking_price|intcomma}}M
+                                                </span>
+                                                {% if listing.negotiable%}
+                                                <span class="badge badge-pill badge-success h6">Negotiable</span>
+                                                {% else %}
+                                                <span
+                                                    class="badge badge-pill badge-secondary h6 text-black">Non-Negotiable</span>
+                                                {%endif %}
                                             </span>
-                                            {% if listing.negotiable%}
-                                            <span class="badge badge-pill badge-success h6">Negotiable</span>
-                                            {% else %}
-                                            <span class="badge badge-pill badge-secondary h6 text-black">Non-Negotiable</span>
-                                            {%endif %}
-                                        </span>
                                     </b>
                                     </strong>
                                 </div>
@@ -159,24 +164,27 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="pagination text-center justify-content-center align-items-center"  >
+            <div class="pagination text-center justify-content-center align-items-center">
                 {% if listings.has_previous %}
-                    
-                    <a href="?{% param_replace page=1 %}"><<&nbsp;</a>
-                    <a href="?{% param_replace page=listings.previous_page_number %}"> <</a>
-                {% endif %}
-              
-                {% for num in listings.paginator.page_range%}
-                    {% if listings.number == num %}
-                    <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-                    {% elif num > listings.number|add:'-8' and num < listings.number|add:'8'  %}
-                    <a href="?{% param_replace page=num %}" class="p-1">{{num}}</a>
-                    {%endif%}
-                {% endfor %}
-                {% if listings.has_next %}
-                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-                {% endif %}
+
+                <a href="?{% param_replace page=1 %}">
+                    <<&nbsp;< /a>
+                        <a href="?{% param_replace page=listings.previous_page_number %}">
+                            << /a>
+                                {% endif %}
+
+                                {% for num in listings.paginator.page_range%}
+                                {% if listings.number == num %}
+                                <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
+                                {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
+                                    href="?{% param_replace page=num %}" class="p-1">{{num}}
+                        </a>
+                        {%endif%}
+                        {% endfor %}
+                        {% if listings.has_next %}
+                        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
+                        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                        {% endif %}
             </div>
         </div>
 
@@ -184,7 +192,7 @@
 
 </div>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('#id_man_range_0').parent().addClass("row");
         $('#id_int_range_0').parent().addClass("row");
         $('#id_end_range_0').parent().addClass("row");

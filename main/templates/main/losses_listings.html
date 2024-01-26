@@ -4,44 +4,46 @@
 {% load custom_tags %}
 {% load humanize %}
 
-<div class = 'container'>
+<div class='container'>
     <div class="text-center col-12">
-        <h4 class="m-4 allerta-font text-center"> 
+        <h4 class="m-4 allerta-font text-center">
             Loss Price Listings
         </h4>
     </div>
     <div>
         {% if not listings%}
-            <p class="text-center">
-                Sorry no listings were found!
-            </p>
+        <p class="text-center">
+            Sorry no listings were found!
+        </p>
         {% else %}
-            <p class="ml-5 p-0 m-0 text-center pb-2">
-                Here are all of the players who are selling losses on Torn Exchange with their prices. 
-                If you are looking to buy losses, simply choose a player from the listings below, click on their name and you shall be directed to their profile so that you can send them a message.
-            </p>
+        <p class="ml-5 p-0 m-0 text-center pb-2">
+            Here are all of the players who are selling losses on Torn Exchange with their prices.
+            If you are looking to buy losses, simply choose a player from the listings below, click on their name and
+            you shall be directed to their profile so that you can send them a message.
+        </p>
         {% endif %}
     </div>
     <div class="offset-md-5  col-4 offset-4 col-md-2 btn btn-primary align-content-center text-center">
-        <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a> 
-     </div>
+        <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a>
+    </div>
     <div class="row">
         {% for listing in listings%}
         <div class="col-md-3 col-sm-6 p-1">
-            <div class="card mt-3 p-0 m-0" >
+            <div class="card mt-3 p-0 m-0">
                 <div class="card-header bg-dark text-white small p-0">
-                    <div class="row">                      
+                    <div class="row">
                         <div class='col-4 p-2 pl-4'>
                             {% if listing.activity_status == 'Online' %}
-                                <img src="{% static '/main/images/crown-online.png' %}" style="max-width:25%;">
+                            <img src="{% static '/main/images/crown-online.png' %}" style="max-width:25%;">
                             {% elif listing.activity_status == 'Idle' %}
-                                <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 25%;">
+                            <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 25%;">
                             {% elif listing.activity_status == 'Offline' %}
-                                <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 25%;">
+                            <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 25%;">
                             {% endif %}
                         </div>
                         <div class="col mt-2 text-left pl-3 allerta-font text-white m-auto ">
-                            <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}" class="text-white">
+                            <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
+                                class="text-white">
                                 {{listing.name}}
                             </a>
                         </div>
@@ -60,27 +62,30 @@
         {% endfor %}
     </div>
 
-<div class="pagination text-center justify-content-center align-items-center"  >
-    {% if not listings%}
-    {% else %}
+    <div class="pagination text-center justify-content-center align-items-center">
+        {% if not listings%}
+        {% else %}
         {% if listings.has_previous %}
-            
-            <a href="?{% param_replace page=1 %}"><<&nbsp;</a>
-            <a href="?{% param_replace page=listings.previous_page_number %}"> <</a>
-        {% endif %}
-    
-        {% for num in listings.paginator.page_range%}
-            {% if listings.number == num %}
-            <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-            {% elif num > listings.number|add:'-8' and num < listings.number|add:'8'  %}
-            <a href="?{% param_replace page=num %}" class="p-1">{{num}}</a>
-            {%endif%}
-        {% endfor %}
-        {% if listings.has_next %}
-        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-        {% endif %}
-    {% endif %}
-</div>
+
+        <a href="?{% param_replace page=1 %}">
+            <<&nbsp;< /a>
+                <a href="?{% param_replace page=listings.previous_page_number %}">
+                    << /a>
+                        {% endif %}
+
+                        {% for num in listings.paginator.page_range%}
+                        {% if listings.number == num %}
+                        <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
+                        {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
+                            href="?{% param_replace page=num %}" class="p-1">{{num}}
+                </a>
+                {%endif%}
+                {% endfor %}
+                {% if listings.has_next %}
+                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
+                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                {% endif %}
+                {% endif %}
+    </div>
 </div>
 {% endblock %}

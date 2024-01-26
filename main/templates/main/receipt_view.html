@@ -3,14 +3,14 @@
 {% load static %}
 {% load humanize %}
 {% load custom_tags %}
-<div class = 'container'>
+<div class='container'>
     <br>
     <div class="col-sm-12 col-md-8 offset-md-2">
         <div class='card receipt-table'>
             <div class="card-header bg-dark m-0 p-0">
                 <div class="offset-8 col-4">
                     <small>
-                        <p class="m-0 p-1 text-white text-right">{{receipt.created_at}}</p> 
+                        <p class="m-0 p-1 text-white text-right">{{receipt.created_at}}</p>
                     </small>
                 </div>
                 <div class=" coltext-white m-1 p-0 text-center">
@@ -19,60 +19,61 @@
                 <div class='row'>
                     <div class="col-4">
                         <p class="mb-0 mr-2 p-0">
-                            <h6 class="text-white-50 small m-2 p-0">
-                                <p class="m-0 p-0">Buyer: {{receipt.owner.name}}</p>
-                            </h6>
+                        <h6 class="text-white-50 small m-2 p-0">
+                            <p class="m-0 p-0">Buyer: {{receipt.owner.name}}</p>
+                        </h6>
                         </p>
                     </div>
                     <div class="offset-4 col-4">
                         <p class="mb-0 mr-2 p-0">
-                            <h6 class="text-white-50 small m-2 p-0">
-                                <p class="m-0 p-0 text-right"">Seller: {{receipt.seller}}</p>
+                        <h6 class="text-white-50 small m-2 p-0">
+                            <p class="m-0 p-0 text-right"">Seller: {{receipt.seller}}</p>
                             </h6>
                         </p>
                     </div>
                 </div>
             </div>
-            <table class="table  table-hover header-fixed receipt-table text-center">
-                <thead>
-                    <tr>
-                        <th scope="col">Image</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Price</th>
-                        <th score="col">Quantity</th>
-                        <th scope="col">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody class="my_tbody receipt-table text-center">
-                    {%for item_record in items_trades%}
-                    <tr class="row-striped m-0 b-0"></td>
-                        <td class='p-0'><img src="{{item_record.item.image_url}}"></td>
-                        <td class='p-2'>{{item_record.item}}</td>
-                        <td class='p-2'>${{item_record.price|intcomma}}</td>
-                        <td class='p-2'>{{item_record.quantity|intcomma}}</td>
-                        <td class="p-2">${{item_record.sub_total|intcomma}}</td>
-                    </tr>
-                    {%endfor%}
-                </tbody>
-                
-            </table>    
-            <div class='card-footer bg-dark text-white text-right'>
-                 <strong>Total:    ${{total|intcomma}}</strong>
+            <table class=" table table-hover header-fixed receipt-table text-center">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Price</th>
+                                        <th score="col">Quantity</th>
+                                        <th scope="col">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="my_tbody receipt-table text-center">
+                                    {%for item_record in items_trades%}
+                                    <tr class="row-striped m-0 b-0">
+                                        </td>
+                                        <td class='p-0'><img src="{{item_record.item.image_url}}"></td>
+                                        <td class='p-2'>{{item_record.item}}</td>
+                                        <td class='p-2'>${{item_record.price|intcomma}}</td>
+                                        <td class='p-2'>{{item_record.quantity|intcomma}}</td>
+                                        <td class="p-2">${{item_record.sub_total|intcomma}}</td>
+                                    </tr>
+                                    {%endfor%}
+                                </tbody>
+
+                                </table>
+                            <div class='card-footer bg-dark text-white text-right'>
+                                <strong>Total: ${{total|intcomma}}</strong>
+                            </div>
+                    </div>
+                </div>
+
             </div>
-        </div>
-    </div>
 
-</div>
-
-<script>
-    function numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-    function removeDollar(x) {
-        return x.toString().replace('$', "");
-    }
-    function numberWOCommas(x){
-        return parseFloat(x.toString().replace(/,/g, ''));
-    }
-</script>
-{%endblock%}
+            <script>
+                function numberWithCommas(x) {
+                    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+                function removeDollar(x) {
+                    return x.toString().replace('$', "");
+                }
+                function numberWOCommas(x) {
+                    return parseFloat(x.toString().replace(/,/g, ''));
+                }
+            </script>
+            {%endblock%}

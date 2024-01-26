@@ -1,61 +1,64 @@
-from django import template 
-register = template.Library() 
-from users.models import Profile 
-from django.contrib.auth.models import User
-from ..models import Listing
-from ..models import Item
-import numpy as np
-from django.core.serializers import serialize
-from django.db.models.query import QuerySet
 import json
-from django.template import Library
+from django.db.models.query import QuerySet
+from django.core.serializers import serialize
+from ..models import Listing
+from django import template
+register = template.Library()
+
 
 @register.simple_tag(name='listing_price')
-def prepopulate_listing_price(item, profile): 
+def prepopulate_listing_price(item, profile):
     try:
-        listing = Listing.objects.filter(owner = profile, item=item).get()
+        listing = Listing.objects.filter(owner=profile, item=item).get()
         if listing.price > 0:
             return listing.price
         else:
             return ''
     except:
         return ''
+
+
 @register.simple_tag(name='listing_discount')
-def prepopulate_listing_discount(item, profile): 
+def prepopulate_listing_discount(item, profile):
     try:
-        listing = Listing.objects.filter(owner = profile, item=item).get()
+        listing = Listing.objects.filter(owner=profile, item=item).get()
         return listing.discount
     except:
         return ''
 
+
 @register.filter(name='buy_price')
-def buy_price(item, profile): 
-    listing = Listing.objects.filter(owner = profile, item=item).get()
+def buy_price(item, profile):
+    listing = Listing.objects.filter(owner=profile, item=item).get()
     return listing.effective_price
+
 
 @register.filter(name='item_plurals')
 def item_name_plural(item_name):
-    if item_name =='Defensive':
+    if item_name == 'Defensive':
         return 'Armor'
-    if item_name =='Virus':
+    if item_name == 'Virus':
         return 'Viruses'
-    if item_name in ['Drug','Electronic','Car','Flower','Plushie','Booster','Enhancer','Artifact','Energy Drink']:
+    if item_name in ['Drug', 'Electronic', 'Car', 'Flower', 'Plushie', 'Booster', 'Enhancer', 'Artifact', 'Energy Drink']:
         return item_name+'s'
     if item_name == 'Other':
         return 'Miscellaneous'
     return item_name
 
+
 @register.filter(name='listing_updated')
-def listing_last_updatedupdated(item, profile): 
-    listing = Listing.objects.filter(owner = profile, item=item).get()
+def listing_last_updatedupdated(item, profile):
+    listing = Listing.objects.filter(owner=profile, item=item).get()
     return listing.last_updated
-    
+
+
 @register.simple_tag(name='item_type_relevant')
 def is_item_type_relevant(item):
     if item.item_type in ['Melee']:
         return True
     else:
         return False
+
 
 @register.filter(name='jsonify')
 def jsonify(object):
@@ -92,12 +95,16 @@ def param_replace(context, **kwargs):
         del d[k]
     return d.urlencode()
 
+
 @register.filter
 def get_index(l, i):
     return l[i]
+
+
 @register.filter(name='replace_spaces')
 def replace_spaces(string):
-    return string.replace(' ','_')
+    return string.replace(' ', '_')
+
 
 @register.simple_tag(name='get_dict_entry')
 def get_dict_entry(dict, entry):
@@ -107,7 +114,7 @@ def get_dict_entry(dict, entry):
 @register.simple_tag(name='effective_price')
 def effective_price(item, profile):
     try:
-        listing = Listing.objects.filter(owner = profile, item=item).get()
+        listing = Listing.objects.filter(owner=profile, item=item).get()
         return listing.effective_price
     except:
         return ''

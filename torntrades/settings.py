@@ -38,7 +38,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '84.46.245.25',
     '0.0.0.0:8000'
-    ]
+]
 
 # CORS_ORIGIN_WHITELIST = ['http://www.torn.com','https://www.torn.com','http://*','chrome-extension://*']
 
@@ -112,7 +112,8 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST'), # the name of the depends_on value from docker-compose.yml
+        # the name of the depends_on value from docker-compose.yml
+        'HOST': os.getenv('POSTGRES_HOST'),
         'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
@@ -169,7 +170,7 @@ LOGIN_REDIRECT_URL = 'home'
 
 LOGIN_URL = 'login'
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
 CRONJOBS = [
     ('* * * * *', 'django.core.management.update_items'),
