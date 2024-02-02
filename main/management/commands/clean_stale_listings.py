@@ -7,7 +7,7 @@ import datetime
 class Command(BaseCommand):
 
     def _clean(self):
-        today = datetime.date.today()
+        today = datetime.datetime.now(tz=datetime.timezone.utc)
         last_month = today - datetime.timedelta(days=30)
         active_traders = set([a.owner.user for a in TradeReceipt.objects.filter(
             created_at__range=(last_month, today)).distinct('owner')])
