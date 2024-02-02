@@ -3,6 +3,7 @@ import requests
 import json
 from django.core.management.base import BaseCommand
 from django.conf import settings as project_settings
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from main.models import Item
 import time
 from users.models import Profile
@@ -47,6 +48,13 @@ class Command(BaseCommand):
                     break
             try:
                 item_in_our_db = Item.objects.get(item_id=item_id)
+            except ObjectDoesNotExist:
+                print("==> ObjectDoesNotExist")
+                item_in_our_db = None
+            except MultipleObjectsReturned:
+                print("==> MultipleObjectsReturned")
+                item_in_our_db = None
+                    
             except Exception as e:
                 item_in_our_db = None
 
@@ -69,7 +77,7 @@ class Command(BaseCommand):
                         ),
                     )
                     print(
-                        f'Updated {row["name"]} -{item_id} market price to {row["market_value"]} and TE_price to {TE_price}')
+                        f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
             else:
                 Item.objects.update_or_create(
                     name=row['name'],
