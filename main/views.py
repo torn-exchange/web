@@ -471,7 +471,7 @@ def parse_trade_paste(request):
 
         if trade_paste is not None:
             name, item_list, item_quantities = parse_trade_text(trade_paste)
-            print(name, item_list, item_quantities)
+            print("005", name, item_list, item_quantities)
 
             item_list, item_quantities = return_item_sets(
                 item_list, item_quantities)
@@ -739,12 +739,21 @@ def receipt_view(request, receipt_id=None):
 
 
 def buy_price_from_name(item_name, profile):
-    item = Item.objects.filter(name=item_name).get()
     try:
-        listing = Listing.objects.filter(owner=profile, item=item).get()
-        return listing.effective_price
-    except:
+        item = Item.objects.get(name=item_name)
+    except Item.DoesNotExist:
+        #print(f"Item with name '{item_name}' does not exist.")
         return 0
+
+    try:
+        listing = Listing.objects.get(owner=profile, item=item)
+        return listing.effective_price
+    except Listing.DoesNotExist:
+        print(f"Listing for item '{item_name}' does not exist for the specified profile.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return 0
 
 
 def delete_receipt_from_profile(request, receipt_id):
