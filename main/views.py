@@ -471,7 +471,6 @@ def parse_trade_paste(request):
 
         if trade_paste is not None:
             name, item_list, item_quantities = parse_trade_text(trade_paste)
-            print("005", name, item_list, item_quantities)
 
             item_list, item_quantities = return_item_sets(
                 item_list, item_quantities)
@@ -742,7 +741,7 @@ def buy_price_from_name(item_name, profile):
     try:
         item = Item.objects.get(name=item_name)
     except Item.DoesNotExist:
-        #print(f"Item with name '{item_name}' does not exist.")
+        print(f"Item with name '{item_name}' does not exist.")
         return 0
 
     try:
