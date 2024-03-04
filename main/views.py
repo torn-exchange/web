@@ -563,18 +563,14 @@ def new_extension_get_prices(request):
         try:
             data = json.loads(request.body)
             user_name = data.get('user_name')
-            print(user_name)
             seller_name = data.get('seller_name')
-            profile = Profile.objects.filter(name=user_name).get()
+            profile = Profile.objects.filter(name__iexact=user_name).get()
             items = data.get('items')
-            print(items, 'items')
             quantities = data.get('quantities')
-            # print(quantities,'quantities')
             items, quantities = return_item_sets(items, quantities)
             listings = []
             items_objects = []
             for i in items:
-                # print(i)
                 try:
                     print(i, Listing.objects.get(owner=profile, item__name=i))
                     listings.append(Listing.objects.get(
@@ -582,7 +578,6 @@ def new_extension_get_prices(request):
                 except Listing.DoesNotExist:
                     listings.append(None)
             for i in items:
-                # print(i)
                 try:
                     items_objects.append(Item.objects.get(name=i))
                 except Item.DoesNotExist:
@@ -600,12 +595,9 @@ def new_extension_get_prices(request):
                 a.image_url if a is not None else '' for a in items_objects]
             market_values = [
                 a.TE_value if a is not None else 0 for a in items_objects]
-            print(listings, 'listings')
-            print(prices, 'prices')
-            print(profile, 'profile')
-            print(profit_per_item)
+        
         except Exception as e:
-            raise e
+            return JsonResponse({'error_message': "unknown error, please report to admin"}, status=400)
 
         data = {
             "seller_name": seller_name,
@@ -617,7 +609,7 @@ def new_extension_get_prices(request):
             'image_url': image_url,
             'market_prices': market_values,
         }
-        # print(data)
+        
         return JsonResponse(data, status=200)
 
     return JsonResponse({}, status=400)
@@ -671,54 +663,59 @@ def create_receipt(request):
 @csrf_exempt
 def new_create_receipt(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        print(data)
-        item_names = data.get('item_names')
-        item_quantities = data.get('item_quantities')
-        item_prices = data.get('prices')
-        owner_name = data.get('owner_username')
-        seller_name = data.get('seller_username')
-        owner_profile = Profile.objects.filter(name=owner_name).get()
-        trade_receipt = TradeReceipt(owner=owner_profile, seller=seller_name)
-        trade_receipt.save()
+        try: 
+            data = json.loads(request.body)
 
-        for i in range(len(item_names)):
-            quantity = item_quantities[i]
-            price = item_prices[i]
-            print(item_names[i], quantity, price)
-            item = Item.objects.filter(name=item_names[i]).get()
-            # print(f'item trade added with {item},{quantity},{price}')
-            item_trade = ItemTrade(
-                owner=owner_profile, item=item, price=price, quantity=quantity, seller=seller_name)
-            # print(item_trade.is_valid())
-            if item_trade.is_valid() == 'valid':
-                item_trade.save()
-                trade_receipt.items_trades.add(item_trade)
-            else:
-                return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
-        trade_receipt.save()
-        # print('receipt has been saved')
-        listings_count = TradeReceipt.objects.filter(
-            owner=owner_profile, seller=seller_name).count()
-        trade_paste_text = owner_profile.settings.receipt_paste_text
-        trade_paste_text = trade_paste_text.replace(
-            '[[seller_name]]', seller_name)
-        trade_paste_text = trade_paste_text.replace(
-            '[[total]]', str(trade_receipt.total))
-        trade_paste_text = trade_paste_text.replace(
-            '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
-        trade_paste_text = trade_paste_text.replace(
-            '[[trade_number]]', str(listings_count))
-        trade_paste_text = trade_paste_text.replace(
-            '[[prices_link]]', f'www.tornexchange.com/prices/{owner_profile.name}')
-        trade_paste_text = trade_paste_text.replace(
-            '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
-        print(trade_paste_text)
-        data = {'receipt_id': trade_receipt.receipt_url_string,
-                'trade_message': escape(trade_paste_text),
-                'profit': trade_receipt.profit,
-                'total': trade_receipt.total,
-                }
+            item_names = data.get('item_names')
+            item_quantities = data.get('item_quantities')
+            item_prices = data.get('prices')
+            owner_name = data.get('owner_username')
+            seller_name = data.get('seller_username')
+            
+            owner_profile = Profile.objects.filter(name__iexact=owner_name).get()
+            trade_receipt = TradeReceipt(owner=owner_profile, seller=seller_name)
+            trade_receipt.save()
+
+            for i in range(len(item_names)):
+                quantity = item_quantities[i]
+                price = item_prices[i]
+                
+                item = Item.objects.filter(name=item_names[i]).get()
+                item_trade = ItemTrade(
+                    owner=owner_profile, item=item, price=price, quantity=quantity, seller=seller_name)
+                if item_trade.is_valid() == 'valid':
+                    item_trade.save()
+                    trade_receipt.items_trades.add(item_trade)
+                else:
+                    return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
+            trade_receipt.save()
+            
+            listings_count = TradeReceipt.objects.filter(
+                owner=owner_profile, seller=seller_name).count()
+            trade_paste_text = owner_profile.settings.receipt_paste_text
+            trade_paste_text = trade_paste_text.replace(
+                '[[seller_name]]', seller_name)
+            trade_paste_text = trade_paste_text.replace(
+                '[[total]]', str(trade_receipt.total))
+            trade_paste_text = trade_paste_text.replace(
+                '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+            trade_paste_text = trade_paste_text.replace(
+                '[[trade_number]]', str(listings_count))
+            trade_paste_text = trade_paste_text.replace(
+                '[[prices_link]]', f'www.tornexchange.com/prices/{owner_profile.name}')
+            trade_paste_text = trade_paste_text.replace(
+                '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
+            
+            data = {'receipt_id': trade_receipt.receipt_url_string,
+                    'trade_message': escape(trade_paste_text),
+                    'profit': trade_receipt.profit,
+                    'total': trade_receipt.total,
+                    }
+            
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error_message': "unknown error, please report to admin"}, status=400)
+        
     return JsonResponse(data=data, status=200)
 
 
