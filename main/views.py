@@ -338,12 +338,12 @@ def price_list(request, identifier=None):
         pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
 
     # fetches the profile of the visiting user using profile name
-    elif Profile.objects.filter(name=identifier).exists():
+    elif Profile.objects.filter(name__iexact=identifier).exists():
         try:
             profile = Profile.objects.filter(user=request.user).get()
         except:
             profile = None
-        pricelist_profile = Profile.objects.filter(name=identifier).get()
+        pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
 
     else:
         return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
@@ -691,8 +691,12 @@ def new_create_receipt(request):
             trade_receipt.save()
             
             listings_count = TradeReceipt.objects.filter(
-                owner=owner_profile, seller=seller_name).count()
+            owner=owner_profile, seller=seller_name).count()
             trade_paste_text = owner_profile.settings.receipt_paste_text
+
+            # error handling for when trader hasn't yet set any message in Settings:
+            trade_paste_text = '' if trade_paste_text is None else trade_paste_text
+
             trade_paste_text = trade_paste_text.replace(
                 '[[seller_name]]', seller_name)
             trade_paste_text = trade_paste_text.replace(
