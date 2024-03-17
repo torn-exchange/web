@@ -176,4 +176,4 @@ CRONJOBS = [
     ('* * * * *', 'django.core.management.update_items'),
 ]
 
-MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM = 100
+MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM = 50
