@@ -242,12 +242,38 @@ def edit_price_list(request):
         "name", "TE_value", "image_url")
     categories = ['Melee', 'Primary', 'Secondary', 'Defensive', 'Medical',
                   'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer',
-                  'Alcohol', 'Booster', 'Electronic', 'Jewelry', 'Virus', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie',
+                  'Alcohol', 'Booster', 'Tool', 'Jewelry', 'Material', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie',
                   'Special', 'Other']
     dictionary_of_categories = {
-        'Equipment': ['Melee', 'Primary', 'Secondary', 'Defensive'],
-        'Useful Supplies': ['Medical', 'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer', 'Alcohol', 'Booster'],
-        'General Shopping': ['Electronic', 'Jewelry', 'Virus', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
+        'Useful Supplies': [
+            'Alcohol',
+            'Booster',
+            'Candy',
+            'Drug',
+            'Energy Drink',
+            'Enhancer',
+            'Medical',
+            'Temporary'
+        ],
+        'General Shopping': [
+            'Artifact',
+            'Car',
+            'Clothing',
+            'Flower',
+            'Jewelry',
+            'Material',
+            'Other',
+            'Plushie',
+            'Special',
+            'Supply Pack',
+            'Tool'
+        ],
+        'Equipment': [
+            'Defensive',
+            'Melee',
+            'Primary',
+            'Secondary'
+        ],
     }
     data_dict = {}
     for category in categories:
