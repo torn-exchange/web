@@ -16,14 +16,14 @@ def categories():
         'Special',
         'Supply Pack',
         'Enhancer',
-        'Virus',
+        'Tool',
         'Jewelry',
         'Melee',
         'Primary',
         'Secondary',
         'Defensive',
         'Clothing',
-        'Electronic',
+        'Material',
         'Car',
         'Artifact',
         'Other']
@@ -35,7 +35,7 @@ def dictionary_of_categories():
     dictionary_of_categories = {
         'Equipment': ['Melee', 'Primary', 'Secondary', 'Defensive'],
         'Useful Supplies': ['Medical', 'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer', 'Alcohol', 'Booster'],
-        'General Shopping': ['Electronic', 'Jewelry', 'Virus', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
+        'General Shopping': ['Material', 'Jewelry', 'Tool', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
     }
     return dictionary_of_categories
 

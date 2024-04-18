@@ -37,9 +37,7 @@ def buy_price(item, profile):
 def item_name_plural(item_name):
     if item_name == 'Defensive':
         return 'Armor'
-    if item_name == 'Virus':
-        return 'Viruses'
-    if item_name in ['Drug', 'Electronic', 'Car', 'Flower', 'Plushie', 'Booster', 'Enhancer', 'Artifact', 'Energy Drink']:
+    if item_name in ['Drug', 'Tool', 'Material', 'Car', 'Flower', 'Plushie', 'Booster', 'Enhancer', 'Artifact', 'Energy Drink']:
         return item_name+'s'
     if item_name == 'Other':
         return 'Miscellaneous'
