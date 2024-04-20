@@ -22,6 +22,7 @@ def categories():
         'Jewelry',
         'Car',
         'Artifact',
+        'Other',
         'Primary',
         'Secondary',
         'Melee',
