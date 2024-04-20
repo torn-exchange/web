@@ -17,16 +17,16 @@ def categories():
         'Supply Pack',
         'Enhancer',
         'Tool',
-        'Jewelry',
-        'Melee',
-        'Primary',
-        'Secondary',
-        'Defensive',
-        'Clothing',
         'Material',
+        'Clothing',
+        'Jewelry',
         'Car',
         'Artifact',
-        'Other']
+        'Primary',
+        'Secondary',
+        'Melee',
+        'Defensive', # this is Armor
+    ]
 
     return categories
 
