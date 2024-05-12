@@ -22,6 +22,8 @@ def prepopulate_listing_price(item, profile):
 def prepopulate_listing_discount(item, profile):
     try:
         listing = Listing.objects.filter(owner=profile, item=item).get()
+        if listing.discount is None:
+            return ''
         return listing.discount
     except:
         return ''
