@@ -294,18 +294,20 @@ def edit_price_list(request):
         updated_discounts = {}
         for item in all_relevant_items:
             price = request.POST.get(f'{item}_max_price')
+            if price and price.strip():
+                price = re.sub(r'[$,]', '', price)
             discount = (request.POST.get(f'{item}_discount'))
             try:
-                discount = float(discount)
-                # print(discount)
+                if discount == '' or discount is None or discount == 'None':
+                    discount = ''
+                else:
+                    discount = float(discount)
             except Exception as e:
-                # print(discount)
-                # print(f'{str(e)},{item}')
                 discount = ''
             try:
-                price = int(price)
+                if price and price != '':
+                    price = int(price)
             except Exception as e:
-                # print(f'{str(e)},{item}')
                 price = ''
 
             if type(discount) == float:

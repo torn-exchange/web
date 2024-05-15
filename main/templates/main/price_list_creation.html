@@ -3,7 +3,6 @@
 {% load humanize %}
 {% load custom_tags %}
 
-
 <div class='container'>
 
     {% if user_settings.tutorial == True%}
@@ -64,7 +63,7 @@
                         </div>
                         <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
                             auto-fill your entire price list! Make sure you only list items you can afford to buy from
-                            sellers. Each category has its own seperate auto-fill option which we recommend.</span>
+                            sellers. Each category has its own separate auto-fill option which we recommend.</span>
                         <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
                             oninput="validateNumber(this);" />
                         <button type="button" class="btn btn-primary auto_fill_button">
@@ -157,7 +156,7 @@
                                                 <input type="text" class="form-control listing_price text-responsive"
                                                     value="{%listing_price item owner_profile%}" id="onlyNumbers"
                                                     name="{{item.name}}_max_price" onkeypress="return isNumber(event)"
-                                                    onpaste="return false;" />
+                                                    onpaste="return true;" />
                                             </div>
                                         </td>
                                         <td style='width:13%;' class='text-center'>
@@ -168,11 +167,11 @@
                                                 <input type="text" class="form-control listing_discount text-responsive"
                                                     value="{%listing_discount item owner_profile%}" id="onlyNumbers"
                                                     name="{{item.name}}_discount" oninput="validateNumber(this);"
-                                                    onpaste="return false;" />
+                                                    onpaste="return true;" />
                                             </div>
                                         </td>
-                                        <td style='width:13%;' class='text-center effective_price'>${%effective_price
-                                            item owner_profile as effective_p%} {{effective_p|intcomma}}</td>
+                                        <td style='width:13%;' class='text-center effective_price'>
+                                            ${%effective_price item owner_profile as effective_p%} {{effective_p|intcomma}}</td>
                                         <td style='width:1%;' class='text-center'>
                                             <div class='input-group  mb-1'>
                                                 <input type="checkbox" class="form-control form-control-sm"
@@ -201,10 +200,9 @@
         });
         $('body').on('change', '.listing_price', function () {
             var parent = $(this).closest('tr');
-            var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
             var listing_price = numberWOCommas($(this).val());
+            var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
             var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-            console.log(profit_margin, listing_price, market_value)
             parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
         });
         $('body').on('change', '.listing_discount', function () {
@@ -212,7 +210,6 @@
             var listing_price = numberWOCommas(parent.find('.listing_price').val());
             var profit_margin = numberWOCommas($(this).val());
             var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-            console.log(profit_margin, listing_price, market_value)
             parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
         });
 
@@ -223,8 +220,6 @@
         $(".auto_fill_button").click(function (event) {
             event.preventDefault();
             var val = $('#auto-fill-all').val();
-            console.log(val)
-            console.log('test')
             $("input[name*='discount']").val(val);
             $("input[name*='discount']").val(val).change();
         });
@@ -284,7 +279,6 @@
             if ((!isNaN(discount)) && (!isNaN(price))) {
                 var discount_fraction = (100.0 - (discount)) / 100;
                 var discount_price = discount_fraction * Math.round(market_value);
-                console.log(discount_price, price, discount_fraction)
                 return Math.min.apply(null, [price, Math.round(discount_price)]);
             }
         }
@@ -297,16 +291,21 @@
             return x.toString().replace('$', "");
         }
         function numberWOCommas(x) {
-            return parseFloat(x.toString().replace(/,/g, ''));
+            x = x.toString().replace('$', "");
+            return parseFloat(x.toString().replaceAll(/,/g, ''));
         }
 
         var validNumber = new RegExp(/^-?\d*\.?\d*$/);
-        var lastValid = document.getElementById("test1").value;
         function validateNumber(elem) {
-            if (validNumber.test(elem.value)) {
-                lastValid = elem.value;
+            // remove dots and commas from possible copy/paste
+            let v = elem.value;
+            v = v.replace(",", "");
+            v = v.replace(".", "");
+            v = v.replace("$", "");
+            if (validNumber.test(v)) {
+                elem.value = v;
             } else {
-                elem.value = lastValid;
+                elem.value = '';
             }
         }
 
@@ -318,28 +317,19 @@
 
                 $('#test_form').submit();
                 event.preventDefault();
-                console.log($('#textbox').val())
                 console.log("form submitted!")  // sanity check
             }
 
         });
 
         function getInputValue() {
-
             // Selecting the input element and get its value 
-
             var inputVal = document.getElementById("onlyNumbers").value;
-
-
-
-            // Displaying the value
-            console.log(inputVal)
         }
         function popup_text() {
             var popup = document.getElementById("myPopup");
             popup.classList.toggle("show");
         }
     </script>
-
 
     {% endblock content %}
