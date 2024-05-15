@@ -73,7 +73,7 @@
                     return x.toString().replace('$', "");
                 }
                 function numberWOCommas(x) {
-                    return parseFloat(x.toString().replace(/,/g, ''));
+                    return parseFloat(x.toString().replaceAll(/,/g, ''));
                 }
             </script>
             {%endblock%}

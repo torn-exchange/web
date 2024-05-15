@@ -63,7 +63,7 @@
                         </div>
                         <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
                             auto-fill your entire price list! Make sure you only list items you can afford to buy from
-                            sellers. Each category has its own seperate auto-fill option which we recommend.</span>
+                            sellers. Each category has its own separate auto-fill option which we recommend.</span>
                         <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
                             oninput="validateNumber(this);" />
                         <button type="button" class="btn btn-primary auto_fill_button">
@@ -292,11 +292,10 @@
         }
         function numberWOCommas(x) {
             x = x.toString().replace('$', "");
-            return parseFloat(x.toString().replace(/,/g, ''));
+            return parseFloat(x.toString().replaceAll(/,/g, ''));
         }
 
         var validNumber = new RegExp(/^-?\d*\.?\d*$/);
-        var lastValid = document.getElementById("test1").value;
         function validateNumber(elem) {
             // remove dots and commas from possible copy/paste
             let v = elem.value;
@@ -304,9 +303,9 @@
             v = v.replace(".", "");
             v = v.replace("$", "");
             if (validNumber.test(v)) {
-                lastValid = v;
+                elem.value = v;
             } else {
-                elem.value = lastValid;
+                elem.value = '';
             }
         }
 
