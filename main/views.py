@@ -312,6 +312,10 @@ def edit_price_list(request):
 
             if type(discount) == float:
                 if discount > 100.0:
+                    # prevent message alert from fading away
+                    storage = messages.get_messages(request)
+                    storage.used = False
+
                     messages.error(
                         request, 'Make sure your discount value is less than 100')
                     return redirect('edit_price_list')

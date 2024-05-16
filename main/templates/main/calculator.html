@@ -247,11 +247,9 @@
 
                 $('#main-container').prepend(
                     `<div class="alert alert-success">
-                Your receipt has been created successfully, you can view it <a href="`+ receipt_url_path + `"> here!</a>
+                Your receipt has been created successfully, you can view it here: <a href="`+ receipt_url_path + `"> ` + receipt_url_path + `</a>
                 </div>`
                 )
-                alertTimeout(8000);
-
             },
             error: function (json) {
                 alert('Make sure to paste the trade on the textbox, including the sellers name, and to include a valid price');
@@ -270,11 +268,6 @@
     }
     function numberWOCommas(x) {
         return parseFloat(x.toString().replaceAll(/,/g, ''));
-    }
-    function alertTimeout(wait) {
-        setTimeout(function () {
-            $('#main-container').children('.alert:first-child').remove();
-        }, wait);
     }
 </script>
 
