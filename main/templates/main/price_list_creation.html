@@ -299,9 +299,9 @@
         function validateNumber(elem) {
             // remove dots and commas from possible copy/paste
             let v = elem.value;
-            v = v.replace(",", "");
-            v = v.replace(".", "");
-            v = v.replace("$", "");
+            // v = v.replace(",", "");
+            // v = v.replace(".", "");
+            // v = v.replace("$", "");
             if (validNumber.test(v)) {
                 elem.value = v;
             } else {

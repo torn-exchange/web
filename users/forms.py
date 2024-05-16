@@ -54,8 +54,9 @@ class SettingsForm(forms.ModelForm):
                 """),
             Field("trade_list_description",
                   placeholder="Welcome to my price list. Click Start Trade now to start a trade. (Emojis are allowed 🤑) "),
-            Field('receipt_paste_text', placeholder='''
-Paste your receipt message here, you will be able to copy this to the clipboard later. 
+            Field(PrependedText('link_to_forum_post',
+                  'https//:www.torn.com/'), placeholder='To'),
+            Field('receipt_paste_text', placeholder='''Paste your receipt message here, you will be able to copy this to the clipboard later. 
 You can use the following variables in your message:
 [[seller_name]] - The name of the seller
 [[total]] - The total price of the items you are buying
@@ -66,9 +67,19 @@ You can use the following variables in your message:
 
 Example:
 Hi [[seller_name]], thank you for the trade, the total is $[[total]], here is your receipt [[receipt_link]]. This is our trade N[[trade_number]]. Don't forget to rate my price list [[prices_link]]. Have a nice day!'''),
-
-            Field(PrependedText('link_to_forum_post',
-                  'https:www.torn.com/'), placeholder='To'),
+            HTML("""
+                <div>
+                Legend:</br>
+<code>
+[[seller_name]] - The name of the seller</br>
+[[total]] - The total price of the items you are buying</br>
+[[trade_number]] - The number of trades you have made with this seller.</br>
+[[receipt_link]] - The link to the receipt of the trade.</br>
+[[prices_link]] - The link to your price list.</br>
+[[forum_link]] - The link to your forum thread.</br></br>
+</code>
+                </div>
+                """),
             #### Job Seeking Tab ####
             HTML("</div>"),
             HTML("""
