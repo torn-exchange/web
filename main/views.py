@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 from .models import Item, Listing, TradeReceipt, ItemTrade, ChangeLog, Company
 from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter
 from users.models import Profile, Settings
@@ -350,6 +351,7 @@ def edit_price_list(request):
         return render(request, 'main/price_list_creation.html', context)
 
 
+@xframe_options_exempt
 def price_list(request, identifier=None):
     if identifier is None:
         try:
