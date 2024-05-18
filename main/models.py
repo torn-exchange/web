@@ -71,7 +71,6 @@ class Item(models.Model):
     def save(self, *args, **kwargs):
         for listing in Listing.objects.filter(item=self):
             listing.save()
-            # print('saving listings')
         super().save(*args, **kwargs)
 
 

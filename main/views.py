@@ -391,7 +391,6 @@ def price_list(request, identifier=None):
 #####
     listings = Listing.objects.filter(
         owner=pricelist_profile).all().order_by('-item__TE_value')
-    print(Listing.objects.order_by('-item__last_updated').first())
     try:
         last_updated = listings.order_by(
             '-item__last_updated').first().item.last_updated
@@ -490,7 +489,6 @@ def vote_view(request):
                 profile.votes.down(voter_id)
         vote_count = profile.votes.count()
         vote_score = profile.vote_score
-        # print(vote_count)
         return JsonResponse({
             "vote_count": vote_count,
             "vote_score": vote_score,
@@ -534,22 +532,18 @@ def extension_get_prices(request):
             items = json.loads(request.POST.get('items'))
             items = [re.sub('<span.*', '', item).replace('\n',
                                                          '').replace('&amp;', "&") for item in items]
-            print(items, 'items')
+            
             quantities = json.loads(request.POST.get('quantities'))
-            # print(quantities,'quantities')
             items, quantities = return_item_sets(items, quantities)
             listings = []
             items_objects = []
             for i in items:
-                # print(i)
                 try:
-                    print(i, Listing.objects.get(owner=profile, item__name=i))
                     listings.append(Listing.objects.get(
                         owner=profile, item__name=i))
                 except Listing.DoesNotExist:
                     listings.append(None)
             for i in items:
-                # print(i)
                 try:
                     items_objects.append(Item.objects.get(name=i))
                 except Item.DoesNotExist:
@@ -567,10 +561,7 @@ def extension_get_prices(request):
                 a.image_url if a is not None else '' for a in items_objects]
             market_values = [
                 a.TE_value if a is not None else 0 for a in items_objects]
-            print(listings, 'listings')
-            print(prices, 'prices')
-            print(profile, 'profile')
-            print(profit_per_item)
+            
         except Exception as e:
             print(e)
             return JsonResponse({}, status=400)
@@ -585,7 +576,6 @@ def extension_get_prices(request):
             'image_url': image_url,
             'market_prices': market_values,
         }
-        # print(data)
         return JsonResponse(data, status=200)
 
     return JsonResponse({}, status=400)
@@ -606,7 +596,6 @@ def new_extension_get_prices(request):
             items_objects = []
             for i in items:
                 try:
-                    print(i, Listing.objects.get(owner=profile, item__name=i))
                     listings.append(Listing.objects.get(
                         owner=profile, item__name=i))
                 except Listing.DoesNotExist:
@@ -653,9 +642,7 @@ def new_extension_get_prices(request):
 def create_receipt(request):
     if request.method == "POST":
         item_names = json.loads(request.POST.get('item_names'))
-        print(item_names)
         item_names = [a[0].replace("&amp;", "&") for a in item_names]
-        print(item_names)
         item_quantities = json.loads(request.POST.get('item_quantities'))
         item_quantities = [a[0] for a in item_quantities]
         item_prices = json.loads(request.POST.get('item_prices'))
@@ -678,19 +665,17 @@ def create_receipt(request):
         for i in range(len(item_names)):
             quantity = item_quantities[i]
             price = item_prices[i]
-            print(item_names[i], quantity, price)
             item = Item.objects.filter(name=item_names[i]).get()
-            # print(f'item trade added with {item},{quantity},{price}')
+            # item trade added with {item},{quantity},{price}
             item_trade = ItemTrade(
                 owner=owner_profile, item=item, price=price, quantity=quantity, seller=seller_name)
-            # print(item_trade.is_valid())
+            
             if item_trade.is_valid() == 'valid':
                 item_trade.save()
                 trade_receipt.items_trades.add(item_trade)
             else:
                 return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
         trade_receipt.save()
-        # print('receipt has been saved')
     return JsonResponse({'receipt_id': trade_receipt.receipt_url_string}, status=200)
 
 

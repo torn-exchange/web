@@ -80,7 +80,6 @@ class Settings(models.Model):
         if self.pk:
             if self.job_seeking != self.__job_seeking and self.job_seeking == True:
                 self.job_post_start_date = timezone.now()
-                print('updated creation date')
             self.__job_seeking = self.job_seeking
         players_company = apps.get_model(
             'main', 'Company').objects.filter(owner=self.owner).first()
