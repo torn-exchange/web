@@ -37,10 +37,10 @@ class Command(BaseCommand):
                 continue
             item_id = row['image'].replace(
                 'https://www.torn.com/images/items/', '').replace('/large.png', '')
-            # print(row)
+            
             TE_price = get_lowest_market_price(
                 item_id, get_random_key(), row['market_value'])
-            # print(TE_price, '<- TE_price')
+            
             while bool(TE_price) is not True:
                 TE_price = get_lowest_market_price(
                     item_id, get_random_key(), row['market_value'])
@@ -49,10 +49,10 @@ class Command(BaseCommand):
             try:
                 item_in_our_db = Item.objects.get(item_id=item_id)
             except ObjectDoesNotExist:
-                print("==> ObjectDoesNotExist")
+                print("==> ObjectDoesNotExist", item_id)
                 item_in_our_db = None
             except MultipleObjectsReturned:
-                print("==> MultipleObjectsReturned")
+                print("==> MultipleObjectsReturned", item_id)
                 item_in_our_db = None
                     
             except Exception as e:
@@ -97,10 +97,6 @@ class Command(BaseCommand):
                 )
                 print(
                     f'Created {row["name"]} -{item_id} as a new entry on the db')
-
-            # else:
-            #     pass
-                #    print(f'skipped {row["name"]} -{item_id} because market price is {row["market_value"]}')
 
         print('Done!')
 
