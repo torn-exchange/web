@@ -374,16 +374,10 @@ def price_list(request, identifier=None):
     # fetches the profile of the visiting user using profile name
     elif Profile.objects.filter(name__iexact=identifier).exists():
         try:
-            print("AA", identifier, request.user)
             profile = Profile.objects.filter(user=request.user).get()
-            if identifier == "Cock":
-                print(profile)
         except:
             profile = None
-        
         pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
-        if identifier == "Cock":
-            print(pricelist_profile)
 
     else:
         return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
@@ -395,25 +389,17 @@ def price_list(request, identifier=None):
     hit_count_response = HitCountMixin.hit_count(request, hit_count)
 
 #####
-    if identifier == "Cock": 
-        print("BB")
     listings = Listing.objects.filter(
         owner=pricelist_profile).all().order_by('-item__TE_value')
     try:
-        if identifier == "Cock":
-            print("BB")
         last_updated = listings.order_by(
             '-item__last_updated').first().item.last_updated
     except AttributeError:
         last_updated = None
     all_relevant_items = Item.objects.filter(listing__in=Listing.objects.filter(
         owner=pricelist_profile)).all().order_by('-TE_value')
-    if identifier == "Cock":
-        print("CC")
     distinct_categories = [a['item_type']
                            for a in all_relevant_items.values('item_type').distinct()]
-    if identifier == "Cock":
-        print("DD")
     item_types = [x for x in categories() if (x in distinct_categories)]
 
     if profile:
@@ -421,12 +407,14 @@ def price_list(request, identifier=None):
     else:
         user_settings = None
     if identifier == "Cock":
-        print("EE")
+        print("AA")
     owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
     if identifier == "Cock":
-        print("FF")
+        print("BB")
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
+    if identifier == "Cock":
+        print("CC")
     context = {
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
         'items': all_relevant_items,
@@ -439,6 +427,8 @@ def price_list(request, identifier=None):
         'owner_settings': owner_settings,
         'last_updated': last_updated
     }
+    if identifier == "Cock":
+        print("DD")
     return render(request, 'main/price_list.html', context)
 
 
