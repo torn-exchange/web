@@ -734,7 +734,7 @@ def new_create_receipt(request):
             trade_paste_text = trade_paste_text.replace(
                 '[[seller_name]]', seller_name)
             trade_paste_text = trade_paste_text.replace(
-                '[[total]]', str(trade_receipt.total))
+                '[[total]]', "${:,.0f}".format(trade_receipt.total))
             trade_paste_text = trade_paste_text.replace(
                 '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
             trade_paste_text = trade_paste_text.replace(
