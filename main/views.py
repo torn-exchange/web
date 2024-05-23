@@ -404,14 +404,14 @@ def price_list(request, identifier=None):
         user_settings = Settings.objects.filter(owner=profile).get()
     else:
         user_settings = None
-    if identifier == "Cock":
+    if identifier == "KillerCleat":
         print("AA")
     owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
-    if identifier == "Cock":
+    if identifier == "KillerCleat":
         print("BB")
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
-    if identifier == "Cock":
+    if identifier == "KillerCleat":
         print("CC")
     context = {
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
