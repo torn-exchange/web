@@ -56,6 +56,7 @@ class Command(BaseCommand):
                 item_in_our_db = None
                     
             except Exception as e:
+                print("sumtin wong", e)
                 item_in_our_db = None
 
             if (item_in_our_db != None):
@@ -77,7 +78,12 @@ class Command(BaseCommand):
                         ),
                     )
                     print(
-                        f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
+                        f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}'
+                    )
+                else:
+                    print(
+                        f'Price for {row["name"]} [{item_id}] did not change: {item_in_our_db.TE_value} vs {TE_price}'
+                    )
             else:
                 Item.objects.update_or_create(
                     name=row['name'],

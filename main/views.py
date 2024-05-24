@@ -425,7 +425,7 @@ def price_list(request, identifier=None):
         'owner_settings': owner_settings,
         'last_updated': last_updated
     }
-    if identifier == "Cock":
+    if identifier == "KillerCleat":
         print("DD")
     return render(request, 'main/price_list.html', context)
 
