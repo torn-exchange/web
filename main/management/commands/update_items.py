@@ -10,6 +10,7 @@ from users.models import Profile
 import numpy as np
 import random
 import os
+import sys
 
 
 class Command(BaseCommand):
@@ -35,6 +36,7 @@ class Command(BaseCommand):
         for index, row in df.iterrows():
             if row['circulation'] < project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM:
                 continue
+
             item_id = row['image'].replace(
                 'https://www.torn.com/images/items/', '').replace('/large.png', '')
             
@@ -56,11 +58,17 @@ class Command(BaseCommand):
                 item_in_our_db = None
                     
             except Exception as e:
-                print("sumtin wong", e)
+                print("general exception", e)
                 item_in_our_db = None
 
             if (item_in_our_db != None):
                 if item_in_our_db.TE_value != TE_price:
+                    # prevent too big numbers
+                    row['buy_price'] = sanitize_numbers(row['buy_price'])
+                    row['sell_price'] = sanitize_numbers(row['sell_price'])
+                    row['market_value'] = sanitize_numbers(row['market_value'])
+                    TE_price = sanitize_numbers(TE_price)
+                    
                     Item.objects.update_or_create(
                         name=row['name'],
                         defaults=dict(
@@ -85,6 +93,12 @@ class Command(BaseCommand):
                         f'Price for {row["name"]} [{item_id}] did not change: {item_in_our_db.TE_value} vs {TE_price}'
                     )
             else:
+                # prevent too big numbers
+                row['buy_price'] = sanitize_numbers(row['buy_price'])
+                row['sell_price'] = sanitize_numbers(row['sell_price'])
+                row['market_value'] = sanitize_numbers(row['market_value'])
+                TE_price = sanitize_numbers(TE_price)
+                
                 Item.objects.update_or_create(
                     name=row['name'],
                     defaults=dict(
@@ -131,8 +145,6 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
     # print(f'using api key: {api_key}')
     if api_key != '':
         if data.get('error'):
-            # print('error')
-            # print(data)
             return None
         else:
             bazaar_data = data.get('bazaar')
@@ -231,3 +243,13 @@ def create_or_update_sets():
             TE_value=10*points_cost
         ),
     )
+
+
+def sanitize_numbers(number):
+    # Dirty Bomb is most expensive thing in Torn and it costs around 50B
+    # so let 100B be the most expensive price possible
+    max_price = 100000000000
+    if number >= sys.maxsize - 1:
+        number = max_price
+
+    return number
