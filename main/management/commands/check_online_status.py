@@ -43,7 +43,6 @@ class Command(BaseCommand):
                     profile.activity_status = status
                     profile.last_active = aware_datetime
                     profile.save()
-                    print(profile.name, status, date_time)
                 except KeyError as e:
                     if data.get('error').get('error') == 'Incorrect key':
                         print(f'{profile.name} API key stale, cleaning from DB!')

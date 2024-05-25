@@ -31,22 +31,20 @@ def register(request):
 def login_request(request):
     if request.method == 'POST':
         api_key = request.POST.get('apikey')
-        print(api_key)
         req = requests.get(
             f'https://api.torn.com/user/?selections=basic&key={api_key}')
-        print(req)
+        
         data = json.loads(req.content)
-        print(data)
+        
         if data.get('error') is not None:
             messages.info(request, "Invalid API key.")
         else:
             player_name = data['name']
             player_id = str(data['player_id'])
-            (print(player_id in Profile.objects.all().values(
-                'torn_id')), 'TEEEEEST \n \n \n \n \n')
+            
             # login
             if player_id in [a['torn_id'] for a in Profile.objects.values('torn_id')]:
-                print('logging IN ! \n \n \n')
+                
                 messages.success(request, f'Welcome back {player_name}!')
                 profile = Profile.objects.filter(torn_id=player_id).get()
                 profile.name = player_name

@@ -42,7 +42,6 @@ def dictionary_of_categories():
 
 
 def return_item_sets(item_names, item_quantities):
-    print(item_names, item_quantities)
     item_dict = {}
     for index, value in enumerate(item_names):
         if item_dict.get(value):
@@ -53,8 +52,6 @@ def return_item_sets(item_names, item_quantities):
                   'Crocus', 'Dahlia', 'Edelweiss', 'Heather', 'Orchid', 'Peony', 'Tribulus Omanense']
     plushie_set = ['Camel Plushie', 'Chamois Plushie', 'Jaguar Plushie', 'Kitten Plushie', 'Lion Plushie', 'Monkey Plushie',
                    'Nessie Plushie', 'Panda Plushie', 'Red Fox Plushie', 'Sheep Plushie', 'Stingray Plushie', 'Teddy Bear Plushie', 'Wolverine Plushie']
-    # print(item_names, item_quantities)
-    # print(item_dict)
 
     while sublist(flower_set, item_dict.keys()):
         for flower in flower_set:
@@ -92,7 +89,6 @@ def parse_trade_text(trade_text: str) -> Tuple[str, List, List]:
         r',{0,1}\s\d{1,13}(?=x\s[a-zA-Z])', trade_text)]
     items = []
     for quantity, item_string in zip(quantities, normalised_string.split(',')):
-        print(quantity, item_string)
         item = item_string.replace(f'{quantity}x ', '').strip()
         items.append(item)
     return (name, items, quantities)
