@@ -81,9 +81,11 @@ class Listing(models.Model):
     price = models.BigIntegerField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     discount = models.FloatField(null=True)
+    effective_price = models.FloatField(null=True)
 
-    @property
-    def effective_price(self):
+    
+    
+    def _effective_price(self):
         if (self.discount is None) and (self.price is None):
             print('ITEM DELETED BY CONMDITION ON SAVE METHOD OF LISTING')
             print(f"""
@@ -106,6 +108,10 @@ class Listing(models.Model):
             effective_price = round(np.nan_to_num(
                 np.nanmin([discount_price, self.price])))
         return effective_price
+
+    def save(self, *args, **kwargs):
+        self.effective_price = self._effective_price()
+        super().save(*args, **kwargs)  # Call the "real" save() method.
 
     class Meta:
         unique_together = (("owner", "item"),)
