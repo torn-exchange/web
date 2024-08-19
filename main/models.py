@@ -85,11 +85,11 @@ class Listing(models.Model):
     @property
     def effective_price(self):
         if (self.discount is None) and (self.price is None):
-            print('ITEM DELETED BY CONMDITION ON SAVE METHOD OF LISTING')
-            print(f"""
+            #print('ITEM DELETED BY CONMDITION ON SAVE METHOD OF LISTING')
+            #print(f"""
                 #Item name {self.item.name}, value: {self.item.TE_value}, set price: {self.price}, discount: {self.discount}, Effective Price:{self.effective_price} 
                 #""")
-            self.delete()
+            #self.delete()
             return None
 
         if (self.discount is None) and (self.price is not None):
