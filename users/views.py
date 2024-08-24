@@ -31,12 +31,9 @@ def register(request):
 def login_request(request):
     if request.method == 'POST':
         api_key = request.POST.get('apikey')
-        print(api_key)
         req = requests.get(
             f'https://api.torn.com/user/?selections=basic&key={api_key}')
-        print(req)
         data = json.loads(req.content)
-        print(data)
         if data.get('error') is not None:
             messages.info(request, "Invalid API key.")
         else:
@@ -79,7 +76,10 @@ def login_request(request):
         #    else:
 
     else:
-        pass
+        if request.user.is_authenticated:
+            messages.error(
+                        request, 'You are already logged in!')
+            return redirect("home")
     return render(request=request,
                   template_name="users/login.html",
                   context={})

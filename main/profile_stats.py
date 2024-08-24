@@ -2,7 +2,8 @@
 from .models import Profile, ItemTrade, TradeReceipt
 import json
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 
 
 def data_graph_1(df_data_receipts):
@@ -19,7 +20,6 @@ def data_graph_1(df_data_receipts):
 def data_graph_2(df_data_trades):
     try:
         summary = df_data_trades.groupby("created_at").sum()
-        print(summary)
         data = [{
             'x': item.name,
             'y': item.profit} for i, item in summary.iterrows()]
@@ -45,9 +45,9 @@ def return_profile_stats(profile):
         total_quantity = sum([obj.quantity for obj in trades])
         average_profit = round(total_profit/len(receipts))
         last_week_trades = ItemTrade.objects.filter(
-            owner=profile, last_updated__gte=datetime.now()-timedelta(days=7))
+            owner=profile, last_updated__gte=timezone.now()-timedelta(days=7))
         last_week_receipts = TradeReceipt.objects.filter(
-            owner=profile, created_at__gte=datetime.now()-timedelta(days=7))
+            owner=profile, created_at__gte=timezone.now()-timedelta(days=7))
 
         data_trades_last_week_dict = [{
             'created_at': pd.to_datetime(a.last_updated).strftime('%Y-%m-%d'),
@@ -80,7 +80,7 @@ def return_profile_stats(profile):
         df_data_trades = pd.DataFrame(data_trades_dict)
 
         top_sellers = df_data_receipts.groupby('seller').count(
-        )['tmp'].sort_values(ascending=False)[:10].to_dict()
+        )['tmp'].sort_values(ascending=False).to_dict()
 
         def get_total_profit(name):
             return (df_data_trades[df_data_trades['seller'] == name]['profit'].sum())

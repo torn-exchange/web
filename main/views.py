@@ -12,9 +12,10 @@ from users.forms import SettingsForm
 from django.core.paginator import Paginator
 import re
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.db.models import F
 from .profile_stats import return_profile_stats
+from django.utils import timezone
 
 # Create your views here.
 from vote.models import Vote
@@ -26,14 +27,13 @@ from html import escape
 
 
 def homepage(request):
-    top_20 = Profile.objects.order_by('-vote_score')[:10]
-    print(top_20)
+    top_50 = Profile.objects.order_by('-vote_score')[:50]
     created_today = Profile.objects.filter(
-        created_at__gte=datetime.now()-timedelta(days=365)).count()
+        created_at__gte=timezone.now()-timedelta(days=365)).count()
     changes_this_week = ChangeLog.objects.filter(
-        created_at__gte=datetime.now()-timedelta(days=365)).order_by('-created_at')
+        created_at__gte=timezone.now()-timedelta(days=365)).order_by('-created_at')
     changes_this_month = ChangeLog.objects.filter(
-        created_at__gte=datetime.now()-timedelta(days=30)).order_by('-created_at')
+        created_at__gte=timezone.now()-timedelta(days=30)).order_by('-created_at')
     try:
         profile = Profile.objects.filter(user=request.user).get()
         user_settings = Settings.objects.filter(owner=profile).get()
@@ -44,7 +44,7 @@ def homepage(request):
     context = {
         'profile': profile,
         'user_settings': user_settings,
-        'top_20': top_20,
+        'top_20': top_50,
         'created_today': created_today,
         'changelog': changes_this_week,
         'number_of_changes_last_month': changes_this_month.count(),
