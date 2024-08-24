@@ -22,7 +22,7 @@
           Profit
         </div>
         <div class='col-2 text-center'>
-
+          Delete Receipt
         </div>
 
       </div>
@@ -32,7 +32,7 @@
     <div class=" text-center  text-responsive">
       <div class='row  '>
         <div class='col-2 p-sm-0 m-sm-0'>
-          <a href="{% url 'receipt_view' receipt.receipt_url_string%}"> <u>View</u> </a>
+          <a href="{% url 'receipt_view' receipt.receipt_url_string%}" target="_blank"> <u>View</u> </a>
         </div>
         <div class='col-2 p-sm-0 m-sm-0'>
           {{receipt.seller}}
@@ -50,7 +50,7 @@
           <form action="{% url 'delete_receipt' receipt.id %}" method="POST">
             {% csrf_token %}
             <button type="button btn btn-primary" class="btn btn-default btn-sm">
-              <i class="fas fa-trash-alt"></i>
+              delete <i class="fas fa-trash-alt"></i>
             </button>
           </form>
         </div>
