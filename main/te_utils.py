@@ -27,6 +27,8 @@ def categories():
         'Secondary',
         'Melee',
         'Defensive', # this is Armor
+        'Basic Properties',
+        'Fully Upgraded Properties',
     ]
 
     return categories
@@ -37,6 +39,7 @@ def dictionary_of_categories():
         'Equipment': ['Melee', 'Primary', 'Secondary', 'Defensive'],
         'Useful Supplies': ['Medical', 'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer', 'Alcohol', 'Booster'],
         'General Shopping': ['Material', 'Jewelry', 'Tool', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
+        'Estate Agency': ['Basic Properties', 'Fully Upgraded Properties'],
     }
     return dictionary_of_categories
 

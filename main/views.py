@@ -21,7 +21,7 @@ from django.utils import timezone
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, parse_trade_text, return_item_sets
+from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories
 
 from html import escape
 
@@ -70,14 +70,19 @@ def listings(request):
         number_of_items = query_set.count()
 
         # Attempt to get the user's profile
-        profile = Profile.objects.filter(user=request.user).get()
-        user_settings = Settings.objects.filter(owner=profile).get()
+        if request.user.is_authenticated:
+            profile = Profile.objects.filter(user=request.user).get()
+            user_settings = Settings.objects.filter(owner=profile).get()
+        else:
+            user_settings = None
+            profile = None
 
         paginator = Paginator(query_set, 6)
         page = request.GET.get('page')
         results = paginator.get_page(page)
 
-    except:
+    except Exception as e:
+        print(e)
         profile = None
         user_settings = None
         results = None
@@ -241,43 +246,9 @@ def edit_price_list(request):
         circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')
     relevant_item_dict = all_relevant_items.values(
         "name", "TE_value", "image_url")
-    categories = ['Melee', 'Primary', 'Secondary', 'Defensive', 'Medical',
-                  'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer',
-                  'Alcohol', 'Booster', 'Tool', 'Jewelry', 'Material', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie',
-                  'Special', 'Other']
-    dictionary_of_categories = {
-        'Useful Supplies': [
-            'Alcohol',
-            'Booster',
-            'Candy',
-            'Drug',
-            'Energy Drink',
-            'Enhancer',
-            'Medical',
-            'Temporary'
-        ],
-        'General Shopping': [
-            'Artifact',
-            'Car',
-            'Clothing',
-            'Flower',
-            'Jewelry',
-            'Material',
-            'Other',
-            'Plushie',
-            'Special',
-            'Supply Pack',
-            'Tool'
-        ],
-        'Equipment': [
-            'Defensive',
-            'Melee',
-            'Primary',
-            'Secondary'
-        ],
-    }
     data_dict = {}
-    for category in categories:
+    cats = categories()
+    for category in cats:
         data_dict.update({category: Item.objects.filter(
             item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')})
 
@@ -287,9 +258,10 @@ def edit_price_list(request):
         'item_types': categories,
         'owner_profile': profile,
         'user_settings': user_settings,
-        'category_dict': dictionary_of_categories,
+        'category_dict': dictionary_of_categories(),
         'data_dict': data_dict,
     }
+
     if request.method == 'POST':
         updated_prices = {}
         updated_discounts = {}
