@@ -10,6 +10,7 @@ from users.models import Profile
 import numpy as np
 import random
 import os
+import sys
 
 
 class Command(BaseCommand):
@@ -39,10 +40,10 @@ class Command(BaseCommand):
                 continue
             item_id = row['image'].replace(
                 'https://www.torn.com/images/items/', '').replace('/large.png', '')
-            # print(row)
+            
             TE_price = get_lowest_market_price(
                 item_id, get_random_key(), row['market_value'])
-            # print(TE_price, '<- TE_price')
+            
             while bool(TE_price) is not True:
                 TE_price = get_lowest_market_price(
                     item_id, get_random_key(), row['market_value'])
@@ -51,18 +52,51 @@ class Command(BaseCommand):
             try:
                 item_in_our_db = Item.objects.get(item_id=item_id)
             except ObjectDoesNotExist:
-                print("==> ObjectDoesNotExist")
+                print("==> ObjectDoesNotExist", item_id)
                 item_in_our_db = None
             except MultipleObjectsReturned:
-                print("==> MultipleObjectsReturned")
+                print("==> MultipleObjectsReturned", item_id)
                 item_in_our_db = None
                     
             except Exception as e:
+                print("general exception", e)
                 item_in_our_db = None
 
             if (item_in_our_db != None):
                 if item_in_our_db.TE_value != TE_price:
-                    f'Saving {row["name"]} [{item_id}]. Market price: {row["market_value"]}, TE_price: {TE_price}'
+                    try:
+                        for key in ['buy_price', 'sell_price', 'market_value']:
+                            row[key] = sanitize_numbers(row[key])
+                        TE_price = sanitize_numbers(TE_price)
+
+                        Item.objects.update_or_create(
+                            name=row['name'],
+                            defaults=dict(
+                                item_id=item_id,
+                                description=row['description'],
+                                requirement=row['requirement'],
+                                item_type=row['type'],
+                                weapon_type=row['weapon_type'],
+                                buy_price=row['buy_price'],
+                                sell_price=row['sell_price'],
+                                market_value=row['market_value'],
+                                circulation=row['circulation'],
+                                image_url=row['image'],
+                                TE_value=TE_price
+                            ),
+                        )
+                    except Exception as e:
+                        print(e)
+                        print(f'AA Did NOT save item: {row["name"]} [{item_id}]', row)
+
+                    print(
+                        f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
+            else:
+                try:
+                    for key in ['buy_price', 'sell_price', 'market_value']:
+                        row[key] = sanitize_numbers(row[key])
+                    TE_price = sanitize_numbers(TE_price)
+                    
                     Item.objects.update_or_create(
                         name=row['name'],
                         defaults=dict(
@@ -77,34 +111,14 @@ class Command(BaseCommand):
                             circulation=row['circulation'],
                             image_url=row['image'],
                             TE_value=TE_price
-                        ),
+                        )
                     )
-                    print(
-                        f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
-            else:
-                f'Saving {row["name"]} [{item_id}]. Market price: {row["market_value"]}, TE_price: {TE_price}'
-                Item.objects.update_or_create(
-                    name=row['name'],
-                    defaults=dict(
-                        item_id=item_id,
-                        description=row['description'],
-                        requirement=row['requirement'],
-                        item_type=row['type'],
-                        weapon_type=row['weapon_type'],
-                        buy_price=row['buy_price'],
-                        sell_price=row['sell_price'],
-                        market_value=row['market_value'],
-                        circulation=row['circulation'],
-                        image_url=row['image'],
-                        TE_value=TE_price
-                    )
-                )
+                except Exception as e:
+                    print(e)
+                    print(f'BB Did NOT save item: {row["name"]} [{item_id}]', row)
+
                 print(
                     f'Created {row["name"]} -{item_id} as a new entry on the db')
-
-            # else:
-            #     pass
-                #    print(f'skipped {row["name"]} -{item_id} because market price is {row["market_value"]}')
 
         print('Done!')
 
@@ -130,11 +144,8 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
     req = requests.get(
         f'https://api.torn.com/market/{item_id}?selections=itemmarket,bazaar&key={api_key}')
     data = json.loads(req.content)
-    # print(f'using api key: {api_key}')
     if api_key != '':
         if data.get('error'):
-            # print('error')
-            # print(data)
             return None
         else:
             bazaar_data = data.get('bazaar')
@@ -143,7 +154,6 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
                 try:
                     first_three = list(
                         map(lambda x: x.get('cost'), bazaar_data[:3]))
-                    # print(first_three,'bazaar prices')
                     bazaar_min = np.nanmean(first_three)
                 except:
                     try:
@@ -159,7 +169,6 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
                 try:
                     first_three = list(
                         map(lambda x: x.get('cost'), itemmarket_data[:3]))
-                    # print(first_three,'itemmarket prices')
                     itemmarket_min = np.nanmean(first_three)
                 except:
                     try:
@@ -169,20 +178,18 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
 
             else:
                 itemmarket_min = np.nan
-            # print(avg_market_price,'average_market_price')
-            # print(itemmarket_min,'itemmarket_min')
-            # print(bazaar_min,'bazaar_min')
+
             pricing_data = np.array(
                 [itemmarket_min, bazaar_min, avg_market_price])
+            
             try:
                 TE_price = int(
                     round(np.nanmin(pricing_data[np.nonzero(pricing_data)])))
-                # print(f'TE_price is {TE_price}')
+            
             except Exception as e:
-
                 print(str(e), item_id)
                 TE_price = 0
-            # print(TE_price,'te_price')
+
             return TE_price
     else:
         return None
@@ -703,3 +710,13 @@ def create_or_update_full_property():
             TE_value=1952788000
         ),
     )
+
+def sanitize_numbers(number):
+    # Dirty Bomb is most expensive thing in Torn and it costs around 50B
+    # so let 100B be the most expensive price possible
+    max_price = 100000000000
+    if number >= sys.maxsize - 1:
+        number = max_price
+
+    return number
+
