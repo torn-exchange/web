@@ -81,6 +81,7 @@ class Command(BaseCommand):
                     print(
                         f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
             else:
+                f'Saving {row["name"]} [{item_id}]. Market price: {row["market_value"]}, TE_price: {TE_price}'
                 Item.objects.update_or_create(
                     name=row['name'],
                     defaults=dict(
