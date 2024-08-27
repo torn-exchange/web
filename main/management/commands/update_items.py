@@ -62,6 +62,7 @@ class Command(BaseCommand):
 
             if (item_in_our_db != None):
                 if item_in_our_db.TE_value != TE_price:
+                    f'Saving {row["name"]} [{item_id}]. Market price: {row["market_value"]}, TE_price: {TE_price}'
                     Item.objects.update_or_create(
                         name=row['name'],
                         defaults=dict(
