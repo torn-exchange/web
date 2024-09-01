@@ -111,8 +111,8 @@ def get_dict_entry(dict, entry):
     return dict[entry]
 
 
-@register.simple_tag(name='effective_price')
-def effective_price(item, profile):
+@register.simple_tag(name='calculate_effective_price')
+def calculate_effective_price(item, profile):
     try:
         listing = Listing.objects.filter(owner=profile, item=item).get()
         return listing.effective_price

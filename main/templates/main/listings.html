@@ -102,7 +102,7 @@
                                                     Buy Price:
                                                 </strong>
                                                 <a class=' badge badge-success text-black'>
-                                                    ${{listing.effective_price|intcomma}}
+                                                    ${{listing.traders_price|intcomma}}
                                                 </a>
                                             </p>
                                         </div>
@@ -131,10 +131,8 @@
             <div class="pagination text-center justify-content-center align-items-center">
                 {% if listings.has_previous %}
 
-                <a href="?{% param_replace page=1 %}">
-                    <<&nbsp;< /a>
-                        <a href="?{% param_replace page=listings.previous_page_number %}">
-                            << /a>
+                <a href="?{% param_replace page=1 %}">First</a>&nbsp;
+                        <a href="?{% param_replace page=listings.previous_page_number %}">Previous</a>&nbsp;
                                 {% endif %}
 
                                 {% for num in listings.paginator.page_range%}
@@ -146,8 +144,8 @@
                         {%endif%}
                         {% endfor %}
                         {% if listings.has_next %}
-                        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
+                        &nbsp;<a href="?{% param_replace page=listings.next_page_number %}">Next</a>
+                        &nbsp;<a href="?{% param_replace page=listings.paginator.num_pages %}">Last</a>
                         {% endif %}
             </div>
         </div>

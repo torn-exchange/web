@@ -63,10 +63,11 @@ def test(request):
 
 def listings(request):
     queryset = Listing.objects.all().order_by('-last_updated')
-    myFilter = ListingFilter(request.GET, queryset=queryset, )
+    myFilter = ListingFilter(request.GET, queryset=queryset)
 
     try:
         query_set = myFilter.qs
+
         number_of_items = query_set.count()
 
         # Attempt to get the user's profile
@@ -77,7 +78,7 @@ def listings(request):
             user_settings = None
             profile = None
 
-        paginator = Paginator(query_set, 6)
+        paginator = Paginator(query_set, 20)
         page = request.GET.get('page')
         results = paginator.get_page(page)
 
