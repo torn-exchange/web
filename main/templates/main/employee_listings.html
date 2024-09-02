@@ -40,6 +40,10 @@
                 <hr>
                 <br>
                 <div class='col-12'>
+                    <div class="text-center col-12">
+                        {%include 'main/includes/pagination.html'%}
+                    </div>
+                    
                     <p>
                         <small class="text-muted ml-4"> {% if number_of_items == 1%}
                             {{number_of_items}} employee found in your search.
@@ -115,28 +119,9 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="pagination text-center justify-content-center align-items-center">
-                {% if listings.has_previous %}
-
-                <a href="?{% param_replace page=1 %}">
-                    <<&nbsp;< /a>
-                        <a href="?{% param_replace page=listings.previous_page_number %}">
-                            << /a>
-                                {% endif %}
-
-                                {% for num in listings.paginator.page_range%}
-                                {% if listings.number == num %}
-                                <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-                                {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
-                                    href="?{% param_replace page=num %}" class="p-1">{{num}}
-                        </a>
-                        {%endif%}
-                        {% endfor %}
-                        {% if listings.has_next %}
-                        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-                        {% endif %}
-            </div>
+            
+            {%include 'main/includes/pagination.html'%}
+            
         </div>
 
     </div>

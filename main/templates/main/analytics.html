@@ -111,6 +111,13 @@
     },
   xaxis: {
     type: "datetime"
+  },
+  yaxis: {
+    labels: {
+      formatter: function (value) {
+        return "$" + numberWithCommas(value);
+      }
+    }
   }
   }
 
