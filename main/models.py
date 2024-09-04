@@ -104,7 +104,7 @@ class Listing(models.Model):
         unique_together = (("owner", "item"),)
 
     def __str__(self):
-        return f"{self.item} - ${self.effective_price}"
+        return f"{self.item} - ${self.effective_price} | {self.owner.name}"
 
     @property
     def profit_per_item(self):

@@ -57,9 +57,8 @@ class ListingFilter(django_filters.FilterSet):
                     )
                 ),
                 output_field=IntegerField()  # Final output as Integer
-            )
-            
-        ).exclude(traders_price__isnull=True)
+            )   
+        )
         return queryset
     
     status_choices = (
