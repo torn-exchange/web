@@ -30,8 +30,7 @@ def data_graph_2(df_data_trades):
 
 def return_profile_stats(profile):
     trades = ItemTrade.objects.filter(owner=profile).all()
-    receipts = TradeReceipt.objects.filter(
-        owner=profile).all().order_by('-created_at')
+    receipts = TradeReceipt.objects.filter(owner=profile).all().order_by('-created_at')
 
     total_ranking = [a.name for a in Profile.objects.order_by('-vote_score')]
     your_rank = total_ranking.index(profile.name)+1

@@ -4,23 +4,68 @@ from .models import Listing, Company
 from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
 from django_filters.widgets import RangeWidget
 
+from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
+from django.db.models.functions import Coalesce, Least, Round
+
 
 class ListingFilter(django_filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
-        data.setdefault('order', '-effective_price')
+        data.setdefault('order', '-traders_price')
         super().__init__(data, *args, **kwargs)
 
-    order_by = OrderingFilter(label='Sort By', choices=(
-        ('-effective_price', 'Price (Highest to Lowest'),
-        ('effective_price', 'Price (Lowest to Highest)'),
-        ('-owner__vote_score', 'Rating (Highest to Lowest'),
-        ('owner__vote_score', 'Rating (Lowest to Highest)'),
+    order_by = OrderingFilter(
+        label='Sort By', 
+        choices=(
+            ('-traders_price', 'Price (Highest to Lowest'),
+            ('traders_price', 'Price (Lowest to Highest)'),
+            ('-owner__vote_score', 'Rating (Highest to Lowest'),
+            ('owner__vote_score', 'Rating (Lowest to Highest)'),
+        )
     )
-    )
+    
+    @property
+    def qs(self):
+        # Annotate the queryset with the computed effective_price
+        queryset = super().qs.annotate(
+            # cannot reuse calculate_effective_price() method here
+            # because this is done on DB level so it needs special SQL-Django ORM mojo
+            traders_price = ExpressionWrapper(
+                Round(
+                    Case(
+                        # If both discount and price are None, return None
+                        When(discount__isnull=True, price__isnull=True, then=Value(None, output_field=IntegerField())),
+                        
+                        # If discount is None and price is not None, use the price
+                        When(discount__isnull=True, then=F('price')),
+                        
+                        # If price is None and discount is not None, calculate the discount price
+                        When(price__isnull=True, then=Round(
+                            (100.0 - F('discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
+                            output_field=FloatField()
+                        )),
+                        
+                        # If both discount and price are not None, calculate the minimum of discount price and price
+                        default=Round(
+                            Least(
+                                (100.0 - F('discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
+                                F('price')
+                            ),
+                            output_field=FloatField()
+                        ),
+                        output_field=FloatField()
+                    )
+                ),
+                output_field=IntegerField()  # Final output as Integer
+            )   
+        )
+        return queryset
+    
     status_choices = (
         ('', 'Any'),
         ('Online', 'Online'),
+        ('Idle', 'Idle'),
+        ('Offline', 'Offline'),
     )
     model_name_contains = CharFilter(
         label='Item Name', field_name='item__name', lookup_expr='icontains')

@@ -27,6 +27,10 @@
         <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a>
     </div>
     <div class="row">
+        <div class="text-center col-12">
+            {%include 'main/includes/pagination.html'%}
+        </div>
+
         {% for listing in listings%}
         <div class="col-md-3 col-sm-6 p-1">
             <div class="card mt-3 p-0 m-0">
@@ -62,30 +66,6 @@
         {% endfor %}
     </div>
 
-    <div class="pagination text-center justify-content-center align-items-center">
-        {% if not listings%}
-        {% else %}
-        {% if listings.has_previous %}
-
-        <a href="?{% param_replace page=1 %}">
-            <<&nbsp;< /a>
-                <a href="?{% param_replace page=listings.previous_page_number %}">
-                    << /a>
-                        {% endif %}
-
-                        {% for num in listings.paginator.page_range%}
-                        {% if listings.number == num %}
-                        <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-                        {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
-                            href="?{% param_replace page=num %}" class="p-1">{{num}}
-                </a>
-                {%endif%}
-                {% endfor %}
-                {% if listings.has_next %}
-                <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-                {% endif %}
-                {% endif %}
-    </div>
+    {%include 'main/includes/pagination.html'%}
 </div>
 {% endblock %}

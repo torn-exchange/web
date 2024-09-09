@@ -33,13 +33,24 @@
                     {% else %}
                     <p class="ml-5 p-0 m-0 text-center pb-2">
                         Here are all of the items that traders in Torn Exchange are buying.
-                        If you are a seller, filter the search by item name, price or rating, to find the best deal for
-                        you!
+                        If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
+                    </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        <b>Note when filtering by status:</b> Idle traders can be just as online as Online traders, they may have switched tabs or having 
+                        Torn opened but doing something away from keyboard so if you use that filter, make sure to always check Idle traders as well.
+                    </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        When choosing a trader, make sure they traded recently - you can check their activity on their price list page.
                     </p>
                     {% endif %}
                 </div>
-                <hr>
+                <hr />
                 <br>
+
+                <div class="text-center col-12">
+                    {%include 'main/includes/pagination.html'%}
+                </div>
+
                 <small class="text-muted ml-4"> {{number_of_items}} items found in your search.</small>
                 {% for listing in listings%}
                 <div class='col-12'>
@@ -51,12 +62,11 @@
 
                                         <div class="p-2 col-2 text-left">
                                             {% if listing.owner.activity_status == 'Online' %}
-                                            <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;">
+                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">
                                             {% elif listing.owner.activity_status == 'Idle' %}
-                                            <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;">
+                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">
                                             {% elif listing.owner.activity_status == 'Offline' %}
-                                            <img src="{% static '/main/images/crown-offline.png' %}"
-                                                style="width: 30%;">
+                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">
                                             {% endif %}
                                         </div>
                                         <div class="col text-left">
@@ -102,7 +112,7 @@
                                                     Buy Price:
                                                 </strong>
                                                 <a class=' badge badge-success text-black'>
-                                                    ${{listing.effective_price|intcomma}}
+                                                    ${{listing.traders_price|intcomma}}
                                                 </a>
                                             </p>
                                         </div>
@@ -112,15 +122,11 @@
                                     <img src="{{listing.item.image_url}}" style="height:50%; width:auto;">
                                 </div>
                             </div>
-
-
-
-
                         </div>
                         <div class="card-footer mt-0">
                             <div class="row">
                                 <div class="col">
-                                    Last updated: {{listing.last_updated|naturaltime}}
+                                    <i class="fas fa-user"></i> Player last active: {{listing.owner.last_active|time_since}}
                                 </div>
                             </div>
                         </div>
@@ -128,28 +134,7 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="pagination text-center justify-content-center align-items-center">
-                {% if listings.has_previous %}
-
-                <a href="?{% param_replace page=1 %}">
-                    <<&nbsp;< /a>
-                        <a href="?{% param_replace page=listings.previous_page_number %}">
-                            << /a>
-                                {% endif %}
-
-                                {% for num in listings.paginator.page_range%}
-                                {% if listings.number == num %}
-                                <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-                                {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} <a
-                                    href="?{% param_replace page=num %}" class="p-1">{{num}}
-                        </a>
-                        {%endif%}
-                        {% endfor %}
-                        {% if listings.has_next %}
-                        <a href="?{% param_replace page=listings.next_page_number %}">>&nbsp;</a>
-                        <a href="?{% param_replace page=listings.paginator.num_pages %}">>></a>
-                        {% endif %}
-            </div>
+            {%include 'main/includes/pagination.html'%}
         </div>
 
     </div>

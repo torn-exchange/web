@@ -9,6 +9,7 @@ notes.md
 
 # specific folders
 /static/
+/crons
 
 # all folders named as
 __pycache__/

@@ -71,7 +71,6 @@ class Item(models.Model):
     def save(self, *args, **kwargs):
         for listing in Listing.objects.filter(item=self):
             listing.save()
-            # print('saving listings')
         super().save(*args, **kwargs)
 
 
@@ -81,43 +80,35 @@ class Listing(models.Model):
     price = models.BigIntegerField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
     discount = models.FloatField(null=True)
-
+    
     @property
     def effective_price(self):
+       
+        # Return computed effective price (read-only)
+        return self.calculate_effective_price()
+    
+    # Computation logic for effective price
+    def calculate_effective_price(self):
         if (self.discount is None) and (self.price is None):
-            #print('ITEM DELETED BY CONMDITION ON SAVE METHOD OF LISTING')
-            #print(f"""
-                #Item name {self.item.name}, value: {self.item.TE_value}, set price: {self.price}, discount: {self.discount}, Effective Price:{self.effective_price} 
-                #""")
-            #self.delete()
             return None
-
-        if (self.discount is None) and (self.price is not None):
-            effective_price = round(self.price)
-
-        if (self.discount is not None) and (self.price is None):
-            discount_fraction = (100.0-(self.discount))/100.0
-            discount_price = discount_fraction*round(self.item.TE_value or 0)
-            effective_price = round(discount_price or 0)
-
-        if (self.discount is not None) and (self.price is not None):
-            discount_fraction = (100.0-(self.discount))/100.0
-            discount_price = discount_fraction*round(self.item.TE_value or 0)
-            effective_price = round(np.nan_to_num(
-                np.nanmin([discount_price, self.price])))
-        return effective_price
+            
+        discount_fraction = (100.0 - (self.discount or 0)) / 100.0
+        discount_price = discount_fraction * round(self.item.TE_value or 0)
+        
+        if self.price is None:
+            return round(discount_price or 0)
+        
+        return round(np.nan_to_num(np.nanmin([discount_price, self.price]))) 
 
     class Meta:
         unique_together = (("owner", "item"),)
 
     def __str__(self):
-        return f"{self.item} - ${self.effective_price}"
-      # Call the "real" save() method.
+        return f"{self.item} - ${self.effective_price} | {self.owner.name}"
 
     @property
     def profit_per_item(self):
         profit = (self.item.TE_value)-(self.effective_price)
-        # print(profit)
         return profit
 
 
@@ -158,7 +149,6 @@ class ItemTrade(models.Model):
     def profit(self):
         profit = (self.TE_value_at_save*self.quantity) - \
             (self.price * self.quantity)
-        # print(profit)
         return profit
 
 
@@ -171,7 +161,7 @@ class TradeReceipt(models.Model):
         max_length=10, null=False, default=generate_url_string, unique=True)
 
     def __str__(self):
-        return f"{self.owner}- {self.seller} - ${self.total}"
+        return f"{self.owner}- {self.seller} - ${self.total} | {self.created_at}"
 
     @property
     def total(self):
