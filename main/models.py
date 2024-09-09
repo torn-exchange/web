@@ -161,7 +161,7 @@ class TradeReceipt(models.Model):
         max_length=10, null=False, default=generate_url_string, unique=True)
 
     def __str__(self):
-        return f"{self.owner}- {self.seller} - ${self.total}"
+        return f"{self.owner}- {self.seller} - ${self.total} | {self.created_at}"
 
     @property
     def total(self):

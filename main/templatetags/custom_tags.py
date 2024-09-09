@@ -3,6 +3,9 @@ from django.db.models.query import QuerySet
 from django.core.serializers import serialize
 from ..models import Listing
 from django import template
+from django.utils import timezone
+from django.utils.timesince import timesince
+
 register = template.Library()
 
 
@@ -118,3 +121,21 @@ def calculate_effective_price(item, profile):
         return listing.effective_price
     except:
         return ''
+
+@register.filter
+def time_since(value):
+    # Returns a string representing "time since" the given datetime.
+    if not value:
+        return ""
+    
+    now = timezone.now()
+
+    # If the value is in the future, return an appropriate message
+    if value > now:
+        return "just now"
+
+    # Get the time difference in a human-readable format
+    time_diff = timesince(value, now)
+
+    # Format to display as "X time ago"
+    return f"{time_diff.split(', ')[0]} ago"

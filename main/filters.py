@@ -64,6 +64,8 @@ class ListingFilter(django_filters.FilterSet):
     status_choices = (
         ('', 'Any'),
         ('Online', 'Online'),
+        ('Idle', 'Idle'),
+        ('Offline', 'Offline'),
     )
     model_name_contains = CharFilter(
         label='Item Name', field_name='item__name', lookup_expr='icontains')

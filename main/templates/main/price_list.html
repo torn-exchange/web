@@ -125,7 +125,6 @@
                 </div>
                 <div class="card-footer small text-center text-muted m-0 p-0">
                     <small class="pl-2">
-
                         Don't forget to rate your experience with this trader, vote using the up and down arrows! NOTE:
                         You must log in with your API to register a vote to prohibit rigged rankings.
                     </small>
@@ -136,8 +135,11 @@
 </div>
 
 <div class="container">
-    <div class="text-right text-muted small">
-        Last updated {{last_updated|naturaltime}}
+    <div class="text-left text-muted">
+        Last trade made by this trader: {{time_since_last_trade|naturaltime}}
+    </div>
+    <div class="text-left text-muted">
+        Prices last updated: {{last_updated|naturaltime}}
     </div>
     <div class='row'>
         {% for itype in item_types %}

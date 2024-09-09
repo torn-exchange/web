@@ -67,7 +67,6 @@ def listings(request):
 
     try:
         query_set = myFilter.qs
-
         number_of_items = query_set.count()
 
         # Attempt to get the user's profile
@@ -356,15 +355,17 @@ def price_list(request, identifier=None):
         return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
 
 
-# COUNTING HITS
+    # COUNTING HITS
 
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
     hit_count_response = HitCountMixin.hit_count(request, hit_count)
 
-#####
+    #####
+    
+    
     listings = Listing.objects.filter(
         owner=pricelist_profile).all().order_by('-item__TE_value')
-    print(Listing.objects.order_by('-item__last_updated').first())
+    
     try:
         last_updated = listings.order_by(
             '-item__last_updated').first().item.last_updated
@@ -380,9 +381,14 @@ def price_list(request, identifier=None):
         user_settings = Settings.objects.filter(owner=profile).get()
     else:
         user_settings = None
+        
     owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
+    
+    last_receipt = TradeReceipt.objects.filter(owner=pricelist_profile).last()
+    time_since_last_trade = last_receipt.created_at
+    
     context = {
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
         'items': all_relevant_items,
@@ -393,7 +399,8 @@ def price_list(request, identifier=None):
         'vote_count': vote_count,
         'user_settings': user_settings,
         'owner_settings': owner_settings,
-        'last_updated': last_updated
+        'last_updated': last_updated,
+        'time_since_last_trade': time_since_last_trade,
     }
     return render(request, 'main/price_list.html', context)
 
@@ -463,7 +470,7 @@ def vote_view(request):
                 profile.votes.down(voter_id)
         vote_count = profile.votes.count()
         vote_score = profile.vote_score
-        # print(vote_count)
+        
         return JsonResponse({
             "vote_count": vote_count,
             "vote_score": vote_score,
@@ -507,22 +514,20 @@ def extension_get_prices(request):
             items = json.loads(request.POST.get('items'))
             items = [re.sub('<span.*', '', item).replace('\n',
                                                          '').replace('&amp;', "&") for item in items]
-            print(items, 'items')
+            
             quantities = json.loads(request.POST.get('quantities'))
-            # print(quantities,'quantities')
+            
             items, quantities = return_item_sets(items, quantities)
             listings = []
             items_objects = []
             for i in items:
-                # print(i)
                 try:
-                    print(i, Listing.objects.get(owner=profile, item__name=i))
+                    # print(i, Listing.objects.get(owner=profile, item__name=i))
                     listings.append(Listing.objects.get(
                         owner=profile, item__name=i))
                 except Listing.DoesNotExist:
                     listings.append(None)
             for i in items:
-                # print(i)
                 try:
                     items_objects.append(Item.objects.get(name=i))
                 except Item.DoesNotExist:
@@ -540,10 +545,6 @@ def extension_get_prices(request):
                 a.image_url if a is not None else '' for a in items_objects]
             market_values = [
                 a.TE_value if a is not None else 0 for a in items_objects]
-            print(listings, 'listings')
-            print(prices, 'prices')
-            print(profile, 'profile')
-            print(profit_per_item)
         except Exception as e:
             print(e)
             return JsonResponse({}, status=400)
@@ -579,7 +580,7 @@ def new_extension_get_prices(request):
             items_objects = []
             for i in items:
                 try:
-                    print(i, Listing.objects.get(owner=profile, item__name=i))
+                    # print(i, Listing.objects.get(owner=profile, item__name=i))
                     listings.append(Listing.objects.get(
                         owner=profile, item__name=i))
                 except Listing.DoesNotExist:
@@ -651,7 +652,7 @@ def create_receipt(request):
         for i in range(len(item_names)):
             quantity = item_quantities[i]
             price = item_prices[i]
-            print(item_names[i], quantity, price)
+            # print(item_names[i], quantity, price)
             item = Item.objects.filter(name=item_names[i]).get()
             # print(f'item trade added with {item},{quantity},{price}')
             item_trade = ItemTrade(
