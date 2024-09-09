@@ -67,6 +67,9 @@ def listings(request):
 
     try:
         query_set = myFilter.qs
+        
+        # exclude Listings where price is None or 0
+        query_set = query_set.exclude(traders_price__isnull=True)
         number_of_items = query_set.count()
 
         # Attempt to get the user's profile
@@ -387,7 +390,7 @@ def price_list(request, identifier=None):
     vote_count = pricelist_profile.votes.count()
     
     last_receipt = TradeReceipt.objects.filter(owner=pricelist_profile).last()
-    time_since_last_trade = last_receipt.created_at
+    time_since_last_trade = getattr(last_receipt, "created_at", None)
     
     context = {
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
