@@ -315,7 +315,10 @@ def edit_price_list(request):
             if discount != '':
                 updated_discounts.update({item: discount})
 
+        # delete all items first
         [a.delete() for a in Listing.objects.filter(owner=profile)]
+        
+        # then recreate them again
         for key in updated_prices:
             Listing.objects.update_or_create(
                 owner=profile,
@@ -436,6 +439,7 @@ def calculator(request):
         user_settings = None
 
     context = {
+        'page_title': 'Calculator - Torn Exchange',
         'items': all_relevant_items,
         'user_settings': user_settings,
         'item_types': item_types,

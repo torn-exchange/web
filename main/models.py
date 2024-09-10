@@ -91,6 +91,10 @@ class Listing(models.Model):
     def calculate_effective_price(self):
         if (self.discount is None) and (self.price is None):
             return None
+        
+        # special case where we want user-set price to prevail
+        if (self.discount is None) and (self.price is not None):
+            return round(self.price)
             
         discount_fraction = (100.0 - (self.discount or 0)) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
