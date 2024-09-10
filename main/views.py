@@ -53,7 +53,11 @@ def homepage(request):
 
 
 def about(request):
-    return render(request, 'main/about.html')
+    context = {
+        'page_title': 'About - Torn Exchange',
+    }
+    
+    return render(request, 'main/about.html', context)
 
 
 def test(request):
@@ -93,6 +97,7 @@ def listings(request):
         number_of_items = None
 
     context = {
+        'page_title': 'Search Traders - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'user_profile': profile,
@@ -118,7 +123,9 @@ def employee_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
+    
     context = {
+        'page_title': 'Search Employees - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'number_of_items': number_of_items,
@@ -142,7 +149,9 @@ def company_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
+    
     context = {
+        'page_title': 'Companies for sale - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'number_of_items': number_of_items,
@@ -166,7 +175,9 @@ def company_hiring_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
+    
     context = {
+        'page_title': 'Company recruitment - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'number_of_items': number_of_items,
@@ -190,7 +201,9 @@ def revives_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = revivers.count()
+    
     context = {
+        'page_title': 'Revives market - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'number_of_items': number_of_items,
@@ -212,7 +225,9 @@ def losses_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = loss_sellers.count()
+    
     context = {
+        'page_title': 'Loss selling - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'number_of_items': number_of_items,
@@ -739,6 +754,7 @@ def receipt_view(request, receipt_id=None):
     receipt = get_object_or_404(TradeReceipt, receipt_url_string=receipt_id)
     items_trades = receipt.items_trades.all()
     context = {
+        'page_title': 'Trade Receipt - Torn Exchange',
         'receipt': receipt,
         'items_trades': items_trades,
         'sub_totals': [i.sub_total for i in items_trades],
