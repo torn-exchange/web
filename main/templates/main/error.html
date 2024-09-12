@@ -1,0 +1,35 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+<div class='container'>
+    <div class="row mt-3">
+
+        <div class="card col-12 p-0 m-1">
+            <div class="card-header bg-dark text-white">
+                Oops, an error has occured!
+            </div>
+            <div class="card-body">
+                <p class='mt-3'>
+                <p>
+                    {{error_message}}
+                </p>
+                </p>
+                </p>
+            </div>
+        </div>
+
+        <div class="card col-12 p-2 m-2">
+            <div class="row">
+                <div class="col-2 text-center"><a href="https://discord.gg/8NstjM2fbb"><img
+                            src="{% static '/main/images/discord_logo.png' %}" style="width: 60%;"></a></div>
+                <div class="col-10 mt-2">We also have a <a href="https://discord.gg/8NstjM2fbb" target="_blank">Discord server</a> where we will be able to speak with you regarding
+                    any ideas, questions or problems you may have. To send us a message now, simply click on the icon!
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+{% endblock %}

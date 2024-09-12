@@ -60,11 +60,6 @@ def about(request):
     return render(request, 'main/about.html', context)
 
 
-def test(request):
-    line = 'test was successful :) hehe'
-    return HttpResponse(line)
-
-
 def listings(request):
     queryset = Listing.objects.all().order_by('-last_updated')
     myFilter = ListingFilter(request.GET, queryset=queryset)
@@ -247,6 +242,7 @@ def settings(request, option=None):
     })
 
     context = {
+        'page_title': 'Settings - Torn Exchange',
         'form': form,
         'user_settings': user_settings,
     }
@@ -271,7 +267,9 @@ def edit_price_list(request):
             item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')})
 
     user_settings = Settings.objects.filter(owner=profile).get()
+    
     context = {
+        'page_title': 'Edit Prices - Torn Exchange',
         'items': all_relevant_items,
         'item_types': categories,
         'owner_profile': profile,
@@ -456,6 +454,7 @@ def analytics(request):
         user_settings = Settings.objects.filter(owner=profile).get()
     except:
         user_settings = None
+        
     context.update({'user_settings': user_settings})
 
     return render(request, 'main/analytics.html', context)
@@ -754,19 +753,22 @@ def new_create_receipt(request):
 
 
 def receipt_view(request, receipt_id=None):
-    # try:
-    receipt = get_object_or_404(TradeReceipt, receipt_url_string=receipt_id)
-    items_trades = receipt.items_trades.all()
-    context = {
-        'page_title': 'Trade Receipt - Torn Exchange',
-        'receipt': receipt,
-        'items_trades': items_trades,
-        'sub_totals': [i.sub_total for i in items_trades],
-        'total': receipt.total,
-    }
-    return render(request, 'main/receipt_view.html', context)
-    # except:
-    #    return(HttpResponse('Page not found, wrong Receipt ID in the URL'))
+    try:
+        receipt = get_object_or_404(TradeReceipt, receipt_url_string=receipt_id)
+        items_trades = receipt.items_trades.all()
+        context = {
+            'page_title': 'Trade Receipt - Torn Exchange',
+            'receipt': receipt,
+            'items_trades': items_trades,
+            'sub_totals': [i.sub_total for i in items_trades],
+            'total': receipt.total,
+        }
+        return render(request, 'main/receipt_view.html', context)
+    except:
+        context = {
+            'error_message': 'Page not found, wrong Receipt ID in the URL'
+        }
+        return render(request, 'main/error.html', context)
 
 
 def buy_price_from_name(item_name, profile):
