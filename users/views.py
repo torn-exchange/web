@@ -24,7 +24,12 @@ def register(request):
             return redirect('login')
     else:
         form = UserRegisterForm
-    return render(request, 'users/register.html', {'form': form})
+        
+    context = {
+        'page_title': 'Register - Torn Exchange',
+        'form': form
+    }
+    return render(request, 'users/register.html', context)
 
 
 @csrf_protect

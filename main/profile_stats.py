@@ -114,6 +114,7 @@ def return_profile_stats(profile):
         df_data_trades = pd.DataFrame()
 
     context = {
+        'page_title': 'Analytics - Torn Exchange',
         'has_data': has_data,
         'profile': profile,
         'trades': trades,
