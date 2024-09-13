@@ -49,9 +49,9 @@ class Company(models.Model):
     def __str__(self):
         return f"{self.name} by {self.owner.name}"
 
-
+# Torn item
 class Item(models.Model):
-    name = models.CharField(max_length=250, )
+    name = models.CharField(max_length=250)
     description = models.TextField()
     requirement = models.TextField()
     item_type = models.CharField(max_length=250)
@@ -73,7 +73,23 @@ class Item(models.Model):
             listing.save()
         super().save(*args, **kwargs)
 
+# Custom item that can be anything, not tied to official Torn items
+class Service(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField()
+    buy_price = models.BigIntegerField() # if sold for Torn $
+    buy_item = models.CharField(max_length=250) # if exchanged for another item
+    service_id = models.IntegerField(null=True)
+    
+    def __str__(self):
+        return self.name
 
+# serves a list of Service entities
+class Services(models.Model):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    
+# serves a list of Item entities
 class Listing(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

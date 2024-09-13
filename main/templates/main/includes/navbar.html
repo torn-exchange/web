@@ -29,6 +29,8 @@
           <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
         </div>
       </li>
+      <li class='{% if request.path == "/services"%} active {% endif %} nav-item float-right'><a class="nav-link"
+        href='{% url "services" %}'>Services</a></li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
@@ -65,6 +67,8 @@
           <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
         </div>
       </li>
+      <li class='{% if request.path == "/services"%} active {% endif %} nav-item float-right'><a class="nav-link"
+        href='{% url "services" %}'>Services</a></li>
       <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
           href='{% url "about" %}'>About</a></li>
       <li class='{% if request.path == "/login/" %} active {% endif %} nav-item float-right'><a

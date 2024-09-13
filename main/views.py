@@ -423,6 +423,11 @@ def price_list(request, identifier=None):
     }
     return render(request, 'main/price_list.html', context)
 
+def services(request, identifier=None):
+    context = {
+        'page_title': 'Services - Torn Exchange',
+    }
+    return render(request, 'main/services.html', context)
 
 @login_required
 def calculator(request):

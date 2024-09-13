@@ -26,6 +26,7 @@ urlpatterns = [
     path('paste_parse', views.parse_trade_paste, name='trade_paste'),
     path('vote_view', views.vote_view, name='vote_view'),
     path('listings', views.listings, name='listings'),
+    path('services', views.services, name='services'),
     path('create_receipt', views.create_receipt, name='create_receipt'),
     path('new_create_receipt', views.new_create_receipt, name='new_create_receipt'),
     path('receipt/<str:receipt_id>/', views.receipt_view, name='receipt_view'),
