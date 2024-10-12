@@ -75,11 +75,9 @@ class Item(models.Model):
 
 # Custom item that can be anything, not tied to official Torn items
 class Service(models.Model):
-    name = models.CharField(max_length=250)
-    description = models.TextField()
-    buy_price = models.BigIntegerField() # if sold for Torn $
-    buy_item = models.CharField(max_length=250) # if exchanged for another item
-    service_id = models.IntegerField(null=True)
+    name = models.CharField(max_length=25)
+    description = models.TextField(max_length=250)
+    category = models.CharField(max_length=250)
     
     def __str__(self):
         return self.name
@@ -88,6 +86,13 @@ class Service(models.Model):
 class Services(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    money_price = models.BigIntegerField(null=True)
+    barter_price = models.TextField(max_length=20) # non-monetary price, like "1 Xanax"
+    offer_description = models.TextField(max_length=250)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
     
 # serves a list of Item entities
 class Listing(models.Model):

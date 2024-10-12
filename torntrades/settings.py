@@ -27,9 +27,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 ENV_DEBUG = os.getenv('DEBUG_ENABLE', '').upper()
-print("AA", ENV_DEBUG)
 DEBUG = ENV_DEBUG == "YES"
-print("BB", DEBUG)
 
 ALLOWED_HOSTS = [
     'tornexchange.com',

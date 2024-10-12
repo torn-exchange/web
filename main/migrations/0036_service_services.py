@@ -3,9 +3,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-from main.enums import ServiceType
-from main.te_utils import service_categories
-
 
 def default_services():
     return [
@@ -41,7 +38,6 @@ def default_services():
         
         {'name': 'Other', 'description': '', 'category': 'Other'},
     ]
-
 
 def add_default_services(apps, schema_editor):
     # Get the Service model

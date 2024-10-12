@@ -1,9 +1,10 @@
 import re
 from typing import List, Tuple
+from django.db.models.query import QuerySet
 
 
 def categories():
-    categories = [
+    return [
         'Plushie',
         'Flower',
         'Drug',
@@ -31,17 +32,25 @@ def categories():
         'Fully Upgraded Properties',
     ]
 
-    return categories
-
 
 def dictionary_of_categories():
-    dictionary_of_categories = {
+    return {
         'Equipment': ['Melee', 'Primary', 'Secondary', 'Defensive'],
         'Useful Supplies': ['Medical', 'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer', 'Alcohol', 'Booster'],
         'General Shopping': ['Material', 'Jewelry', 'Tool', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
         'Estate Agency': ['Basic Properties', 'Fully Upgraded Properties'],
     }
-    return dictionary_of_categories
+    
+
+def service_categories():
+    return [
+        'Torn feature',
+        'Company specials',
+        'Software',
+        'Attacking',
+        'Custom services',
+        'Other'
+    ]
 
 
 def return_item_sets(item_names, item_quantities):

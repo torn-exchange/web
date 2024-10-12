@@ -5,7 +5,7 @@ from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
-from .models import Item, Listing, TradeReceipt, ItemTrade, ChangeLog, Company
+from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, ChangeLog, Company
 from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter
 from users.models import Profile, Settings
 from users.forms import SettingsForm
@@ -21,7 +21,7 @@ from django.utils import timezone
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories
+from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
 
 from html import escape
 
@@ -258,8 +258,7 @@ def edit_price_list(request):
     profile = Profile.objects.filter(user=request.user).get()
     all_relevant_items = Item.objects.filter(
         circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')
-    relevant_item_dict = all_relevant_items.values(
-        "name", "TE_value", "image_url")
+    
     data_dict = {}
     cats = categories()
     for category in cats:
@@ -423,10 +422,39 @@ def price_list(request, identifier=None):
     }
     return render(request, 'main/price_list.html', context)
 
-def services(request, identifier=None):
+def services(request):
+    try:
+        profile = Profile.objects.filter(user=request.user).get()       
+    except:
+        context = {
+            'error_message': 'Page not found'
+        }
+        return render(request, 'main/error.html', context)
+        
+    data_dict = {}
+    cats = service_categories()
+    for category in cats:
+        data_dict.update({category: Service.objects.filter(
+            category=category).order_by('name')
+        })
+    
+    user_settings = Settings.objects.filter(owner=profile).get()
+    
     context = {
         'page_title': 'Services - Torn Exchange',
+        'categories': cats,
+        'data_dict': data_dict,
+        'user_settings': user_settings,
     }
+    
+    if request.method == 'POST':
+        updated_prices = {}
+        all_services = Service.objects.all()
+        for service in all_services:
+            money_price = request.POST.get(f'{service.name}_money_price')
+            barter_price = request.POST.get(f'{service.name}_barter_price')
+            desc = request.POST.get(f'{service.name}_offer_description')
+    
     return render(request, 'main/services.html', context)
 
 @login_required
