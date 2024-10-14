@@ -1,7 +1,7 @@
 import json
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
-from ..models import Listing
+from ..models import Listing, Services
 from django import template
 from django.utils import timezone
 from django.utils.timesince import timesince
@@ -139,3 +139,42 @@ def time_since(value):
 
     # Format to display as "X time ago"
     return f"{time_diff.split(', ')[0]} ago"
+
+@register.simple_tag(name='service_money')
+def prepopulate_service_money(service, user_services):
+    try:
+        for user_service in user_services:
+            if service.name == user_service.service.name:
+                return user_service.money_price
+    
+    except Exception as e:
+        print("custom tag: service_money. Error: ", e)
+        return ''
+    
+    return ''
+
+@register.simple_tag(name='service_barter')
+def prepopulate_service_barter(service, user_services):
+    try:
+        for user_service in user_services:
+            if service.name == user_service.service.name:
+                return user_service.barter_price
+    
+    except Exception as e:
+        print("custom tag: service_barter. Error: ", e)
+        return ''
+    
+    return ''
+
+@register.simple_tag(name='service_desc')
+def prepopulate_service_desc(service, user_services):
+    try:
+        for user_service in user_services:
+            if service.name == user_service.service.name:
+                return user_service.offer_description
+    
+    except Exception as e:
+        print("custom tag: service_desc. Error: ", e)
+        return ''
+    
+    return ''

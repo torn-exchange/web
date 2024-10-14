@@ -51,7 +51,7 @@
                                     <td style='width:13%;' class='text-center'>
                                         <div class='input-group  mb-1'>
                                             <input type="text" class="form-control listing_price text-responsive"
-                                                value="{%listing_price service owner_profile%}" id="onlyNumbers"
+                                                value="{%service_money service user_services%}" id="onlyNumbers"
                                                 name="{{service}}_money_price" onkeypress="return isNumber(event)"
                                                 onpaste="return true;" />
                                         </div>
@@ -59,7 +59,7 @@
                                     <td style='width:13%;' class='text-center'>
                                         <div class='input-group  mb-1'>
                                             <input type="text" class="form-control listing_price text-responsive"
-                                                value="{%listing_price service owner_profile%}"
+                                                value="{%service_barter service user_services%}"
                                                 name="{{service}}_barter_price"
                                                 onpaste="return true;" />
                                         </div>
@@ -67,7 +67,7 @@
                                     <td style='width:13%;' class='text-center'>
                                         <div class='input-group  mb-1'>
                                             <input type="text" class="form-control listing_price text-responsive"
-                                                value="{%listing_price service owner_profile%}"
+                                                value="{%service_desc service user_services%}"
                                                 name="{{service}}_offer_description"
                                                 onpaste="return true;" />
                                         </div>

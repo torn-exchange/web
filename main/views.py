@@ -422,17 +422,21 @@ def price_list(request, identifier=None):
     }
     return render(request, 'main/price_list.html', context)
 
-def services(request):
+
+@login_required
+def edit_services(request):
     try:
-        profile = Profile.objects.filter(user=request.user).get()       
+        profile = Profile.objects.filter(user=request.user).get()  
     except:
         context = {
             'error_message': 'Page not found'
         }
         return render(request, 'main/error.html', context)
-        
+    
     data_dict = {}
     cats = service_categories()
+    user_services = Services.objects.filter(owner=profile)
+        
     for category in cats:
         data_dict.update({category: Service.objects.filter(
             category=category).order_by('name')
@@ -444,18 +448,65 @@ def services(request):
         'page_title': 'Services - Torn Exchange',
         'categories': cats,
         'data_dict': data_dict,
+        'owner_profile': profile,
+        'user_services': user_services,
         'user_settings': user_settings,
     }
     
     if request.method == 'POST':
         updated_prices = {}
         all_services = Service.objects.all()
+        
         for service in all_services:
-            money_price = request.POST.get(f'{service.name}_money_price')
-            barter_price = request.POST.get(f'{service.name}_barter_price')
-            desc = request.POST.get(f'{service.name}_offer_description')
+            # monetary value of a service
+            money_price = request.POST.get(f'{service.name}_money_price').strip()
+            if money_price and money_price.strip():
+                money_price = re.sub(r'[$,]', '', money_price)
+            
+            try:
+                if money_price and money_price != '':
+                    money_price = int(money_price)
+            except Exception as e:
+                money_price = ''
+                
+            # service value expressed in Torn items (like "1 xanax")
+            barter_price = request.POST.get(f'{service.name}_barter_price').strip()
+            barter_price = escape(barter_price) if barter_price else ''
+            
+            desc = request.POST.get(f'{service.name}_offer_description').strip()
+            desc = escape(desc) if desc else ''
+            
+            if money_price != '':
+                updated_prices.update({service: {
+                    'money_price': money_price,
+                    'barter_price': barter_price,
+                    'desc': desc,
+                }})
+                
+        # delete all items first
+        [a.delete() for a in Services.objects.filter(owner=profile)]
+        
+        # then recreate them again
+        for key in updated_prices:
+            service = updated_prices.get(key)
+            
+            Services.objects.update_or_create(
+                owner=profile,
+                service=key,
+                defaults={
+                    'money_price': service['money_price'],
+                    'barter_price': service['barter_price'],
+                    'offer_description': service['desc']
+                })
     
     return render(request, 'main/services.html', context)
+
+
+def services_list(request, identifier=None):
+    context = {
+            'error_message': 'Page not found'
+        }
+    return render(request, 'main/error.html', context)
 
 @login_required
 def calculator(request):

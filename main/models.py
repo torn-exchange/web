@@ -75,7 +75,7 @@ class Item(models.Model):
 
 # Custom item that can be anything, not tied to official Torn items
 class Service(models.Model):
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=250)
     description = models.TextField(max_length=250)
     category = models.CharField(max_length=250)
     
@@ -91,8 +91,11 @@ class Services(models.Model):
     offer_description = models.TextField(max_length=250)
     last_updated = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        unique_together = (("owner", "service"),)
+    
     def __str__(self):
-        return self.name
+        return f"{self.service} - ${self.money_price} | {self.owner.name}"
     
 # serves a list of Item entities
 class Listing(models.Model):
