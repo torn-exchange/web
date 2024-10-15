@@ -1,0 +1,160 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<div class='container'>
+    {% if owner_profile.torn_id == user_profile.torn_id %}
+    {% if user_settings.tutorial == True%}
+    <div class="card bg-info small mt-3">
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center'>
+                Tutorial: Welcome to your Price List
+            </h5>
+        </div>
+        <div class="card-body m-0 p-1">
+            <ul>
+                <li>
+                    Set your buying prices by clicking on the 'Change Prices' button.
+                </li>
+                <li>
+                    Once your prices have been set, you can share the URL of this page to other Torn players, and they
+                    will be able to view your prices and trade with you.
+                </li>
+                <li>
+                    If you have set a profit margin, your prices will automatically update every 10 minutes to match the
+                    market value. Otherwise they will remain the fixed prices which you originally set.
+                </li>
+                <li>
+                    You can add a link to your trades forum thread and customise the message displayed in the textbox at
+                    the top of your price list by visiting your <a href="{% url 'settings' %}">settings</a>.
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer p-0 pb-1">
+            <small class="text-muted text-center pl-2">To turn off help messages go to your <a
+                    href="{% url 'settings' %}">Settings</a>.</small>
+
+        </div>
+    </div>
+
+    {% endif %}
+    {% endif %}
+    <br>
+    <div class=row>
+
+
+        <div class='col'>
+            <div class="card">
+                <div class='card-title justify-content-center'>
+                    <div class='row'>
+                        <div class="col-md-6 col-6 pt-2 mt-2 pl-4 ml-2 text-center">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <h3 class="text-left float-right mt-3 m-0 p-0 allerta-font">
+                                {% if owner_profile.activity_status == 'Online' %}
+                                <img src="{% static '/main/images/crown-online.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
+                                {% elif owner_profile.activity_status == 'Idle' %}
+                                <img src="{% static '/main/images/crown-idle.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
+                                {% elif owner_profile.activity_status == 'Offline' %}
+                                <img src="{% static '/main/images/crown-offline.png' %}" class='mb-2'
+                                    style="height:20px; width:auto;">
+                                {% endif %}
+                                {{owner_profile.name}}'s Custom Services
+                            </h3>
+                        </div>
+                        <div class="col text-right">
+                            <div class='row justify-content-end m-1 p-1 pt-0 mt-0 float-right'>
+                                {% if not owner_settings.link_to_forum_post%}
+
+                                {% else %}
+                                <div class='m-1 ml-0'>
+                                    <a class='btn btn-primary' target="_blank"
+                                        href="https://www.torn.com/profiles.php?XID={{owner_profile.torn_id}}">Profile</a>
+                                </div>
+                                {% endif %}
+
+                                {% if owner_profile.torn_id == user_profile.torn_id %}
+                                <div class='m-1 ml-0'>
+                                    <a class='btn btn-primary ' href="{% url 'edit_services' %}">Edit Services</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-text"></div>
+                    <div class='col-12 row text-center p-2'>
+                        <div class="col text-center p-1 ml-2">
+                            {% if owner_settings.trade_list_description == None %}
+                            <h5 class="p-1 text-responsive">
+                                Welcome to {{owner_profile.name}}'s price list for custom services.
+                            </h5>
+                            {% else %}
+                            <h5 class="p-1 text-responsive">
+                                {{owner_settings.trade_list_description}}
+                            </h5>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer small text-center text-muted m-0 p-0">
+                    TBD
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <br />
+    <div class='row'>
+        {% for itype in distinct_categories %}
+
+            {% if forloop.counter0|divisibleby:4 %}
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- TE-SquareAds -->
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5083091252165465"
+                    data-ad-slot="4187308828" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            {% endif %}
+            <div class="col-sm-12 col-md-12 col-lg-12 mb-1">
+                <div class='card'>
+                    <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
+                        <h5 class="text-white allerta-font ">
+                            {{itype}}
+                        </h5>
+                    </div>
+                    <table class="table table-hover table-sm table-responsive">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;" scope="col" class="p-0 m-0">Name</th>
+                                <th style="width: 15%;" scope="col" class="p-0 m-0">Price in cash</th>
+                                <th style="width: 15%;" scope="col" class="p-0 m-0">Price in items</th>
+                                <th style="width: 40%;" scope="col" class="p-0 m-0">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="my_tbody w-100">
+                            {%for service in services%}
+                            {% if service.service.category == itype%}
+                            <tr class="row-striped p-0 w-100">
+                                </td>
+                                <td style="width: 30%;" class="m-0">{{service.service.name}}</td>
+                                <td style="width: 15%;" class="m-0">${{service.money_price}}</td>
+                                <td style="width: 15%;" class="m-0">{{service.barter_price}}</td>
+                                <td style="width: 40%;" class="m-0">{{service.offer_description}}</td>
+                            </tr>
+                            {% endif%}
+                            {%endfor%}
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

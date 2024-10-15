@@ -499,14 +499,64 @@ def edit_services(request):
                     'offer_description': service['desc']
                 })
     
-    return render(request, 'main/services.html', context)
+    return render(request, 'main/edit_services.html', context)
 
 
 def services_list(request, identifier=None):
+    if identifier is None:
+        try:
+            profile = Profile.objects.filter(user=request.user).get()
+            t_name = profile.name
+            return (redirect(f'services/{t_name}'))
+        except:
+            return (redirect(f'login'))
+
+    # if the torn_id for the page corresponds to an existing profile
+    if Profile.objects.filter(torn_id=identifier).exists():
+        try:
+            # fetches the profile of the visiting user
+            profile = Profile.objects.filter(user=request.user).get()
+        except:
+            profile = None
+        # fetches the profile of the pricelist owner
+        pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
+
+    # fetches the profile of the visiting user using profile name
+    elif Profile.objects.filter(name__iexact=identifier).exists():
+        try:
+            profile = Profile.objects.filter(user=request.user).get()
+        except:
+            profile = None
+        pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
+
+    else:
+        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+
+    # TBD
+    
+    owner_services = Services.objects.filter(
+        owner=pricelist_profile).all()
+    
+    distinct_categories = set()
+    for service in owner_services:
+        distinct_categories.add(service.service.category)
+
+    # Convert the set to a list if needed
+    distinct_categories = list(distinct_categories)
+    print(distinct_categories)
+    
     context = {
-            'error_message': 'Page not found'
-        }
-    return render(request, 'main/error.html', context)
+        'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
+        'services': owner_services,
+        'distinct_categories': distinct_categories,
+        'owner_profile': pricelist_profile,
+        'user_profile': profile,
+        # 'user_settings': user_settings,
+        # 'owner_settings': owner_settings,
+        # 'last_updated': last_updated,
+        # 'time_since_last_trade': time_since_last_trade,
+    }
+    return render(request, 'main/services_list.html', context)
 
 @login_required
 def calculator(request):
