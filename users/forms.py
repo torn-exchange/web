@@ -24,6 +24,7 @@ class SettingsForm(forms.ModelForm):
             'selling_losses',
             'losses_message',
             'trade_list_description',
+            'service_list_description',
             'link_to_forum_post',
             'receipt_paste_text',
             'tutorial',
@@ -42,6 +43,7 @@ class SettingsForm(forms.ModelForm):
         self.fields['receipt_paste_text'].label = "Receipt Paste Text"
         self.fields['tutorial'].label = "Show page tutorials"
         self.fields['trade_list_description'].label = "Price list description"
+        self.fields['service_list_description'].label = "Service list description"
         self.fields['job_seeking'].label = 'Looking for jobs'
         self.fields['selling_company_price_negotiable'].label = 'Price negotiable'
         self.fields['selling_company_asking_price'].label = 'Price in Millions'
@@ -49,6 +51,7 @@ class SettingsForm(forms.ModelForm):
         self.fields['company_looking_to_hire'].label = 'Looking to Hire?'
         self.fields['company_looking_to_hire_message'].label = 'Who are you looking for?'
         self.helper.layout = Layout(
+            ###3 Traders Tab ####
             HTML("""
                 <div class="tab-pane fade show active" id="traders" role="tabpanel" aria-labelledby="traders-tab">
                 """),
@@ -80,14 +83,20 @@ Hi [[seller_name]], thank you for the trade, the total is $[[total]], here is yo
 </code>
                 </div>
                 """),
-            #### Job Seeking Tab ####
             HTML("</div>"),
+            #### Job Seeking Tab ####
             HTML("""
                 <div class="tab-pane fade " id="jobseekers" role="tabpanel" aria-labelledby="jobseekers-tab">"""),
             HTML("<p class=' small text-muted'>NOTE: It will take a couple of minutes for your workstats to be displayed on your ad.</p>"),
             Field('job_seeking'),
             Field('job_message',
                   placeholder='Looking for 3* AN send me your offers'),
+            HTML("</div>"),
+            #### Services Tab ####
+            HTML("""
+                <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">"""),
+            Field("service_list_description",
+                  placeholder="Welcome. These are the services that I provide. Click on profile button and chat me up."),
             HTML("</div>"),
             #### Selling Revives Tab ####
             HTML("""

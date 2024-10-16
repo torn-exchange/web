@@ -532,7 +532,10 @@ def services_list(request, identifier=None):
     else:
         return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
 
-    # TBD
+    if profile:
+        user_settings = Settings.objects.filter(owner=profile).get()
+    else:
+        user_settings = None
     
     owner_services = Services.objects.filter(
         owner=pricelist_profile).all()
@@ -540,6 +543,10 @@ def services_list(request, identifier=None):
     distinct_categories = set()
     for service in owner_services:
         distinct_categories.add(service.service.category)
+        
+    owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
+    vote_score = pricelist_profile.vote_score
+    vote_count = pricelist_profile.votes.count()
 
     # Convert the set to a list if needed
     distinct_categories = list(distinct_categories)
@@ -551,10 +558,10 @@ def services_list(request, identifier=None):
         'distinct_categories': distinct_categories,
         'owner_profile': pricelist_profile,
         'user_profile': profile,
-        # 'user_settings': user_settings,
-        # 'owner_settings': owner_settings,
-        # 'last_updated': last_updated,
-        # 'time_since_last_trade': time_since_last_trade,
+        'vote_score': vote_score,
+        'vote_count': vote_count,
+        'user_settings': user_settings,
+        'owner_settings': owner_settings,
     }
     return render(request, 'main/services_list.html', context)
 
