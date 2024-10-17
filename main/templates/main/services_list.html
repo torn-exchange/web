@@ -147,7 +147,7 @@
                             <tr class="row-striped p-0 w-100">
                                 </td>
                                 <td style="width: 30%;" class="m-0">{{service.service.name}}</td>
-                                <td style="width: 15%;" class="m-0">${{service.money_price}}</td>
+                                <td style="width: 15%;" class="m-0">{{service.money_price|sanitize_number}}</td>
                                 <td style="width: 15%;" class="m-0">{{service.barter_price}}</td>
                                 <td style="width: 40%;" class="m-0">{{service.offer_description}}</td>
                             </tr>

@@ -122,6 +122,7 @@ def calculate_effective_price(item, profile):
     except:
         return ''
 
+
 @register.filter
 def time_since(value):
     # Returns a string representing "time since" the given datetime.
@@ -140,20 +141,27 @@ def time_since(value):
     # Format to display as "X time ago"
     return f"{time_diff.split(', ')[0]} ago"
 
-@register.simple_tag(name='service_money')
+
+@register.filter(name='sanitize_number')
+def sanitize_number(value):
+    return f"${value:,}" if value > 0 else ''
+
+
+@register.simple_tag()
 def prepopulate_service_money(service, user_services):
     try:
         for user_service in user_services:
             if service.name == user_service.service.name:
-                return user_service.money_price
+                return f"${user_service.money_price:,}" if user_service.money_price > 0 else ''
     
     except Exception as e:
-        print("custom tag: service_money. Error: ", e)
+        print("custom tag: service money. Error: ", e)
         return ''
     
     return ''
 
-@register.simple_tag(name='service_barter')
+
+@register.simple_tag()
 def prepopulate_service_barter(service, user_services):
     try:
         for user_service in user_services:
@@ -166,7 +174,7 @@ def prepopulate_service_barter(service, user_services):
     
     return ''
 
-@register.simple_tag(name='service_desc')
+@register.simple_tag()
 def prepopulate_service_desc(service, user_services):
     try:
         for user_service in user_services:

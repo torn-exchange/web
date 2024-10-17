@@ -464,10 +464,9 @@ def edit_services(request):
                 money_price = re.sub(r'[$,]', '', money_price)
             
             try:
-                if money_price and money_price != '':
-                    money_price = int(money_price)
+                money_price = int(money_price)
             except Exception as e:
-                money_price = ''
+                money_price = 0
                 
             # service value expressed in Torn items (like "1 xanax")
             barter_price = request.POST.get(f'{service.name}_barter_price').strip()
@@ -476,7 +475,7 @@ def edit_services(request):
             desc = request.POST.get(f'{service.name}_offer_description').strip()
             desc = escape(desc) if desc else ''
             
-            if money_price != '':
+            if(money_price != 0 or barter_price != '' or desc != ''):
                 updated_prices.update({service: {
                     'money_price': money_price,
                     'barter_price': barter_price,
@@ -498,6 +497,14 @@ def edit_services(request):
                     'barter_price': service['barter_price'],
                     'offer_description': service['desc']
                 })
+            
+        for service in all_services:
+            checkbox_output = request.POST.get(f'{service}_checkbox')
+            if checkbox_output == 'on':
+                try:
+                    Services.objects.get(owner=profile, service=service).delete()
+                except:
+                    pass
     
     return render(request, 'main/edit_services.html', context)
 
@@ -550,7 +557,6 @@ def services_list(request, identifier=None):
 
     # Convert the set to a list if needed
     distinct_categories = list(distinct_categories)
-    print(distinct_categories)
     
     context = {
         'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
