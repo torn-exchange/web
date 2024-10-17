@@ -87,7 +87,7 @@ class Command(BaseCommand):
                         )
                     except Exception as e:
                         print(e)
-                        print(f'AA Did NOT save item: {row["name"]} [{item_id}]', row)
+                        print(f'Did NOT save item: {row["name"]} [{item_id}]', row)
 
                     print(
                         f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
@@ -115,7 +115,7 @@ class Command(BaseCommand):
                     )
                 except Exception as e:
                     print(e)
-                    print(f'BB Did NOT save item: {row["name"]} [{item_id}]', row)
+                    print(f'Did NOT save item: {row["name"]} [{item_id}]', row)
 
                 print(
                     f'Created {row["name"]} -{item_id} as a new entry on the db')

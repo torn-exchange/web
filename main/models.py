@@ -49,9 +49,9 @@ class Company(models.Model):
     def __str__(self):
         return f"{self.name} by {self.owner.name}"
 
-
+# Torn item
 class Item(models.Model):
-    name = models.CharField(max_length=250, )
+    name = models.CharField(max_length=250)
     description = models.TextField()
     requirement = models.TextField()
     item_type = models.CharField(max_length=250)
@@ -73,7 +73,31 @@ class Item(models.Model):
             listing.save()
         super().save(*args, **kwargs)
 
+# Custom item that can be anything, not tied to official Torn items
+class Service(models.Model):
+    name = models.CharField(max_length=250)
+    description = models.TextField(max_length=250)
+    category = models.CharField(max_length=250)
+    
+    def __str__(self):
+        return self.name
 
+# serves a list of Service entities
+class Services(models.Model):
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    money_price = models.BigIntegerField(null=True)
+    barter_price = models.TextField(max_length=20) # non-monetary price, like "1 Xanax"
+    offer_description = models.TextField(max_length=250)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = (("owner", "service"),)
+    
+    def __str__(self):
+        return f"{self.service} - ${self.money_price} | {self.owner.name}"
+    
+# serves a list of Item entities
 class Listing(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

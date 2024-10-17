@@ -5,7 +5,7 @@ from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
-from .models import Item, Listing, TradeReceipt, ItemTrade, ChangeLog, Company
+from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, ChangeLog, Company
 from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter
 from users.models import Profile, Settings
 from users.forms import SettingsForm
@@ -21,7 +21,7 @@ from django.utils import timezone
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories
+from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
 
 from html import escape
 
@@ -258,8 +258,7 @@ def edit_price_list(request):
     profile = Profile.objects.filter(user=request.user).get()
     all_relevant_items = Item.objects.filter(
         circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')
-    relevant_item_dict = all_relevant_items.values(
-        "name", "TE_value", "image_url")
+    
     data_dict = {}
     cats = categories()
     for category in cats:
@@ -423,6 +422,148 @@ def price_list(request, identifier=None):
     }
     return render(request, 'main/price_list.html', context)
 
+
+@login_required
+def edit_services(request):
+    try:
+        profile = Profile.objects.filter(user=request.user).get()  
+    except:
+        context = {
+            'error_message': 'Page not found'
+        }
+        return render(request, 'main/error.html', context)
+    
+    data_dict = {}
+    cats = service_categories()
+    user_services = Services.objects.filter(owner=profile)
+        
+    for category in cats:
+        data_dict.update({category: Service.objects.filter(
+            category=category).order_by('name')
+        })
+    
+    user_settings = Settings.objects.filter(owner=profile).get()
+    
+    context = {
+        'page_title': 'Services - Torn Exchange',
+        'categories': cats,
+        'data_dict': data_dict,
+        'owner_profile': profile,
+        'user_services': user_services,
+        'user_settings': user_settings,
+    }
+    
+    if request.method == 'POST':
+        updated_prices = {}
+        all_services = Service.objects.all()
+        
+        for service in all_services:
+            # monetary value of a service
+            money_price = request.POST.get(f'{service.name}_money_price').strip()
+            if money_price and money_price.strip():
+                money_price = re.sub(r'[$,]', '', money_price)
+            
+            try:
+                if money_price and money_price != '':
+                    money_price = int(money_price)
+            except Exception as e:
+                money_price = ''
+                
+            # service value expressed in Torn items (like "1 xanax")
+            barter_price = request.POST.get(f'{service.name}_barter_price').strip()
+            barter_price = escape(barter_price) if barter_price else ''
+            
+            desc = request.POST.get(f'{service.name}_offer_description').strip()
+            desc = escape(desc) if desc else ''
+            
+            if money_price != '':
+                updated_prices.update({service: {
+                    'money_price': money_price,
+                    'barter_price': barter_price,
+                    'desc': desc,
+                }})
+                
+        # delete all items first
+        [a.delete() for a in Services.objects.filter(owner=profile)]
+        
+        # then recreate them again
+        for key in updated_prices:
+            service = updated_prices.get(key)
+            
+            Services.objects.update_or_create(
+                owner=profile,
+                service=key,
+                defaults={
+                    'money_price': service['money_price'],
+                    'barter_price': service['barter_price'],
+                    'offer_description': service['desc']
+                })
+    
+    return render(request, 'main/edit_services.html', context)
+
+
+def services_list(request, identifier=None):
+    if identifier is None:
+        try:
+            profile = Profile.objects.filter(user=request.user).get()
+            t_name = profile.name
+            return (redirect(f'services/{t_name}'))
+        except:
+            return (redirect(f'login'))
+
+    # if the torn_id for the page corresponds to an existing profile
+    if Profile.objects.filter(torn_id=identifier).exists():
+        try:
+            # fetches the profile of the visiting user
+            profile = Profile.objects.filter(user=request.user).get()
+        except:
+            profile = None
+        # fetches the profile of the pricelist owner
+        pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
+
+    # fetches the profile of the visiting user using profile name
+    elif Profile.objects.filter(name__iexact=identifier).exists():
+        try:
+            profile = Profile.objects.filter(user=request.user).get()
+        except:
+            profile = None
+        pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
+
+    else:
+        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+
+    if profile:
+        user_settings = Settings.objects.filter(owner=profile).get()
+    else:
+        user_settings = None
+    
+    owner_services = Services.objects.filter(
+        owner=pricelist_profile).all()
+    
+    distinct_categories = set()
+    for service in owner_services:
+        distinct_categories.add(service.service.category)
+        
+    owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
+    vote_score = pricelist_profile.vote_score
+    vote_count = pricelist_profile.votes.count()
+
+    # Convert the set to a list if needed
+    distinct_categories = list(distinct_categories)
+    print(distinct_categories)
+    
+    context = {
+        'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
+        'services': owner_services,
+        'distinct_categories': distinct_categories,
+        'owner_profile': pricelist_profile,
+        'user_profile': profile,
+        'vote_score': vote_score,
+        'vote_count': vote_count,
+        'user_settings': user_settings,
+        'owner_settings': owner_settings,
+    }
+    return render(request, 'main/services_list.html', context)
 
 @login_required
 def calculator(request):

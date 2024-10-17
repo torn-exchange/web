@@ -36,7 +36,11 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href='{% url "price_list" %}'>My Price List</a>
-          <a class="dropdown-item" href='{% url "edit_price_list" %}'>Change Prices</a>
+          <a class="dropdown-item" href='{% url "edit_price_list" %}'>Edit Prices List</a>
+          <!--
+          <a class="dropdown-item" style="color:red" href='{% url "services_list" %}'>My Services</a>
+          <a class="dropdown-item" style="color:red" href='{% url "edit_services" %}'>Edit Services</a>
+          -->
           <a class="dropdown-item" href='{% url "calculator" %}'>Calculator</a>
           <a class="dropdown-item" href='{% url "analytics" %}'>Analytics</a>
           <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>

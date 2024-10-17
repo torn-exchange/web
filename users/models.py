@@ -47,6 +47,8 @@ class Settings(models.Model):
         Profile, on_delete=models.CASCADE, related_name='settings')
     trade_list_description = models.CharField(
         max_length=500, null=True, blank=True)
+    service_list_description = models.CharField(
+        max_length=500, null=True, blank=True)
     link_to_forum_post = models.CharField(
         max_length=250, null=True, blank=True)
     receipt_paste_text = models.TextField(

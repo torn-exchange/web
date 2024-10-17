@@ -9,6 +9,7 @@
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EDC812F6YJ"></script>
+  {% if not DEBUG %}
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
@@ -16,6 +17,7 @@
 
     gtag('config', 'G-EDC812F6YJ');
   </script>
+  {% endif %}
 
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
