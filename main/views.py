@@ -445,7 +445,7 @@ def edit_services(request):
     user_settings = Settings.objects.filter(owner=profile).get()
     
     context = {
-        'page_title': 'Services - Torn Exchange',
+        'page_title': 'Edit Services - Torn Exchange',
         'categories': cats,
         'data_dict': data_dict,
         'owner_profile': profile,
