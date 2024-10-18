@@ -149,6 +149,11 @@ def sanitize_number(value):
     return f"${value:,}" if value > 0 else ''
 
 
+@register.filter(name='sanitize_string')
+def sanitize_string(value):
+    return unescape(value)
+
+
 @register.simple_tag()
 def prepopulate_service_money(service, user_services):
     try:

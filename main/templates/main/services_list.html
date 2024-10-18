@@ -148,8 +148,8 @@
                                 </td>
                                 <td style="width: 30%;" class="m-0">{{service.service.name}}</td>
                                 <td style="width: 15%;" class="m-0">{{service.money_price|sanitize_number}}</td>
-                                <td style="width: 15%;" class="m-0">{{service.barter_price}}</td>
-                                <td style="width: 40%;" class="m-0">{{service.offer_description}}</td>
+                                <td style="width: 15%;" class="m-0">{{service.barter_price|sanitize_string}}</td>
+                                <td style="width: 40%;" class="m-0">{{service.offer_description|sanitize_string}}</td>
                             </tr>
                             {% endif%}
                             {%endfor%}
