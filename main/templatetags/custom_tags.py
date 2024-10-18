@@ -1,7 +1,9 @@
 import json
+from html import unescape
+
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
-from ..models import Listing, Services
+from ..models import Listing
 from django import template
 from django.utils import timezone
 from django.utils.timesince import timesince
@@ -166,7 +168,7 @@ def prepopulate_service_barter(service, user_services):
     try:
         for user_service in user_services:
             if service.name == user_service.service.name:
-                return user_service.barter_price
+                return unescape(user_service.barter_price)
     
     except Exception as e:
         print("custom tag: service_barter. Error: ", e)
@@ -174,12 +176,13 @@ def prepopulate_service_barter(service, user_services):
     
     return ''
 
+
 @register.simple_tag()
 def prepopulate_service_desc(service, user_services):
     try:
         for user_service in user_services:
             if service.name == user_service.service.name:
-                return user_service.offer_description
+                return unescape(user_service.offer_description)
     
     except Exception as e:
         print("custom tag: service_desc. Error: ", e)
