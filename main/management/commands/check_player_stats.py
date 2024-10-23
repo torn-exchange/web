@@ -6,8 +6,11 @@ import numpy as np
 
 from django.core.management.base import BaseCommand
 from users.models import Profile, Settings
-from main.models import Listing, Company
+from main.models import Listing, Company, TradeReceipt
 from django.db.models import Q
+from django.utils import timezone
+from django.contrib.humanize.templatetags.humanize import naturaltime
+import datetime
 
 
 '''
@@ -20,9 +23,11 @@ class Command(BaseCommand):
         print('Updating company data')
         update_companies()
         
-        print('Updating work stats of all profiles')
+        # active trader are the ones that have a listing
         active_traders = set(
-            [a.owner.user for a in Listing.objects.filter().distinct('owner')])
+            [a.owner.user for a in Listing.objects.filter().distinct('owner')]
+        )
+        
         other_advertisers = set([a.user for a in Profile.objects.filter(settings__job_seeking=True) |
                                  Profile.objects.filter(settings__selling_losses=True) |
                                  Profile.objects.filter(settings__selling_revives=True) |
@@ -30,13 +35,16 @@ class Command(BaseCommand):
                                      settings__selling_company=True)
                                  ])
         users_to_be_checked = active_traders.union(other_advertisers)
-
+        
         for profile in Profile.objects.filter(user__in=users_to_be_checked):
             if profile.api_key != '':
                 req = requests.get(
                     f'https://api.torn.com/user/?selections=profile&key={profile.api_key}')
                 data = json.loads(req.content)
                 try:
+                    # check if person has traded last month
+                    set_last_traded_time(profile)
+                    
                     if profile.settings.job_seeking == True:
                         update_workstats_data(profile)
                     profile.save()
@@ -88,13 +96,13 @@ def update_company_sale_data(profile):
         # If there is a company in our database with this profile as the owner, we should delete the company.
         print("Unable to fetch company data from API")
         print(e)
+        
         company_model = Company.objects.filter(owner=profile).first()
-        print("AA", company_model)
         if company_model is not None:
             company_model.delete()
         return None
+    
     # Assuming here we got valid data from the API we can update or create our company
-
     Company.objects.update_or_create(
 
         owner=profile,
@@ -186,3 +194,25 @@ def get_company_info(api_key):
             [data['company_employees'][a]['effectiveness']['working_stats'] for a in data['company_employees']])))
 
         return name, company_id, company_type, rating, days_old, weekly_income, weekly_customers, employees_hired, employees_capacity, popularity, efficiency, average_employee_efficiency, average_employee_tenure
+
+
+def set_last_traded_time(profile:Profile) -> int:
+    try:
+        last_receipt = TradeReceipt.objects.filter(owner=profile).last()
+        time_since_last_trade = getattr(last_receipt, "created_at", None)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
+        
+        if (time_since_last_trade != None and time_since_last_trade > one_month_ago):
+            # Get the relative time as a natural time string
+            relative_time = naturaltime(time_since_last_trade)
+            
+            # save to DB
+            Profile.objects.filter(name=profile.name).update(active_trader=True)
+            return 1
+        else:
+            Profile.objects.filter(name=profile.name).update(active_trader=False)
+            return 0
+        
+    except Exception as e:
+        print("Last Traded Time error", e)
+        return 0

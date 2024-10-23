@@ -52,18 +52,13 @@
     </div>
     {% endif %}
 
-
-
-
-
-
-
-
     <div class='row'>
         <div class='col-md-3 col-sm-12'>
+            {%include 'main/includes/top_active_traders.html'%}
+            {%include 'main/includes/most_receipts.html'%}
             {%include 'main/includes/leaderboard.html'%}
             <p class="p-4 small mr-3 text-center">
-                <strong>{{ created_today }}</strong> users registered
+                <strong>{{ created_today }}</strong> users registered in last 30 days
             </p>
 
         </div>
