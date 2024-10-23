@@ -1,0 +1,26 @@
+<div class="container">
+    <div class="card mt-3" style="height:250px">
+        <div class="card-header text-center bg-dark text-white">
+            <i class="fas fa-award"></i> Most trades in last 30 days
+        </div>
+        <div class="card-body overflow-auto pt-3">
+
+            {% for item in most_receipts%}
+            <div class="row small pl-1 pr-1">
+                <div class="col-3 small pl-0 pr-0">
+                    <strong>#{{forloop.counter}} </strong>
+                </div>
+                <div class="col-6 small pl-0 pr-0">
+                    <a href="{% url 'price_list' item.trader_name %}"> {{item.trader_name}} </a>
+                </div>
+                <div class="col-3 small  pl-0 pr-0 text-right">
+                    {{item.trade_count}} <i class="fas fa-star small"></i>
+                </div>
+            </div>
+            {% if forloop.counter != 10%}
+            <hr class="m-0 pt-0 pb-0">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>

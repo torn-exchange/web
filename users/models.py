@@ -28,6 +28,7 @@ class Profile(VoteModel, models.Model, HitCountMixin):
 
     te_plus_status = models.BooleanField(default=False)
     te_plus_days = models.IntegerField(null=True)
+    active_trader = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         try:

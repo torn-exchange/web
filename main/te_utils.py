@@ -1,6 +1,5 @@
 import re
 from typing import List, Tuple
-from django.db.models.query import QuerySet
 
 
 def categories():

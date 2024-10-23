@@ -1,21 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseNotFound, JsonResponse
+from django.urls import reverse
+from django.http import HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.clickjacking import xframe_options_exempt
-from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, ChangeLog, Company
+
+from main.model_utils import get_all_time_leaderboard, get_active_traders, get_most_trades, get_changelog
+from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, Company
 from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter
 from users.models import Profile, Settings
 from users.forms import SettingsForm
 from django.core.paginator import Paginator
 import re
 import json
-from datetime import timedelta
 from django.db.models import F
 from .profile_stats import return_profile_stats
-from django.utils import timezone
+
 
 # Create your views here.
 from vote.models import Vote
@@ -27,13 +29,11 @@ from html import escape
 
 
 def homepage(request):
-    top_50 = Profile.objects.order_by('-vote_score')[:50]
-    created_today = Profile.objects.filter(
-        created_at__gte=timezone.now()-timedelta(days=365)).count()
-    changes_this_week = ChangeLog.objects.filter(
-        created_at__gte=timezone.now()-timedelta(days=365)).order_by('-created_at')
-    changes_this_month = ChangeLog.objects.filter(
-        created_at__gte=timezone.now()-timedelta(days=30)).order_by('-created_at')
+    all_time_traders = get_all_time_leaderboard()
+    active_traders = get_active_traders()
+    most_receipts = get_most_trades()
+    created_today, changes_this_week, changes_this_month = get_changelog()
+    
     try:
         profile = Profile.objects.filter(user=request.user).get()
         user_settings = Settings.objects.filter(owner=profile).get()
@@ -44,11 +44,14 @@ def homepage(request):
     context = {
         'profile': profile,
         'user_settings': user_settings,
-        'top_20': top_50,
+        'top_50': all_time_traders,
+        'most_receipts': most_receipts,
+        'active_traders': active_traders,
         'created_today': created_today,
         'changelog': changes_this_week,
         'number_of_changes_last_month': changes_this_month.count(),
     }
+    
     return render(request, 'main/home.html', context)
 
 
@@ -346,8 +349,7 @@ def price_list(request, identifier=None):
     if identifier is None:
         try:
             profile = Profile.objects.filter(user=request.user).get()
-            t_name = profile.name
-            return (redirect(f'prices/{t_name}'))
+            return redirect(reverse('price_list', args=[profile.name]))
         except:
             return (redirect(f'login'))
 
@@ -513,8 +515,7 @@ def services_list(request, identifier=None):
     if identifier is None:
         try:
             profile = Profile.objects.filter(user=request.user).get()
-            t_name = profile.name
-            return (redirect(f'services/{t_name}'))
+            return redirect(reverse('services_list', args=[profile.name]))
         except:
             return (redirect(f'login'))
 
