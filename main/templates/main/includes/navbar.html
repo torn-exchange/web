@@ -44,6 +44,8 @@
           <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>
         </div>
       </li>
+      <li class='{% if request.path == "/bazaars"%} active {% endif %} nav-item float-right'><a class="nav-link"
+        href='{% url "bazaars" %}'>Bazaars</a></li>
       <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
           href='{% url "about" %}'>About</a></li>
       <li class='{% if request.path == "/logout/"%} active {% endif %} nav-item float-right'><a class="nav-link"
@@ -51,7 +53,6 @@
 
     </ul>
     {% else %}
-
     <ul class="navbar-nav ml-auto">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
@@ -67,6 +68,8 @@
           <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
         </div>
       </li>
+      <li class='{% if request.path == "/bazaars"%} active {% endif %} nav-item float-right'><a class="nav-link"
+        href='{% url "bazaars" %}'>Bazaars</a></li>
       <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
           href='{% url "about" %}'>About</a></li>
       <li class='{% if request.path == "/login/" %} active {% endif %} nav-item float-right'><a
