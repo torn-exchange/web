@@ -106,6 +106,14 @@ def listings(request):
     return render(request, 'main/listings.html', context)
 
 
+def bazaars(request):
+    context = {
+        'page_title': 'Bazaars - Torn Exchange',
+    }
+    
+    return render(request, 'main/bazaars.html', context)
+
+
 def employee_listings(request):
     try:
         profile = Profile.objects.filter(user=request.user).get()

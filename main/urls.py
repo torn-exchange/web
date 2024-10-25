@@ -26,6 +26,7 @@ urlpatterns = [
     path('paste_parse', views.parse_trade_paste, name='trade_paste'),
     path('vote_view', views.vote_view, name='vote_view'),
     path('listings', views.listings, name='listings'),
+    path('bazaars', views.bazaars, name='bazaars'),
     path('services/<str:identifier>/', views.services_list, name='services_list'),
     path('services/', views.services_list, name='services_list'),
     path('edit_services/', views.edit_services, name='edit_services'),
