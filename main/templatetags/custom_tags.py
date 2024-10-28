@@ -3,41 +3,14 @@ from html import unescape
 
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
+
+from main.te_utils import get_time
 from ..models import Listing
 from django import template
 from django.utils import timezone
 from django.utils.timesince import timesince
 
 register = template.Library()
-
-
-@register.simple_tag(name='listing_price')
-def prepopulate_listing_price(item, profile):
-    try:
-        listing = Listing.objects.filter(owner=profile, item=item).get()
-        if listing.price > 0:
-            return listing.price
-        else:
-            return ''
-    except:
-        return ''
-
-
-@register.simple_tag(name='listing_discount')
-def prepopulate_listing_discount(item, profile):
-    try:
-        listing = Listing.objects.filter(owner=profile, item=item).get()
-        if listing.discount is None:
-            return ''
-        return listing.discount
-    except:
-        return ''
-
-
-@register.filter(name='buy_price')
-def buy_price(item, profile):
-    listing = Listing.objects.filter(owner=profile, item=item).get()
-    return listing.effective_price
 
 
 @register.filter(name='item_plurals')
@@ -49,20 +22,6 @@ def item_name_plural(item_name):
     if item_name == 'Other':
         return 'Miscellaneous'
     return item_name
-
-
-@register.filter(name='listing_updated')
-def listing_last_updatedupdated(item, profile):
-    listing = Listing.objects.filter(owner=profile, item=item).get()
-    return listing.last_updated
-
-
-@register.simple_tag(name='item_type_relevant')
-def is_item_type_relevant(item):
-    if item.item_type in ['Melee']:
-        return True
-    else:
-        return False
 
 
 @register.filter(name='jsonify')
@@ -114,16 +73,6 @@ def replace_spaces(string):
 @register.simple_tag(name='get_dict_entry')
 def get_dict_entry(dict, entry):
     return dict[entry]
-
-
-@register.simple_tag(name='calculate_effective_price')
-def calculate_effective_price(item, profile):
-    try:
-        listing = Listing.objects.filter(owner=profile, item=item).get()
-        return listing.effective_price
-    except:
-        return ''
-
 
 @register.filter
 def time_since(value):

@@ -1,5 +1,7 @@
 import re
+from datetime import datetime
 from typing import List, Tuple
+from django.db.models.query import QuerySet
 
 
 def categories():
@@ -59,6 +61,7 @@ def return_item_sets(item_names, item_quantities):
             item_dict[value] += item_quantities[index]
         else:
             item_dict.update({value: item_quantities[index]})
+            
     flower_set = ['African Violet', 'Banana Orchid', 'Cherry Blossom', 'Ceibo Flower',
                   'Crocus', 'Dahlia', 'Edelweiss', 'Heather', 'Orchid', 'Peony', 'Tribulus Omanense']
     plushie_set = ['Camel Plushie', 'Chamois Plushie', 'Jaguar Plushie', 'Kitten Plushie', 'Lion Plushie', 'Monkey Plushie',
@@ -103,3 +106,25 @@ def parse_trade_text(trade_text: str) -> Tuple[str, List, List]:
         item = item_string.replace(f'{quantity}x ', '').strip()
         items.append(item)
     return (name, items, quantities)
+
+
+def get_time(input):
+    now = datetime.now()
+    str = f'{now.hour}:{now.minute}:{now.second} - {input}'
+    return str
+
+
+def merge_items(all_relevant_items: QuerySet, traders_items: QuerySet):
+    for item in all_relevant_items:
+        item.price = ""
+        item.discount = ""
+        item.effective_price = ""
+        
+        for trader_item in traders_items:
+            if trader_item.item.item_id == item.item_id:
+                item.price = trader_item.price if trader_item.price is not None else ''
+                item.discount = trader_item.discount if trader_item.discount is not None else ''
+                item.effective_price = trader_item.effective_price if trader_item.effective_price is not None else ''
+                break
+        
+    return all_relevant_items

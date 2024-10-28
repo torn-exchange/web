@@ -162,12 +162,12 @@
                     </thead>
                     <tbody class="my_tbody">
                         {%for item in items%}
-                        {% if item.item_type == itype%}
+                        {% if item.item.item_type == itype%}
                         <tr class="row-striped p-0">
                             </td>
-                            <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.image_url}}" style="width: 100%;"></td>
-                            <td style="width: 50%;" class="p-0 m-0">{{item.name}}</td>
-                            <td style="width: 30%;" class="p-0 m-0">${{item|buy_price:owner_profile|intcomma}}</td>
+                            <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
+                            <td style="width: 50%;" class="p-0 m-0">{{item.item.name}}</td>
+                            <td style="width: 30%;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
                         </tr>
                         {% endif%}
                         {%endfor%}

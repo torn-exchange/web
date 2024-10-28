@@ -154,7 +154,7 @@
                                     {% for item in items %}
                                     <tr class="m-0 p-0">
                                         <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
-                                                src="{{item.image_url}}" style="width:50%;"></td>
+                                                src="{{ item.image_url }}" style="width:50%;"></td>
                                         <td style='width:13%;' class='text-center'>{{item.name}}</td>
                                         <td style='width:15%;' class='text-center torn_market_value'>
                                             ${{item.market_value|intcomma}}
@@ -165,8 +165,8 @@
                                         <td style='width:13%;' class='text-center'>
                                             <div class='input-group  mb-1'>
                                                 <input type="text" class="form-control listing_price text-responsive"
-                                                    value="{%listing_price item owner_profile%}" id="onlyNumbers"
-                                                    name="{{item.name}}_max_price" onkeypress="return isNumber(event)"
+                                                    value="{{ item.price }}" id="onlyNumbers"
+                                                    name="{{ item.name }}_max_price" onkeypress="return isNumber(event)"
                                                     onpaste="return true;" />
                                             </div>
                                         </td>
@@ -176,13 +176,13 @@
                                                     <span class="input-group-text d-none d-md-flex">%</span>
                                                 </div>
                                                 <input type="text" class="form-control listing_discount text-responsive"
-                                                    value="{%listing_discount item owner_profile%}" id="onlyNumbers"
-                                                    name="{{item.name}}_discount" oninput="validateNumber(this);"
+                                                    value="{{ item.discount }}" id="onlyNumbers"
+                                                    name="{{ item.name }}_discount" oninput="validateNumber(this);"
                                                     onpaste="return true;" />
                                             </div>
                                         </td>
                                         <td style='width:13%;' class='text-center effective_price'>
-                                            ${%calculate_effective_price item owner_profile as effective_p%}{{effective_p|intcomma}}</td>
+                                            ${{item.effective_price|intcomma}}</td>
                                         <td style='width:1%;' class='text-center'>
                                             <div class='input-group  mb-1'>
                                                 <input type="checkbox" class="form-control form-control-sm"

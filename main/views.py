@@ -23,7 +23,7 @@ from .profile_stats import return_profile_stats
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
+from main.te_utils import categories, get_time, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
 
 from html import escape
 
@@ -259,20 +259,24 @@ def settings(request, option=None):
 @login_required
 def edit_price_list(request):
     profile = Profile.objects.filter(user=request.user).get()
-    all_relevant_items = Item.objects.filter(
-        circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')
     
+    all_traders_prices = Listing.objects.filter(owner=profile).select_related('item').order_by('-item__TE_value')
+     
     data_dict = {}
     cats = categories()
     for category in cats:
-        data_dict.update({category: Item.objects.filter(
-            item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10).order_by('-TE_value')})
+        cat_items = Item.objects.filter(
+            item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10
+        ).order_by('-TE_value')
+        
+        # add trader's data to the pool of all items
+        cat_items = merge_items(cat_items, all_traders_prices)
+        data_dict.update({category: cat_items})
 
     user_settings = Settings.objects.filter(owner=profile).get()
     
     context = {
         'page_title': 'Edit Prices - Torn Exchange',
-        'items': all_relevant_items,
         'item_types': categories,
         'owner_profile': profile,
         'user_settings': user_settings,
@@ -283,37 +287,46 @@ def edit_price_list(request):
     if request.method == 'POST':
         updated_prices = {}
         updated_discounts = {}
-        for item in all_relevant_items:
-            price = request.POST.get(f'{item}_max_price')
-            if price and price.strip():
-                price = re.sub(r'[$,]', '', price)
-            discount = (request.POST.get(f'{item}_discount'))
-            try:
-                if discount == '' or discount is None or discount == 'None':
+        
+        # first go through all categories
+        for items in data_dict:
+            all_relevant_items = data_dict[items]
+            
+            for item in all_relevant_items:
+                price = request.POST.get(f'{item}_max_price')
+                if price and price.strip():
+                    price = re.sub(r'[$,]', '', price)
+                    
+                discount = (request.POST.get(f'{item}_discount'))
+                
+                try:
+                    if discount == '' or discount is None or discount == 'None':
+                        discount = ''
+                    else:
+                        discount = float(discount)
+                except Exception as e:
                     discount = ''
-                else:
-                    discount = float(discount)
-            except Exception as e:
-                discount = ''
-            try:
-                if price and price != '':
-                    price = int(price)
-            except Exception as e:
-                price = ''
+                    
+                try:
+                    if price and price != '':
+                        price = int(price)
+                except Exception as e:
+                    price = ''
 
-            if type(discount) == float:
-                if discount > 100.0:
-                    # prevent message alert from fading away
-                    storage = messages.get_messages(request)
-                    storage.used = False
+                if type(discount) == float:
+                    if discount > 100.0:
+                        # prevent message alert from fading away
+                        storage = messages.get_messages(request)
+                        storage.used = False
 
-                    messages.error(
-                        request, 'Make sure your discount value is less than 100')
-                    return redirect('edit_price_list')
-            if price != '':
-                updated_prices.update({item: price})
-            if discount != '':
-                updated_discounts.update({item: discount})
+                        messages.error(
+                            request, 'Make sure your discount value is less than 100')
+                        return redirect('edit_price_list')
+                
+                if price != '':
+                    updated_prices.update({item: price})
+                if discount != '':
+                    updated_discounts.update({item: discount})
 
         # delete all items first
         [a.delete() for a in Listing.objects.filter(owner=profile)]
@@ -324,22 +337,26 @@ def edit_price_list(request):
                 owner=profile,
                 item=key,
                 defaults={'price': updated_prices.get(key)})
+        
         for key in updated_discounts:
             Listing.objects.update_or_create(
                 owner=profile,
                 item=key,
                 defaults={'discount': updated_discounts.get(key)})
 
-        for item in all_relevant_items:
-            checkbox_output = request.POST.get(f'{item}_checkbox')
-            if checkbox_output == 'on':
-                try:
-                    Listing.objects.get(owner=profile, item=item).delete()
-                except:
-                    pass
+        for items in data_dict:
+            all_relevant_items = data_dict[items]
+
+            for item in all_relevant_items:
+                checkbox_output = request.POST.get(f'{item}_checkbox')
+                if checkbox_output == 'on':
+                    try:
+                        Listing.objects.get(owner=profile, item=item).delete()
+                    except:
+                        pass
 
         messages.success(request, f'Your price list has been updated!')
-        return render(request, 'main/price_list_creation.html', context)
+        return redirect('edit_price_list')
     else:
         return render(request, 'main/price_list_creation.html', context)
 
@@ -360,6 +377,7 @@ def price_list(request, identifier=None):
             profile = Profile.objects.filter(user=request.user).get()
         except:
             profile = None
+            
         # fetches the profile of the pricelist owner
         pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
 
@@ -382,7 +400,6 @@ def price_list(request, identifier=None):
 
     #####
     
-    
     listings = Listing.objects.filter(
         owner=pricelist_profile).all().order_by('-item__TE_value')
     
@@ -391,10 +408,11 @@ def price_list(request, identifier=None):
             '-item__last_updated').first().item.last_updated
     except AttributeError:
         last_updated = None
-    all_relevant_items = Item.objects.filter(listing__in=Listing.objects.filter(
-        owner=pricelist_profile)).all().order_by('-TE_value')
-    distinct_categories = [a['item_type']
-                           for a in all_relevant_items.values('item_type').distinct()]
+    
+    all_relevant_items = Listing.objects.filter(owner=pricelist_profile).select_related('item').order_by('-item__TE_value')
+    
+    distinct_categories = [a['item__item_type'] for a in all_relevant_items.values('item__item_type').distinct()]
+    
     item_types = [x for x in categories() if (x in distinct_categories)]
 
     if profile:
@@ -422,6 +440,7 @@ def price_list(request, identifier=None):
         'last_updated': last_updated,
         'time_since_last_trade': time_since_last_trade,
     }
+
     return render(request, 'main/price_list.html', context)
 
 

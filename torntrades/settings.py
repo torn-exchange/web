@@ -26,8 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-ENV_DEBUG = os.getenv('DEBUG_ENABLE', '').upper()
-DEBUG = ENV_DEBUG == "YES"
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
     'tornexchange.com',
@@ -69,10 +68,12 @@ INSTALLED_APPS = [
     'django_crontab',
     'hitcount',
     'corsheaders',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -178,3 +179,8 @@ CRONJOBS = [
 ]
 
 MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM = 50
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
