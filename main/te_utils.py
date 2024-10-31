@@ -108,10 +108,11 @@ def parse_trade_text(trade_text: str) -> Tuple[str, List, List]:
     return (name, items, quantities)
 
 
-def get_time(input):
+# debug function that outputs time in seconds with custom string
+def tt(input):
     now = datetime.now()
     str = f'{now.hour}:{now.minute}:{now.second} - {input}'
-    return str
+    print(str)
 
 
 def merge_items(all_relevant_items: QuerySet, traders_items: QuerySet):

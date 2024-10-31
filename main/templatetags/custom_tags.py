@@ -4,8 +4,6 @@ from html import unescape
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
 
-from main.te_utils import get_time
-from ..models import Listing
 from django import template
 from django.utils import timezone
 from django.utils.timesince import timesince

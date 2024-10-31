@@ -23,7 +23,7 @@ from .profile_stats import return_profile_stats
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, get_time, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
+from main.te_utils import categories, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
 
 from html import escape
 
