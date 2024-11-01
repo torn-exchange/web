@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include
+from django.conf import settings
 from django.views.generic import TemplateView
 
 from . import views
@@ -49,3 +50,11 @@ urlpatterns = [
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
 ]
+
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+        # other URLs
+    ] + urlpatterns
