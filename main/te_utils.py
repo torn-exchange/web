@@ -116,6 +116,16 @@ def tt(input):
 
 
 def merge_items(all_relevant_items: QuerySet, traders_items: QuerySet):
+    """Function that merges two QuerySets so that template engine doesn't have to
+    request it from DB
+
+    Args:
+        all_relevant_items (QuerySet): All items available in DB
+        traders_items (QuerySet): All items for which a trader has set any value
+
+    Returns:
+        QuerySet: merged items
+    """
     for item in all_relevant_items:
         item.price = ""
         item.discount = ""
