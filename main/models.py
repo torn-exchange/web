@@ -68,11 +68,6 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        for listing in Listing.objects.filter(item=self):
-            listing.save()
-        super().save(*args, **kwargs)
-
 # Custom item that can be anything, not tied to official Torn items
 class Service(models.Model):
     name = models.CharField(max_length=250)
