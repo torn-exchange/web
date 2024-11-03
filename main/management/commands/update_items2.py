@@ -11,6 +11,7 @@ import numpy as np
 from random import choice
 import os
 import sys
+from django.db import connection, reset_queries
 
 
 class Command(BaseCommand):
@@ -87,6 +88,7 @@ class Command(BaseCommand):
 
                     print(
                         f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
+            
             else:
                 try:
                     for key in ['buy_price', 'sell_price', 'market_value']:
@@ -117,8 +119,10 @@ class Command(BaseCommand):
                     f'Created {row["name"]} -{item_id} as a new entry on the db')
 
         print('Done!')
+        print("Total database queries:", len(connection.queries))
 
     def handle(self, *args, **options):
+        reset_queries()
         if options['item_name']:
             item_name = options['item_name']
             custom_df = self.df[self.df['name'] == item_name]
