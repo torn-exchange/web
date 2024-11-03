@@ -42,8 +42,6 @@
     {% endif %}
     <br>
     <div class=row>
-
-
         <div class='col'>
             <div class="card">
                 <div class='card-title justify-content-center'>
@@ -132,9 +130,13 @@
     <div class="text-left text-muted">
         Prices last updated: {{last_updated|naturaltime}}
     </div>
+    <div class="row justify-content-center mt-4 mb-4">
+        <div class="col-sm-12 col-md-4 col-lg-4 search-container">
+            <input type="search" class="form-control rounded" id="searchInput" placeholder="Search for an item...">  
+        </div>
+    </div>
     <div class='row'>
         {% for itype in item_types %}
-
 
         {% if forloop.counter0|divisibleby:4 %}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
@@ -145,7 +147,8 @@
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
         {% endif %}
-        <div class="col-sm-12 col-md-4 col-lg-4">
+        
+        <div class="col-sm-12 col-md-4 col-lg-4 category">
             <div class='card price_table'>
                 <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
                     <h5 class="text-white allerta-font ">
@@ -163,10 +166,10 @@
                     <tbody class="my_tbody">
                         {%for item in items%}
                         {% if item.item.item_type == itype%}
-                        <tr class="row-striped p-0">
+                        <tr class="row-striped p-0 item">
                             </td>
                             <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
-                            <td style="width: 50%;" class="p-0 m-0">{{item.item.name}}</td>
+                            <td style="width: 50%;" class="p-0 m-0 item-name">{{item.item.name}}</td>
                             <td style="width: 30%;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
                         </tr>
                         {% endif%}
@@ -217,7 +220,6 @@
     });
     $(document).on('click', '#vote-up', function (e) {
         e.preventDefault();
-
         var voter_username = '{{user.profile.name}}'
         var owner_username = '{{owner_profile.name}}'
         console.log(owner_username)
@@ -242,6 +244,42 @@
                     $('#vote-count').html('' + json.vote_count + ' votes')
                 }
             }
+        });
+    });
+    // SEARCH
+    $(document).ready(function () {
+        $("#searchInput").val(''); // Clears the input field
+
+        // Function to update category visibility
+        function updateCategoryVisibility() {
+            const categories = $(".category");
+
+            categories.each((index, category) => {
+                const visibleItems = $(category).find('.item:not([style*="display: none"])',
+            );
+            if (visibleItems.length === 0) {
+                category.style.display = "none";
+            } else {
+                category.style.display = "";
+            }
+            });
+        }
+
+        $("#searchInput").on("input", function () {
+            const searchTerm = $(this).val().toLowerCase();
+            const items = $(".item");
+
+            items.each((index, item) => {
+                const itemName = $(item).find(".item-name").text().toLowerCase();
+                
+                if (itemName.includes(searchTerm)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            updateCategoryVisibility();
         });
     });
 </script>
