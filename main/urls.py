@@ -29,6 +29,7 @@ urlpatterns = [
     path('listings', views.listings, name='listings'),
     path('services/<str:identifier>/', views.services_list, name='services_list'),
     path('services/', views.services_list, name='services_list'),
+    path('search_services/', views.search_services, name='search_services'),
     path('edit_services/', views.edit_services, name='edit_services'),
     path('create_receipt', views.create_receipt, name='create_receipt'),
     path('new_create_receipt', views.new_create_receipt, name='new_create_receipt'),

@@ -1,0 +1,143 @@
+{% extends "main/base.html" %}
+{% block content %}
+{%load crispy_forms_tags %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<div class='container'>
+    <div class='row'>
+        <div class='col-md-3 col-sm-12'>
+            <div class="p-2">
+                <form method="GET">
+                    {{myFilter.form|crispy}}
+                    <button class='btn btn-primary'> Search </button>
+                </form>
+            </div>
+        </div>
+        <div class='col-md-9 col-sm-12'>
+            <div class='row'>
+                <div class="text-center col-12">
+                    <h4 class="m-4 allerta-font text-center">
+                        Search Custom Services
+                    </h4>
+                </div>
+                <div>
+                    {% if not listings.object_list%}
+                    <p>
+                        {% if error %}
+                        {{error}}
+                        {% else %}
+                        Sorry no listings were found!
+                        {% endif %}
+                    </p>
+                    {% else %}
+                    <!-- <p class="ml-5 p-0 m-0 text-center pb-2">
+                        Here are all of the items that traders in Torn Exchange are buying.
+                        If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
+                    </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        <b>Note when filtering by status:</b> Idle traders can be just as online as Online traders, they may have switched tabs or having 
+                        Torn opened but doing something away from keyboard so if you use that filter, make sure to always check Idle traders as well.
+                    </p>
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        When choosing a trader, make sure they traded recently - you can check their activity on their price list page.
+                    </p> -->
+                    {% endif %}
+                </div>
+                <hr />
+                <br>
+
+                <div class="text-center col-12">
+                    {%include 'main/includes/pagination.html'%}
+                </div>
+
+                <small class="text-muted ml-4"> {{number_of_items}} services found in your search.</small>
+                {% for listing in listings%}
+                <div class='col-12'>
+                    <div class='card listing-card  m-0 mb-1 p-0'>
+                        <div class="card-header m-0 p-0">
+                            <div class="row pl-1 m-auto">
+                                <div class="col-9 mb-0">
+                                    <div class='row m-auto'>
+
+                                        <div class="p-2 col-2 text-left">
+                                            {% if listing.owner.activity_status == 'Online' %}
+                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">
+                                            {% elif listing.owner.activity_status == 'Idle' %}
+                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">
+                                            {% elif listing.owner.activity_status == 'Offline' %}
+                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">
+                                            {% endif %}
+                                        </div>
+                                        <div class="col text-left">
+                                            <div class="pl-3 text-left">
+                                                {{listing.owner.name}}[{{listing.owner.torn_id}}]
+                                            </div>
+                                        </div>
+                                        <div class="pl-1 col">
+                                            <i class="fas fa-star small mr-2 mb-2 size-2x">
+                                            </i>{{listing.owner.vote_score}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+
+
+                                        <div class="col">
+                                            <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
+                                                class="badge badge-light text-black pl-2 pr-2"
+                                                style="background-color: rgb(223, 239,243);"> Service Price List</a>
+                                        </div>
+                                        <div class="col">
+                                            <a target="_blank"
+                                                href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}"
+                                                class="badge badge-light text-black pl-2 pr-2"
+                                                style="background-color: rgb(235, 244,225);"> Contact Now </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-text">
+                            <div class='row'>
+                                <div class="pl-4 col-5">
+                                    <div class='row'>
+                                        <div class="col">
+                                            <strong>Service Name:</strong> {{listing.service.name}}
+                                            <p class="mb-0">
+                                                <strong>Asking Price:</strong>
+                                                <a class=' badge badge-success text-black'>
+                                                    ${{listing.money_price|intcomma}}
+                                                </a>
+                                            </p>
+                                            <strong>Price in items:</strong> {{listing.barter_price}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pl-4 col-7">
+                                    <p class="mb-0">
+                                        ${{listing.offer_description}}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer mt-0">
+                            <div class="row">
+                                <div class="col">
+                                    <i class="fas fa-user"></i> Player last active: {{listing.owner.last_active|time_since}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {%include 'main/includes/pagination.html'%}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
