@@ -87,7 +87,7 @@
                                         <div class="col">
                                             <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
                                                 class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(223, 239,243);"> Service Price List</a>
+                                                style="background-color: rgb(223, 239,243);"> Service Price List </a>
                                         </div>
                                         <div class="col">
                                             <a target="_blank"
@@ -111,13 +111,13 @@
                                                     ${{listing.money_price|intcomma}}
                                                 </a>
                                             </p>
-                                            <strong>Price in items:</strong> {{listing.barter_price}}
+                                            <strong>Price in items:</strong> {{listing.barter_price|sanitize_string}}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="pl-4 col-7">
                                     <p class="mb-0">
-                                        ${{listing.offer_description}}
+                                        {{listing.offer_description|sanitize_string}}
                                     </p>
                                 </div>
                             </div>
