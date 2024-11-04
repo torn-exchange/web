@@ -54,6 +54,36 @@ def service_categories():
     ]
 
 
+def service_names():
+    return [
+        'Bookie Tips', 
+        'Racing Assistant', 
+        'Reviving', 
+        'Stocks Advice', 
+        'View anonymous bounties', 
+        'Hack a company\'s bank account', 
+        'Company productivity boost', 
+        'Flight Delay', 
+        'See Friends & Enemies', 
+        'View Money on Hand', 
+        'View Stats & Money', 
+        'True Level Reveal', 
+        'Stat Spies', 
+        'Creating Discord Bots', 
+        'General Coding', 
+        'Scripting', 
+        'Discord Administration', 
+        'Custom Spreadsheets', 
+        'Selling Escapes', 
+        'Selling Losses', 
+        'Selling Stalemates', 
+        'Mercenary', 
+        'Graphics', 
+        'RW Armor', 
+        'RW Weapons', 
+        'Other', 
+    ]
+
 def return_item_sets(item_names, item_quantities):
     item_dict = {}
     for index, value in enumerate(item_names):

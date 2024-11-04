@@ -1,6 +1,8 @@
 import django_filters
 
-from .models import Listing, Company
+from main.te_utils import service_names
+
+from .models import Listing, Company, Services
 from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
 from django_filters.widgets import RangeWidget
 
@@ -180,3 +182,31 @@ class EmployeeListingFilter(django_filters.FilterSet):
         model = Listing
         fields = [('model_name_contains'), ('status'), ('order_by'),
                   ('man_range'), ('int_range'), ('end_range')]
+
+
+class ServicesFilter(django_filters.FilterSet):
+    def __init__(self, data, *args, **kwargs):
+        data = data.copy()
+        data.setdefault('order', '-owner__vote_score')
+        super().__init__(data, *args, **kwargs)
+
+    order_by = OrderingFilter(
+        label='Sort By', 
+        choices=(
+            ('-money_price', 'Price (Highest to Lowest'),
+            ('money_price', 'Price (Lowest to Highest)'),
+            ('-owner__vote_score', 'Rating (Highest to Lowest'),
+            ('owner__vote_score', 'Rating (Lowest to Highest)'),
+        )
+    )
+    
+    services = service_names()
+    
+    # add default option
+    services.insert(0, 'Any')
+    
+    # Create a tuple of tuples for dropdowns
+    status_choices = tuple((service if service != 'Any' else '', service) for service in services)
+
+    status = TypedChoiceFilter(
+        label='Service', field_name='service__name', choices=status_choices)

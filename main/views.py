@@ -9,7 +9,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 from main.model_utils import get_all_time_leaderboard, get_active_traders, get_most_trades, get_changelog
 from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, Company
-from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter
+from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter, ServicesFilter
 from users.models import Profile, Settings
 from users.forms import SettingsForm
 from django.core.paginator import Paginator
@@ -104,6 +104,48 @@ def listings(request):
     }
 
     return render(request, 'main/listings.html', context)
+
+
+def search_services(request):
+    queryset = Services.objects.all().order_by('-last_updated')
+    myFilter = ServicesFilter(request.GET, queryset=queryset)
+
+    try:
+        query_set = myFilter.qs
+        
+        # exclude Listings where price is None or 0
+        number_of_items = query_set.count()
+
+        # Attempt to get the user's profile
+        if request.user.is_authenticated:
+            profile = Profile.objects.filter(user=request.user).get()
+            user_settings = Settings.objects.filter(owner=profile).get()
+        else:
+            user_settings = None
+            profile = None
+
+        paginator = Paginator(query_set, 20)
+        page = request.GET.get('page')
+        results = paginator.get_page(page)
+
+    except Exception as e:
+        print(e)
+        profile = None
+        user_settings = None
+        results = None
+        page = None
+        number_of_items = None
+
+    context = {
+        'page_title': 'Search Services - Torn Exchange',
+        'user_settings': user_settings,
+        'listings': results,
+        'user_profile': profile,
+        'myFilter': myFilter,
+        'number_of_items': number_of_items,
+    }
+
+    return render(request, 'main/search_services.html', context)
 
 
 def employee_listings(request):
@@ -590,6 +632,7 @@ def services_list(request, identifier=None):
         'owner_settings': owner_settings,
     }
     return render(request, 'main/services_list.html', context)
+
 
 @login_required
 def calculator(request):
