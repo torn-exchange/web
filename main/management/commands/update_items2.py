@@ -43,8 +43,12 @@ class Command(BaseCommand):
             TE_price = get_lowest_market_price(
                 item_id, get_random_key(), row['market_value'])
             
-            if TE_price == None:
-                continue
+            while bool(TE_price) is not True:
+                print("Repeating requst for item:", item_id)
+                TE_price = get_lowest_market_price(
+                    item_id, get_random_key(), row['market_value'])
+                if TE_price == 0:
+                    break
             
             try:
                 item_in_our_db = Item.objects.get(item_id=item_id)
@@ -153,24 +157,9 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
     data = json.loads(req.content)
 
     if data.get('error'):
-        print("ERROR", data)
-        return 0
+        print("update_items2 ERROR", data, item_id)
+        return None
     else:
-        bazaar_data = data.get('bazaar')
-
-        if bazaar_data is not None:
-            try:
-                first_three = list(
-                    map(lambda x: x.get('cost'), bazaar_data[:3]))
-                bazaar_min = np.nanmean(first_three)
-            except:
-                try:
-                    bazaar_min = np.mean(bazaar_data[0].get('cost'))
-                except:
-                    bazaar_min = avg_market_price
-        else:
-            bazaar_min = 0
-
         itemmarket_data = data.get('itemmarket')
         if (itemmarket_data is not None and itemmarket_data["listings"]):
             try:
@@ -178,22 +167,22 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
                     map(lambda x: x.get('price'), itemmarket_data["listings"][:3]))
                 itemmarket_min = np.nanmean(first_three)
             except Exception as e:
-                print("ERROR", e)
+                print("ERROR", e, "itemID:", item_id)
                 itemmarket_min = avg_market_price
         else:
-            itemmarket_min = 0
+            itemmarket_min = np.nan
             
         # error handling to avoid "cannot convert float NaN to integer" error
-        if all(x in [None, np.nan, 0] for x in [itemmarket_min, bazaar_min, avg_market_price]):
+        if all(x in [None, np.nan, 0] for x in [itemmarket_min, avg_market_price]):
             return 0
 
-        pricing_data = np.array([itemmarket_min, bazaar_min, avg_market_price])
-        
         try:
+            pricing_data = np.array([itemmarket_min, avg_market_price])
+            
             TE_price = int(
                 round(np.nanmin(pricing_data[np.nonzero(pricing_data)])))
         except Exception as e:
-            print(str(e), item_id)
+            print("update_items2 ERROR", str(e), item_id)
             TE_price = 0
 
         return TE_price

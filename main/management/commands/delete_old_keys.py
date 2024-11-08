@@ -48,9 +48,12 @@ def ping_torn_api(api_key):
     data = json.loads(req.content)
     
     # Possible errors:
-    #  2: Incorrect key
-    # 13: The key is temporary disabled due to owner inactivity
-    if data.get("error", {}).get("code") in {2, 13, 18}:
+    #  2 => Incorrect key
+    # 10 => Key owner is in federal jail
+    # 13 => The key is temporary disabled due to owner inactivity
+    # 16 => Access level of this key is not high enough
+    # 18 => API key has been paused by the owner
+    if data.get("error", {}).get("code") in {2, 10, 13, 16, 18}:
         return False
     
     return True
