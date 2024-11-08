@@ -1,6 +1,6 @@
 import django_filters
 
-from main.te_utils import service_names
+from main.te_utils import service_categories, service_names
 
 from .models import Listing, Company, Services
 from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
@@ -185,6 +185,34 @@ class EmployeeListingFilter(django_filters.FilterSet):
 
 
 class ServicesFilter(django_filters.FilterSet):
+    def get_service_filter():
+        list_of_services = service_names()
+        
+        # add default option
+        list_of_services.insert(0, 'Any')
+        
+        # Create a tuple of tuples for dropdowns
+        services_choices = tuple((service if service != 'Any' else '', service) for service in list_of_services)
+        
+        return TypedChoiceFilter(
+            label='Service', 
+            field_name='service__name', 
+            choices=services_choices
+        )
+
+    def get_categories_filter():
+        list_of_service_categories = service_categories()
+        
+        list_of_service_categories.insert(0, 'Any')
+    
+        categories_choices = tuple((cat if cat != 'Any' else '', cat) for cat in list_of_service_categories)
+        
+        return TypedChoiceFilter(
+            label='Category',
+            field_name='service__category', 
+            choices=categories_choices
+        )
+
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
         data.setdefault('order', '-owner__vote_score')
@@ -200,13 +228,6 @@ class ServicesFilter(django_filters.FilterSet):
         )
     )
     
-    services = service_names()
+    category = get_categories_filter()
     
-    # add default option
-    services.insert(0, 'Any')
-    
-    # Create a tuple of tuples for dropdowns
-    status_choices = tuple((service if service != 'Any' else '', service) for service in services)
-
-    status = TypedChoiceFilter(
-        label='Service', field_name='service__name', choices=status_choices)
+    service = get_service_filter()

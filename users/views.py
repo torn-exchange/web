@@ -44,19 +44,21 @@ def login_request(request):
         else:
             player_name = data['name']
             player_id = str(data['player_id'])
-            (print(player_id in Profile.objects.all().values(
-                'torn_id')), 'TEEEEEST \n \n \n \n \n')
+            
             # login
             if player_id in [a['torn_id'] for a in Profile.objects.values('torn_id')]:
-                print('logging IN ! \n \n \n')
                 messages.success(request, f'Welcome back {player_name}!')
                 profile = Profile.objects.filter(torn_id=player_id).get()
                 profile.name = player_name
                 profile.api_key = api_key
                 profile.save()
+                
                 user = User.objects.filter(profile=profile).get()
                 login(request, user)
-                return redirect('/')
+                
+                print("0001", request.GET.get('next'))
+                
+                return redirect(request.GET.get('next') or 'home')
             else:  # register
 
                 user = User.objects.create_user(player_id, 'johnpassword')
@@ -66,25 +68,15 @@ def login_request(request):
                 user.profile.api_key = api_key
                 user.profile.name = player_name
                 user.save()
+                
                 messages.success(request, 'Your account has been created')
                 login(request, user)
-                return redirect('/')
-
-        # if form.is_valid():
-        #    username = form.cleaned_data.get('username')
-        #    password = form.cleaned_data.get('password')
-        #    user = authenticate(username=username, password=password)
-        #    if user is not None:
-        #        login(request, user)
-        #        messages.info(request, f"You are now logged in as {username}")
-        #        return redirect('/')
-        #    else:
-
+                return redirect(request.POST.get('next') or 'home')
     else:
         if request.user.is_authenticated:
-            messages.error(
-                        request, 'You are already logged in!')
+            messages.error(request, 'You are already logged in!')
             return redirect("home")
+        
     return render(request=request,
                   template_name="users/login.html",
                   context={})

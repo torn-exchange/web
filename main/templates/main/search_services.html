@@ -13,15 +13,44 @@
                     <button class='btn btn-primary'> Search </button>
                 </form>
             </div>
+            <hr />
+            <div class="p-2">
+                <h4>Full Service Tree:</h4>
+                
+                  <!-- <div class="container mt-4"> -->
+                    <!-- Card for Category 1 -->
+                    <div class="card mb-4">
+                      <div class="card-header bg-primary text-white">
+                        Category 1
+                      </div>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service 1</li>
+                        <li class="list-group-item">Service 2</li>
+                      </ul>
+                    </div>
+                  
+                    <!-- Card for Category 2 -->
+                    <div class="card mb-4">
+                      <div class="card-header bg-primary text-white">
+                        Category 2
+                      </div>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service 3</li>
+                        <li class="list-group-item">Service 4</li>
+                      </ul>
+                    </div>
+                  <!-- </div> -->
+                  
+            </div>
         </div>
         <div class='col-md-9 col-sm-12'>
             <div class='row'>
                 <div class="text-center col-12">
-                    <h4 class="m-4 allerta-font text-center">
+                    <h3 class="m-4 allerta-font text-center">
                         Search Custom Services
-                    </h4>
+                    </h3>
                 </div>
-                <div>
+                <div class="text-center">
                     {% if not listings.object_list%}
                     <p>
                         {% if error %}
@@ -31,17 +60,19 @@
                         {% endif %}
                     </p>
                     {% else %}
-                    <!-- <p class="ml-5 p-0 m-0 text-center pb-2">
-                        Here are all of the items that traders in Torn Exchange are buying.
-                        If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        Here's a list of all services that Torn players provide.
                     </p>
                     <p class="ml-5 p-0 m-0 text-center pb-2">
-                        <b>Note when filtering by status:</b> Idle traders can be just as online as Online traders, they may have switched tabs or having 
-                        Torn opened but doing something away from keyboard so if you use that filter, make sure to always check Idle traders as well.
+                        Do you have a business of your own and want to advertise too? Join Torn Exchange and start making
+                        your own service list now.
                     </p>
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
-                        When choosing a trader, make sure they traded recently - you can check their activity on their price list page.
-                    </p> -->
+                    <p class="ml-5 p-0 m-0 pb-2">
+                        <div class="btn btn-dark">
+                            <a class="allerta-font h5 text-white text-center" href="{% url 'edit_services' %}"> Create Service List Now </a>
+                        </div>
+                    </p>
+                    
                     {% endif %}
                 </div>
                 <hr />
@@ -104,14 +135,21 @@
                                 <div class="pl-4 col-5">
                                     <div class='row'>
                                         <div class="col">
-                                            <strong>Service Name:</strong> {{listing.service.name}}
+                                            <p class="mb-0">
+                                                <strong>Service:</strong> {{listing.service.name}}
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong>Category:</strong> {{listing.service.category}}
+                                            </p>
                                             <p class="mb-0">
                                                 <strong>Asking Price:</strong>
                                                 <a class=' badge badge-success text-black'>
                                                     ${{listing.money_price|intcomma}}
                                                 </a>
                                             </p>
-                                            <strong>Price in items:</strong> {{listing.barter_price|sanitize_string}}
+                                            <p class="mb-0">
+                                                <strong>Price in items:</strong> {{listing.barter_price|sanitize_string}}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
