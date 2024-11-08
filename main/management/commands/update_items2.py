@@ -88,6 +88,10 @@ class Command(BaseCommand):
 
                     print(
                         f'Updated {row["name"]} [{item_id}] market price to {row["market_value"]} and TE_price to {TE_price}')
+                
+                print(
+                    f'No updated needed for {row["name"]} [{item_id}]'
+                )
             
             else:
                 try:
@@ -145,7 +149,7 @@ def get_random_key():
 
 def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
     if api_key == '':
-        return 0
+        return None
     
     time.sleep(0.05)
     url = f'https://api.torn.com/v2/market/?selections=itemmarket&id={item_id}&key={api_key}'
