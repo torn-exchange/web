@@ -53,6 +53,13 @@
     {% endif %}
 
     <div class='row'>
+        <div class='col-12 m-3'>
+            <h1 class="display allerta-font text-center">
+                A community for <a href="https://www.torn.com">Torn</a> traders, buyers and sellers
+            </h1>
+        </div>
+    </div>
+    <div class='row'>
         <div class='col-md-3 col-sm-12'>
             <!-- {%include 'main/includes/top_active_traders.html'%} -->
             {%include 'main/includes/most_receipts.html'%}
@@ -63,17 +70,71 @@
 
         </div>
         <div class='col-md-6 col-sm-12 align-content-center text-center'>
+            <div class="row">
+                <div class="col-6">
+                    <div class="card mt-3" style="height:200px">
+                        <div class="card-header text-center bg-dark text-gold">
+                            <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
+                        </div>
+                        <div class="card-body text-left pl-1">
+                            <ul class="list-group list-group-flush">
+                                {% if profile %}
+                                    <il class="list-group-item my-0">
+                                        <a href="{% url 'edit_price_list' %}">Edit price list</a>
+                                    </il>
+                                    <il class="list-group-item my-0">
+                                        <a href="{% url 'edit_services' %}">Edit custom services</a>
+                                    </il>
+                                {% else %}
+                                    <il class="list-group-item my-0">
+                                        <a href="{% url 'edit_price_list' %}">Create a price list</a>
+                                    </il>
+                                    <il class="list-group-item my-0">
+                                        <a href="{% url 'edit_services' %}">Add custom services</a>
+                                    </il>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-6">
+                    <div class="card mt-3" style="height:200px">
+                        <div class="card-header text-center bg-dark text-gold">
+                            <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
+                        </div>
+                        <div class="card-body text-left pl-1">
+                            <ul class="list-group list-group-flush">
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'listings' %}">Search items and traders</a>
+                                </il>
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'search_services' %}">Search custom service</a>
+                                </il>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12">
+                    <hr />
+                </div>
+            </div>
+
+
             <img src="{% static '/main/images/logocentral.png' %}" class='img-fluid logocentral mt-3'
                 style="max-width: 50% !important;">
             <p>
-            <h3 class="display allerta-font">
-                Not just a tool, but a community for traders, buyers and sellers alike. Free of charge.
-            </h3>
             </p>
             <div class="pt-3">
+                {% if not profile %}
                 <div class="btn btn-primary">
                     <a class="allerta-font h5 text-white" href="{% url 'login' %}"> Join Now </a>
                 </div>
+                {% endif %}
                 <p class="mt-2">
                 <p>Want to know more about Torn Exchange?
                     <br>
@@ -118,7 +179,7 @@
             </p>
             <div class="container">
                 <div class="card mt-3" style="height:175px">
-                    <div class="card-header text-center bg-dark text-white">
+                    <div class="card-header text-center text-white" style="background-color: rgb(31, 39, 57);">
                         <i class="fas fa-puzzle-piece"></i> Extension
                     </div>
                     <div class="card-body">

@@ -1,6 +1,7 @@
+from django import forms
 import django_filters
 
-from main.te_utils import service_names
+from main.te_utils import service_categories, service_names
 
 from .models import Listing, Company, Services
 from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
@@ -193,20 +194,18 @@ class ServicesFilter(django_filters.FilterSet):
     order_by = OrderingFilter(
         label='Sort By', 
         choices=(
-            ('-money_price', 'Price (Highest to Lowest'),
-            ('money_price', 'Price (Lowest to Highest)'),
-            ('-owner__vote_score', 'Rating (Highest to Lowest'),
+            ('-owner__vote_score', 'Rating (Highest to Lowest)'),
             ('owner__vote_score', 'Rating (Lowest to Highest)'),
         )
     )
     
-    services = service_names()
+    list_of_services = service_names()
     
-    # add default option
-    services.insert(0, 'Any')
+    services_choices = tuple((service, service) for service in list_of_services)
     
-    # Create a tuple of tuples for dropdowns
-    status_choices = tuple((service if service != 'Any' else '', service) for service in services)
-
-    status = TypedChoiceFilter(
-        label='Service', field_name='service__name', choices=status_choices)
+    service = django_filters.MultipleChoiceFilter(
+        label="Select multiple services",
+        choices=services_choices,
+        field_name='service__name', 
+        widget=forms.CheckboxSelectMultiple
+    )
