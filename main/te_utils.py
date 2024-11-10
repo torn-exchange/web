@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List, Tuple
 from django.db.models.query import QuerySet
 
+from main.models import Service
+
 
 def categories():
     return [
@@ -169,3 +171,31 @@ def merge_items(all_relevant_items: QuerySet, traders_items: QuerySet):
                 break
         
     return all_relevant_items
+
+
+def get_services_view(selected_services) -> dict:
+    """Returns list of Service items to display on Search Services page as Django Filter.
+        It constructs a dict object and groups services by category and also attaches selected
+        state by each service.
+    
+    Args:
+        selected_services (list[str]): all checkbox'ed services from query URL
+        
+    Returns:
+        dict: services grouped by categories
+    """
+    
+    list_of_services = Service.objects.all()
+    
+    # Group services by category
+    SERVICES_CHOICES = {}
+    for service in list_of_services:
+        category = service.category
+        if category not in SERVICES_CHOICES:
+            SERVICES_CHOICES[category] = []
+        
+        # Check if this service is in the selected services list
+        checked_state = 'checked' if service.name in selected_services else ''
+        SERVICES_CHOICES[category].append((service.name, checked_state))
+    
+    return SERVICES_CHOICES

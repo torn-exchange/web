@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
@@ -23,7 +23,7 @@ from .profile_stats import return_profile_stats
 from vote.models import Vote
 from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories
+from main.te_utils import categories, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories, get_services_view
 
 from html import escape
 
@@ -106,9 +106,12 @@ def listings(request):
     return render(request, 'main/listings.html', context)
 
 
-def search_services(request):
-    queryset = Services.objects.all().order_by('-last_updated')
+def search_services(request: HttpRequest):
+    queryset = Services.objects.all()
     myFilter = ServicesFilter(request.GET, queryset=queryset)
+    
+    # Get all selected services from the GET request
+    selected_services = request.GET.getlist('service')
 
     try:
         query_set = myFilter.qs
@@ -135,14 +138,16 @@ def search_services(request):
         results = None
         page = None
         number_of_items = None
-
+    
     context = {
         'page_title': 'Search Services - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'user_profile': profile,
         'myFilter': myFilter,
+        'order_by': request.GET.get('order_by'),
         'number_of_items': number_of_items,
+        'services_by_category': get_services_view(selected_services),
     }
 
     return render(request, 'main/search_services.html', context)

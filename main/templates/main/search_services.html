@@ -8,39 +8,39 @@
     <div class='row'>
         <div class='col-md-3 col-sm-12'>
             <div class="p-2">
-                <form method="GET">
-                    {{myFilter.form|crispy}}
+                <form method="get">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">Sort by rating</div>
+                        <ul class="list-group list-group-flush">  
+                            <li class="list-group-item py-1 my-0">
+                                <input type="radio" name="order_by" value="-owner__vote_score" {% if order_by == '-owner__vote_score' %}checked{% endif %}>
+                                <a href="?order_by=-owner__vote_score" class="small">Highest to Lowest</a>
+                            </li>
+                            <li class="list-group-item py-1 my-0">
+                                <input type="radio" name="order_by" value="owner__vote_score" {% if order_by == 'owner__vote_score' %}checked{% endif %}>
+                                <a href="?order_by=owner__vote_score" class="small">Lowest to Highest</a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% for category, services in services_by_category.items %}
+                        <div class="card mb-4">
+                            <div class="card-header text-white" style="background-color: rgb(31, 39, 57);">
+                                <input type="checkbox" name="category" value="{{ category }}" class="mark_category" {{ checked }}>
+                                {{ category }}
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                {% for service, checked in services %}
+                                <li class="list-group-item py-1 my-0">
+                                    <input type="checkbox" name="service" value="{{ service }}" {{ checked }}>
+                                    <a href="?order_by={{ order_by }}&service={{ service|urlencode }}" class="small">{{ service }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
                     <button class='btn btn-primary'> Search </button>
+                    <a href="{% url 'search_services' %}" class="btn btn-secondary">Reset</a>
                 </form>
-            </div>
-            <hr />
-            <div class="p-2">
-                <h4>Full Service Tree:</h4>
-                
-                  <!-- <div class="container mt-4"> -->
-                    <!-- Card for Category 1 -->
-                    <div class="card mb-4">
-                      <div class="card-header bg-primary text-white">
-                        Category 1
-                      </div>
-                      <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service 1</li>
-                        <li class="list-group-item">Service 2</li>
-                      </ul>
-                    </div>
-                  
-                    <!-- Card for Category 2 -->
-                    <div class="card mb-4">
-                      <div class="card-header bg-primary text-white">
-                        Category 2
-                      </div>
-                      <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service 3</li>
-                        <li class="list-group-item">Service 4</li>
-                      </ul>
-                    </div>
-                  <!-- </div> -->
-                  
             </div>
         </div>
         <div class='col-md-9 col-sm-12'>
@@ -60,16 +60,22 @@
                         {% endif %}
                     </p>
                     {% else %}
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                    <p class="ml-5 p-0 m-0 text-left pb-2">
                         Here's a list of all services that Torn players provide.
                     </p>
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                    <p class="ml-5 p-0 m-0 text-left pb-2">
+                        There are two filters: by rating and by service name. You can check multiple services. Clicking checkbox by the category
+                        selects all the services in that category. <br />
+                        You can click on the service name or select checkbox next to it if you want to search multiple services at once. <br />
+                        Search and Reset buttons are found at the bottom of the page.
+                    </p>
+                    <p class="ml-5 p-0 m-0 text-left pb-2">
                         Do you have a business of your own and want to advertise too? Join Torn Exchange and start making
                         your own service list now.
                     </p>
                     <p class="ml-5 p-0 m-0 pb-2">
                         <div class="btn btn-dark">
-                            <a class="allerta-font h5 text-white text-center" href="{% url 'edit_services' %}"> Create Service List Now </a>
+                            <a class="allerta-font h5 text-white" href="{% url 'edit_services' %}"> Add Your Service Now </a>
                         </div>
                     </p>
                     
@@ -93,11 +99,11 @@
 
                                         <div class="p-2 col-2 text-left">
                                             {% if listing.owner.activity_status == 'Online' %}
-                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">
+                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">&nbsp;
                                             {% elif listing.owner.activity_status == 'Idle' %}
-                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">
+                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">&nbsp;
                                             {% elif listing.owner.activity_status == 'Offline' %}
-                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">
+                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">&nbsp;
                                             {% endif %}
                                         </div>
                                         <div class="col text-left">
@@ -177,5 +183,17 @@
     </div>
 
 </div>
+
+<script type="text/javascript">
+    $('.mark_category').click(function () {
+        console.log("YAY!")
+        var parent = $(this).closest('.mb-4');
+        if ($(this).is(':checked')) {
+            parent.find('input[name*="service"').prop("checked", true);
+        } else {
+            parent.find('input[name*="service"').prop("checked", false);
+        }
+    });
+</script>
 
 {% endblock %}
