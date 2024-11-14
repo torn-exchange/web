@@ -1011,3 +1011,11 @@ def delete_receipt_from_profile(request, receipt_id):
         [a.delete() for a in trade_items]
         trade_receipt.delete()
     return redirect('analytics')
+
+
+def museum_helper(request):
+    context = {
+        'page_title': 'Zim\'s Museum Helper - Torn Exchange',
+    }
+    
+    return render(request, 'main/museum_helper.html', context)

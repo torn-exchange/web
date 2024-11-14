@@ -49,6 +49,7 @@ urlpatterns = [
          name='new_extension_get_prices'),
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
+    path('museum_helper', views.museum_helper, name='museum_helper'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
 ]
 
