@@ -5,11 +5,21 @@ from django.utils.crypto import get_random_string
 
 
 def generate_url_string():
-    # while True:
     string = get_random_string(10)
-    #    if not TradeReceipt.objects.filter(receipt_url_string=string).exists():
     return string
 
+
+### MODEL ENUMS ###
+
+class ServiceCategories(models.TextChoices):
+    TornFeature = "Torn Feature"
+    Company = "Company specials"
+    Software = "Software"
+    Attacking = "Atacking"
+    Other = "Other"
+
+
+### MODELS ###
 
 class ChangeLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -24,7 +34,6 @@ class Company(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
     company_id = models.IntegerField()
-
     company_type = models.CharField(max_length=250)
     rating = models.IntegerField()
     days_old = models.IntegerField()
@@ -36,18 +45,17 @@ class Company(models.Model):
     efficiency = models.IntegerField()
     average_employee_tenure = models.IntegerField()
     average_employee_efficiency = models.IntegerField()
-
     company_looking_to_hire_message = models.CharField(
         max_length=140, null=True, blank=True)
     negotiable = models.BooleanField(default=True)
     asking_price = models.BigIntegerField()
     description = models.CharField(max_length=140, null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} by {self.owner.name}"
+
 
 # Torn item
 class Item(models.Model):
@@ -68,14 +76,19 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
+
 # Custom item that can be anything, not tied to official Torn items
 class Service(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(max_length=250)
-    category = models.CharField(max_length=250)
+    category = models.CharField(
+        max_length=250, 
+        choices=ServiceCategories.choices
+    )
     
     def __str__(self):
         return self.name
+
 
 # serves a list of Service entities
 class Services(models.Model):
@@ -92,6 +105,7 @@ class Services(models.Model):
     def __str__(self):
         return f"{self.service} - ${self.money_price} | {self.owner.name}"
     
+
 # serves a list of Item entities
 class Listing(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)

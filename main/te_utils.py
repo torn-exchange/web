@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, OrderedDict, Tuple
 from django.db.models.query import QuerySet
 
 from main.models import Service
@@ -185,17 +185,19 @@ def get_services_view(selected_services) -> dict:
         dict: services grouped by categories
     """
     
-    list_of_services = Service.objects.all()
+    list_of_services = Service.objects.all().order_by("name")
     
     # Group services by category
-    SERVICES_CHOICES = {}
+    services_choices_unsorted = {}
     for service in list_of_services:
         category = service.category
-        if category not in SERVICES_CHOICES:
-            SERVICES_CHOICES[category] = []
+        if category not in services_choices_unsorted:
+            services_choices_unsorted[category] = []
         
         # Check if this service is in the selected services list
         checked_state = 'checked' if service.name in selected_services else ''
-        SERVICES_CHOICES[category].append((service.name, checked_state))
+        services_choices_unsorted[category].append((service.name, checked_state))
+        
+    SERVICES_CHOICES = OrderedDict(sorted(services_choices_unsorted.items()))
     
     return SERVICES_CHOICES

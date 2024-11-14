@@ -128,7 +128,12 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="offset-4 col-4 text-center justify-content-center">
+                                <div class="col-4 text-center">
+                                    {% if type == 'Plushie' or type == 'Flower' %}
+                                        Check {{type|item_plurals}} price history with <br /><a href='{% url "museum_helper" %}' target="_blank">Museum Helper</a>!
+                                    {% endif %}
+                                </div>
+                                <div class="col-4 text-center justify-content-center">
                                     Tick to remove all items from category
                                     <div class="mt-1">
                                         <i class="fas fa-trash-alt m-2"></i> <input type="checkbox"
