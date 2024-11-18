@@ -35,6 +35,8 @@ urlpatterns = [
     path('new_create_receipt', views.new_create_receipt, name='new_create_receipt'),
     path('receipt/<str:receipt_id>/', views.receipt_view, name='receipt_view'),
     path('analytics/', views.analytics, name='analytics'),
+    path('analytics/all_sellers/', views.all_sellers, name='all_sellers'),
+    path('analytics/all_trades/', views.all_trades, name='all_trades'),
     path('delete_receipt/<str:receipt_id>/',
          views.delete_receipt_from_profile, name='delete_receipt'),
     path('about/', views.about, name='about'),
