@@ -36,21 +36,53 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Heading -->
+    <div class="row">
+        <div class="col-12 col-md-12 col-sm-12 text-center mb-3 mt-3">
+            <h1>Trade Calculator</h1>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="row">
+        <div class="text-center col-12 mb-3">
+            <p>You can do calculations on Chrome, Firefox or Torn PDA!</p>
+            <a class='btn btn-primary'
+                href="https://chromewebstore.google.com/detail/torn-exchange/iggcinpeofcbplffobefiojjgfeoblll"
+                target="_blank">
+                <img src="https://icons.iconarchive.com/icons/dtafalonso/android-lollipop/48/Chrome-icon.png"
+                    style="width: 16px; height: 16px;" />
+                Chrome extension
+            </a>
+            <a class='btn btn-primary' href="https://addons.mozilla.org/en-GB/firefox/addon/torn-exchange-2-0/"
+                target="_blank">
+                <img src="https://icons.iconarchive.com/icons/morcha/browsers/48/Firefox-icon.png"
+                    style="width: 16px; height: 16px;" />
+                Firefox extension
+            </a>
+            <a class='btn btn-primary' href="https://github.com/Manuito83/torn-pda" target="_blank">
+                <img src="https://raw.githubusercontent.com/Manuito83/torn-pda/refs/heads/master/images/icons/pda_icon.png"
+                    style="width: 16px; height: 16px;" />
+                Torn PDA
+            </a>
+
+        </div>
+    </div>
+
     <div class='row'>
+        <!-- Calculator -->
         <div class='col-md-6 col-sm-12'>
             <div class='card mt-3'>
-                <div class='card-header bg-dark text-white text-center '>
-                    Trade Calculator
+                <div class='card-header bg-dark text-white text-center'>
+                    Calculator
                 </div>
                 <form id="text-input-form" method="POST">
                     <div class="card-body">
-                        <h3>
-                        </h3>
                         {% csrf_token %}
-
                         <div class="form-group col-sm-12">
                             <label for="textarea1">Paste your trade log here as in the example below</label>
-                            <textarea class="form-control" id="textarea1" rows="5"
+                            <textarea class="form-control" id="textarea1" rows="8"
                                 placeholder='Duke added 900x Chamois Plushie to the trade.'></textarea>
                         </div>
                     </div>
@@ -60,7 +92,16 @@
                 </form>
             </div>
         </div>
+        <!-- Trade Details -->
         <div class='col-md-6 col-sm-12 mt-3' id='table-div' class='card bg-dark b-1 text-white'>
+            <div class='card'>
+                <div class='card-header bg-dark text-white text-center'>
+                    Trade Details
+                </div>
+                <div class="card-body" id="trade-details-card-body">
+                    <p class="text-muted">Paste trade log in the input area. Trade items will be
+                </div>
+            </div>
         </div>
         <div id='output_area'>
 
@@ -72,7 +113,6 @@
     $(document).ready(function () {
         $(document).on('submit', '#text-input-form', function (e) {
             e.preventDefault();
-            console.log('eh')
             var owner_username = '{{user.profile.name}}'
             $.ajax({
                 type: 'POST',
@@ -83,33 +123,37 @@
                     csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
                 },
                 success: function (json) {
+                    $('#confirmtrade').parent().show()
                     $('#table-div').empty()
                     $('#table-div').html(`
                     <div class='card'>
                     <div class='card-header bg-dark text-white text-center'>Trade with <strong id='seller-name'>`+ json.name + `</strong></div>
-                    <table class='table table-hover table-sm small' id='output-table'>
-                        <thead>
-                          <tr>
-                            <th scope="col" class='text-center' style='width: 20%;'></th>
-                            <th scope="col" class='text-center' style='width: 15%;'>Item</th>
-                            <th scope="col" class='text-center' style='width: 5%;'>Qty</th>
-                            <th scope="col" class='text-center' style='width: 15%;'>Market $</th>
-                            <th scope="col" class='text-center' style='width: 25%;'>Price</th>
-                            <th scope="col" class='text-center' style='width: 15%;'>Profit</th>
-                            <th scope="col" class='text-center' style='width: 20%;'>Subtotal</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                        <tfoot>
-                          </tfoot>
-                      </table>`);
+                    <div id='trade-details-body' class='m-3'>
+                        <table class='table table-hover table-sm small' id='output-table'>
+                            <thead>
+                            <tr>
+                                <th scope="col" class='text-center' style='width: 20%;'></th>
+                                <th scope="col" class='text-center' style='width: 15%;'>Item</th>
+                                <th scope="col" class='text-center' style='width: 5%;'>Qty</th>
+                                <th scope="col" class='text-center' style='width: 15%;'>Market $</th>
+                                <th scope="col" class='text-center' style='width: 25%;'>Price</th>
+                                <th scope="col" class='text-center' style='width: 15%;'>Profit</th>
+                                <th scope="col" class='text-center' style='width: 20%;'>Subtotal</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                      </div>`);
                     var total_price = 0
                     console.log(json.market_prices)
                     window.market_values = json.market_prices;
                     window.items = json.items
                     window.qty = json.qty
                     var profit_from_trade = 0
+
                     $(json.items).each(function (i, item) {
                         total_price += json.price[i] * json.qty[i]
                         profit_from_trade += (json.market_prices[i] - json.price[i]) * json.qty[i]
@@ -121,6 +165,7 @@
                             "<td class='text-center profit-per-item'>$" + numberWithCommas((json.market_prices[i] - json.price[i]) * json.qty[i]) + "</td>" +
                             "<td class='total'>$" + numberWithCommas(json.qty[i] * json.price[i]) + "</td>/tr></div>").appendTo('#output-table');
                     })
+
                     $('#table-div').append("<div class='card-footer bg-dark'><button class='btn btn-primary border-white' id='confirmtrade'>Confirm Trade</button></div></div>")
 
 
@@ -143,24 +188,15 @@
                             <td><strong>$`+ numberWithCommas(profit_from_trade) + `</strong></td>
                             </tr>
                             
-                    
                             `)
-
-                    //$('#textarea1').html(json.prompt_data);
-                    //var promptText = document.getElementById('textarea1');
-                    //var promptInput = document.getElementById('textarea1');
-                    //promptText.style.display = 'block';
-                    //promptInput.style.display = 'none';
                 },
                 error: function (json) {
                     alert('Make sure to paste the trade log message on the textbox, including the sellers name, and to include a valid price');
                 }
             });
         });
+
         function updated_profit(itemname, newprice) {
-
-
-
             var index_ = window.items.findIndex(name => name == itemname);
             var market_price = window.market_values[index_]
             var qty = window.qty[index_]
@@ -168,6 +204,7 @@
             console.log(index_, market_values, qty, newprofit)
             return (market_price - newprice) * qty
         };
+
         $('body').on('change', '.price', function () {
             console.log('changed')
             var parent = $(this).closest('tr');
@@ -178,7 +215,6 @@
             grand_total = $('.total').toArray().map(x => numberWOCommas(removeDollar(x.innerHTML))).reduce((sum, x) => sum + x);
 
             total_profit = $('.profit-per-item').toArray().map(x => numberWOCommas(removeDollar(x.innerHTML))).reduce((sum, x) => sum + x);
-            //console.log(arr1.reduce(function(r,a,i){return r+a*arr2[i]},0));
 
             $('tfoot').html(`<tr>
                 <td></td>
@@ -201,12 +237,14 @@
               
               `)
         });
+
+
     });
+
     $(document).on('click', '#confirmtrade', function (e) {
         e.preventDefault();
         var owner_username = '{{user.profile.name}}';
         var seller_username = $('#seller-name').html();
-        console.log(owner_username)
 
         var item_names = $('.input-row').get().map(function (row) {
             return $(row).find('.name_input').get().map(function (cell) {
@@ -224,7 +262,6 @@
             });
         });
 
-        console.log(item_prices)
         $.ajax({
             type: 'POST',
             url: '{% url "create_receipt" %}',
@@ -238,18 +275,68 @@
             },
             success: function (json) {
                 $("#textarea1").val('')
-                $("#table-div").empty()
+                $("#trade-details-card-body").empty()
+                $("#trade-details-body").empty()
                 window.scrollTo(0, 0);
-                console.log(json.receipt_id)
                 var origin = window.location.origin;
                 var receipt_url_path = origin + '/receipt/' + json.receipt_id
                 $('.alert-success').remove()
+                $('#confirmtrade').parent().hide()
 
-                $('#main-container').prepend(
-                    `<div class="alert alert-success">
-                Your receipt has been created successfully, you can view it here: <a href="`+ receipt_url_path + `"> ` + receipt_url_path + `</a>
-                </div>`
+                let header = $('#seller-name').parent();
+                header.removeClass('bg-dark').addClass('bg-success');
+                header.text(header.text() + " finished!"); 
+
+                function writeToClipboard(textToCopy, callback) {
+                    navigator.clipboard.writeText(textToCopy)
+                        .then(() => {
+                            // Clipboard write succeeded
+                            if (callback) {
+                                callback(null, 'Text copied to clipboard successfully.');
+                            }
+                        })
+                        .catch((err) => {
+                            // Clipboard write failed
+                            if (callback) {
+                                callback(err, 'Failed to copy text to clipboard.');
+                            }
+                        });
+                }
+
+                // write trade details
+                $('#trade-details-body').append(
+                    `<p>
+                        <b>Total: </b>$<span id="trade-total" class='copy-text'>`+ json.total + `</span>
+                        <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
+                    </p>
+                    <p>
+                        <b>Receipt: </b><span id="trade-receipt" class='copy-text'><a href="`+ receipt_url_path + `"> ` + receipt_url_path + `</a></span>
+                        <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
+                    </p>
+                    <p>
+                        <b>Message: </b><span id="trade-message" class='copy-text'>` + json.trade_message + `</span>
+                        <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
+                    </p>`
                 )
+
+                // listen to parent because button does not yet exist
+                // at the time of the page load
+                $('.btn-outline-secondary').on('click', function (e) {
+                    e.preventDefault(); // Prevent the default anchor behavior
+                    let totalText = $(this).parent().find('.copy-text').text();
+                    writeToClipboard(totalText, (error) => {
+                        if (error) {
+                            window.prompt("Copy to clipboard: Ctrl+C, Enter", totalText);
+                        } else {
+                            const $this = $(this);
+                            const backup = $this.html(); // Store the current HTML
+                            $this.html("Copied!"); // Update the content to "Copied!"
+                            setTimeout(() => {
+                                $this.html(backup); // Restore the original content after 1.5 seconds
+                            }, 1500);
+                        }
+                    });
+                });
             },
             error: function (json) {
                 alert('Make sure to paste the trade on the textbox, including the sellers name, and to include a valid price');
@@ -269,6 +356,30 @@
     function numberWOCommas(x) {
         return parseFloat(x.toString().replaceAll(/,/g, ''));
     }
+
+    /**
+     * This function takes trader's template message as a parameter,
+     * searches for a price number and formats it with commas for easier read.
+     * @param {*} inputString template message from server
+     * @returns template message with formatted prices
+     */
+    function formatTemplateNumbers(inputString) {
+        inputString = escape(inputString);
+
+        // Regular expression to match numbers preceded by a dollar sign
+        var pattern = /\$\d+(,\d{3})*(?:\.\d+)?/g;
+
+        // Replace matched numbers with commas
+        var formattedString = inputString.replace(pattern, function (match) {
+            // Remove dollar sign and commas from the match
+            var number = match.replace(/\$|,/g, '');
+            // Format the number with commas
+            return '$' + parseFloat(number).toLocaleString();
+        });
+
+        return formattedString;
+    }
+
 </script>
 
 <style>
