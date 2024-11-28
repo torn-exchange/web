@@ -48,6 +48,7 @@
     <div class="row">
         <div class="text-center col-12 mb-3">
             <p>You can do calculations on Chrome, Firefox or Torn PDA!</p>
+            <p>Don't forget to set custom trading message in <a href="{% url 'settings' %}">Settings</a>.</p>
             <a class='btn btn-primary'
                 href="https://chromewebstore.google.com/detail/torn-exchange/iggcinpeofcbplffobefiojjgfeoblll"
                 target="_blank">
@@ -99,7 +100,7 @@
                     Trade Details
                 </div>
                 <div class="card-body" id="trade-details-card-body">
-                    <p class="text-muted">Paste trade log in the input area. Trade items will be
+                    <p class="text-muted">Paste trade log in the input area. Trade items will be displayed here.
                 </div>
             </div>
         </div>
@@ -303,6 +304,16 @@
                         });
                 }
 
+                let trade_msg = `<p>
+                        <b>Message: </b>No message. Set one in the Settings.
+                    </p>`;
+                if (json.trade_message) {
+                    trade_msg = `<p>
+                        <b>Message: </b><span id="trade-message" class='copy-text'>` + json.trade_message + `</span>
+                        <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
+                    </p>`;
+                }
+
                 // write trade details
                 $('#trade-details-body').append(
                     `<p>
@@ -313,10 +324,7 @@
                         <b>Receipt: </b><span id="trade-receipt" class='copy-text'><a href="`+ receipt_url_path + `"> ` + receipt_url_path + `</a></span>
                         <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
                     </p>
-                    <p>
-                        <b>Message: </b><span id="trade-message" class='copy-text'>` + json.trade_message + `</span>
-                        <a href="#" class="btn btn-outline-secondary btn-sm active" title='Click to copy to clipboard' role="button" aria-pressed="true">Copy</a>
-                    </p>`
+                    ` + trade_msg
                 )
 
                 // listen to parent because button does not yet exist
