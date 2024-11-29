@@ -33,6 +33,24 @@
   </div>
   {% endif %}
 
+  <div class="row">
+    <div class="text-center col-12">
+      <h1 class="m-4 allerta-font text-center">
+        Analytics
+      </h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="text-center col-12">
+      <a class='btn btn-primary' href="{% url 'all_sellers' %}"><i class="fa-solid fa-user-tie"></i> View all sellers</a>
+      <a class='btn btn-primary' href="{% url 'all_trades' %}"><i class="fa-solid fa-receipt"></i> Full receipt history</a>
+    </div>
+  </div>
+
+
+
+
   {% if has_data == False%}
   <div class="container mt-2">
     You have not yet registered any trades, try creating a trade using the <a
@@ -43,15 +61,14 @@
     <div class="col-md-6 col-sm-12">
       {%include 'main/includes/dashboard_cards/main_statistics.html'%}
     </div>
+
     <div class="col-md-6 col-sm-12">
       {%include 'main/includes/dashboard_cards/top_sellers.html'%}
     </div>
-    <div class="col-md-12 col-sm-12">
-      {%include 'main/includes/dashboard_cards/receipt_history.html'%}
-    </div>
 
+    <!-- Number of trades -->
     <div class="col-md-6 col-sm-12">
-      <div class="card mt-3">
+      <div class="card mt-3 mb-3">
         <div class="card-header bg-dark text-white">
           Number of trades
         </div>
@@ -62,8 +79,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Profits -->
     <div class="col-md-6 col-sm-12">
-      <div class="card mt-3">
+      <div class="card mt-3 mb-3">
         <div class="card-header bg-dark text-white">
           Profits
         </div>
@@ -73,6 +92,11 @@
           </div>
         </div>
       </div>
+    </div>
+
+
+    <div class="col-md-12 col-sm-12 mt-3">
+      {%include 'main/includes/dashboard_cards/latest_trades.html'%}
     </div>
   </div>
 </div>

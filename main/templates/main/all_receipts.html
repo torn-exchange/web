@@ -1,0 +1,92 @@
+{% extends "main/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load custom_tags %}
+{% load humanize %}
+
+<div class='container'>
+  <div class="row mt-3 mb-3">
+    <div class="col-12 text-center">
+      <h1>List of all trades and their receipts</h1>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="text-center col-12">
+      <a class='btn btn-primary' href="{% url 'analytics' %}"><i class="fa-solid fa-circle-left"></i> Back to
+        Summary</a>
+      <a class='btn btn-primary' href="{% url 'all_sellers' %}"><i class="fa-solid fa-user-tie"></i> View all sellers
+        </a>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="text-center col-12">
+      {%include 'main/includes/pagination.html'%}
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-2"></div>
+    <div class="col-8 text-center">
+      <div class=" font-weight-bold text-center text-responsive">
+        <div class='row '>
+          <div class='col-2 text-center'>
+            Link
+          </div>
+          <div class='col-2 text-center'>
+            Name
+          </div>
+          <div class='col-2 text-center'>
+            Date
+          </div>
+          <div class='col-2 text-center'>
+            Price
+          </div>
+          <div class='col-2 text-center'>
+            Profit
+          </div>
+          <div class='col-2 text-center'>
+            Delete Receipt
+          </div>
+  
+        </div>
+      </div>
+      <hr>
+      {% for receipt in receipts%}
+      <div class=" text-center text-responsive">
+        <div class='row  '>
+          <div class='col-2 p-sm-0 m-sm-0'>
+            <a href="{% url 'receipt_view' receipt.receipt_url_string%}" target="_blank"> <u>View</u> </a>
+          </div>
+          <div class='col-2 p-sm-0 m-sm-0'>
+            {{receipt.seller}}
+          </div>
+          <div class='col-2 p-sm-0 m-sm-0'>
+            {{receipt.created_at}}
+          </div>
+          <div class='col-2 p-sm-0 m-sm-0'>
+            ${{receipt.total|intcomma}}
+          </div>
+          <div class='col-2 p-sm-0 m-sm-0'>
+            ${{receipt.profit|intcomma}}
+          </div>
+          <div class='col-2'>
+            <form action="{% url 'delete_receipt' receipt.id %}" method="POST">
+              {% csrf_token %}
+              <button type="button btn btn-primary" class="btn btn-default btn-sm">
+                delete <i class="fas fa-trash-alt"></i>
+              </button>
+            </form>
+          </div>
+  
+        </div>
+      </div>
+      <hr>
+      {% endfor %}
+    </div>
+    <div class="col-2"></div>
+  </div>  
+</div>
+
+{% endblock %}
