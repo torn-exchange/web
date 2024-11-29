@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponseNotFound, JsonResponse, HttpResponseBadRequest
+from django.http import HttpRequest, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
@@ -437,7 +437,10 @@ def price_list(request, identifier=None):
         pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
 
     else:
-        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+        context = {
+            'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
+        }
+        return render(request, 'main/error.html', context)
 
 
     # COUNTING HITS
@@ -604,7 +607,10 @@ def services_list(request, identifier=None):
         pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
 
     else:
-        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+        context = {
+            'error_message': f'Oops, looks like {identifier} does not correspond to a valid service list! Try checking the spelling for any typos.'
+        }
+        return render(request, 'main/error.html', context)
 
     if profile:
         user_settings = Settings.objects.filter(owner=profile).get()
