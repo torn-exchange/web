@@ -86,7 +86,17 @@ def service_names():
         'Other', 
     ]
 
-def return_item_sets(item_names, item_quantities):
+
+def return_item_sets(item_names: List, item_quantities: List):
+    """Check whether plushies and flowers in a trade make a full set
+
+    Args:
+        item_names (List): All items found in a trade
+        item_quantities (List): Quantites of those items in a trade
+
+    Returns:
+        List: Return full plushies and flowers set
+    """    
     item_dict = {}
     for index, value in enumerate(item_names):
         if item_dict.get(value):
@@ -132,7 +142,7 @@ def parse_trade_text(trade_text: str) -> Tuple[str, List, List]:
     normalised_string = trade_text.strip(' ').replace(
         'to the trade.', '').replace(name, '').replace('added', '').strip()
     quantities = [int(a.replace(', ', '')) for a in re.findall(
-        r',{0,1}\s\d{1,13}(?=x\s[a-zA-Z])', trade_text)]
+        r',{0,1}\s\d{1,13}(?=x\s.)', trade_text)]
     items = []
     for quantity, item_string in zip(quantities, normalised_string.split(',')):
         item = item_string.replace(f'{quantity}x ', '').strip()

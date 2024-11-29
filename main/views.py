@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpRequest, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
@@ -437,7 +437,10 @@ def price_list(request, identifier=None):
         pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
 
     else:
-        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+        context = {
+            'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
+        }
+        return render(request, 'main/error.html', context)
 
 
     # COUNTING HITS
@@ -604,7 +607,10 @@ def services_list(request, identifier=None):
         pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
 
     else:
-        return HttpResponseNotFound(f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.')
+        context = {
+            'error_message': f'Oops, looks like {identifier} does not correspond to a valid service list! Try checking the spelling for any typos.'
+        }
+        return render(request, 'main/error.html', context)
 
     if profile:
         user_settings = Settings.objects.filter(owner=profile).get()
@@ -642,9 +648,8 @@ def services_list(request, identifier=None):
 @login_required
 def calculator(request):
     profile = Profile.objects.filter(user=request.user).get()
-    listings = Listing.objects.filter(owner=profile).all()
     all_relevant_items = Item.objects.filter(
-        listing__in=Listing.objects.filter(owner=profile)).all()
+    listing__in=Listing.objects.filter(owner=profile)).all()
     item_types = all_relevant_items.values('item_type').distinct()
     try:
         user_settings = Settings.objects.filter(owner=profile).get()
@@ -713,28 +718,67 @@ def vote_view(request):
         }, status=200)
 
 
-def parse_trade_paste(request):
+# JSON response
+def parse_trade_paste(request: HttpRequest):
+    """Parse trade text from Calculator page and match them with trader's price list
+
+    Args:
+        request (HttpRequest): Full HTTP POST request
+
+    Returns:
+        JSON: All items, quentities and their market prices and trader prices
+    """ 
     if request.method == "POST":
-        username = request.POST.get('profile')
+        username = request.POST.get('profile', '')
         profile = Profile.objects.filter(name=username).get()
         trade_paste = (request.POST.get('prompt', None))
 
         if trade_paste is not None:
             name, item_list, item_quantities = parse_trade_text(trade_paste)
 
-            item_list, item_quantities = return_item_sets(
-                item_list, item_quantities)
+            item_list, item_quantities = return_item_sets(item_list, item_quantities)
+            
+            # Fetch all items in one query
+            items = Item.objects.filter(name__in=item_list)
+    
+             # If no items were found, return an error
+            if not items.exists():
+                return JsonResponse({"error": "No items found matching the given names."}, status=400)
 
-            price_list = [buy_price_from_name(a, profile) for a in item_list]
-            item_urls = [Item.objects.filter(
-                name=a).get().image_url for a in item_list]
-            market_prices = [Item.objects.filter(
-                name=a).get().TE_value for a in item_list]
+            # Fetch listings for the fetched items and the given profile
+            listings = Listing.objects.filter(owner=profile, item__in=items)
 
-            item_list = [escape(a) for a in item_list]
-            name = escape(name)
+            # Create a mapping of item names to their respective objects
+            item_map = {item.name: item for item in items}
 
-            return JsonResponse({"name": name, "items": item_list, "qty": item_quantities, "price": price_list, 'market_prices': market_prices, 'img_url': item_urls}, status=200)
+            # Create a mapping of items to their effective prices
+            listing_map = {listing.item: listing.effective_price for listing in listings}
+            
+            price_list = []
+            item_urls = []
+            market_prices = []
+            escaped_item_list = []
+            for item_name in item_list:
+                if item_name not in item_map:
+                    # Item doesn't exist
+                    return JsonResponse({"error": f"Item '{item_name}' does not exist."}, status=400)
+
+                item = item_map[item_name]
+                price = listing_map.get(item, 0)  # Default to 0 if no listing found
+                price_list.append(price)
+                
+                item_urls.append(item.image_url)
+                market_prices.append(item.TE_value)
+                escaped_item_list.append(item_name)
+
+            return JsonResponse({
+                "name": escape(name), 
+                "items": item_list, 
+                "qty": item_quantities, 
+                "price": price_list, 
+                'market_prices': market_prices, 
+                'img_url': item_urls
+            }, status=200)
 
     return JsonResponse({}, status=400)
 
@@ -863,45 +907,79 @@ def new_extension_get_prices(request):
 def create_receipt(request):
     if request.method == "POST":
         item_names = json.loads(request.POST.get('item_names'))
-        print(item_names)
         item_names = [a[0].replace("&amp;", "&") for a in item_names]
-        print(item_names)
+        
         item_quantities = json.loads(request.POST.get('item_quantities'))
         item_quantities = [a[0] for a in item_quantities]
+        
         item_prices = json.loads(request.POST.get('item_prices'))
         item_prices = [a[0] for a in item_prices]
+        
         try:
             owner_name = request.POST.get('owner_username').strip('"')
         except:
             owner_user_id = request.POST.get('owner_user_id').strip('"')
             owner_name = None
+            
         seller_name = request.POST.get('seller_username').strip('"')
         seller_name = re.sub('<div.*', '', seller_name)
+        
         try:
             owner_profile = Profile.objects.filter(name=owner_name).get()
         except:
             owner_profile = Profile.objects.filter(
-                user__username=owner_user_id).get()
+            user__username=owner_user_id).get()
+            
         trade_receipt = TradeReceipt(owner=owner_profile, seller=seller_name)
         trade_receipt.save()
 
         for i in range(len(item_names)):
             quantity = item_quantities[i]
             price = item_prices[i]
-            # print(item_names[i], quantity, price)
             item = Item.objects.filter(name=item_names[i]).get()
-            # print(f'item trade added with {item},{quantity},{price}')
             item_trade = ItemTrade(
-                owner=owner_profile, item=item, price=price, quantity=quantity, seller=seller_name)
-            # print(item_trade.is_valid())
+                owner=owner_profile, item=item, price=price, quantity=quantity, seller=seller_name
+            )
+            
             if item_trade.is_valid() == 'valid':
                 item_trade.save()
                 trade_receipt.items_trades.add(item_trade)
             else:
                 return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
+        
         trade_receipt.save()
-        # print('receipt has been saved')
-    return JsonResponse({'receipt_id': trade_receipt.receipt_url_string}, status=200)
+    
+    ## CREATE CUSTOM MESSAGE
+    
+    listings_count = TradeReceipt.objects.filter(
+                owner=owner_profile, seller=seller_name
+            ).count()
+        
+    trade_paste_text = owner_profile.settings.receipt_paste_text
+
+    # error handling for when trader hasn't yet set any message in Settings:
+    trade_paste_text = '' if trade_paste_text is None else trade_paste_text
+
+    trade_paste_text = trade_paste_text.replace(
+        '[[seller_name]]', seller_name)
+    trade_paste_text = trade_paste_text.replace(
+        '[[total]]', "${:,.0f}".format(trade_receipt.total))
+    trade_paste_text = trade_paste_text.replace(
+        '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+    trade_paste_text = trade_paste_text.replace(
+        '[[trade_number]]', str(listings_count))
+    trade_paste_text = trade_paste_text.replace(
+        '[[prices_link]]', f'www.tornexchange.com/prices/{owner_profile.name}')
+    trade_paste_text = trade_paste_text.replace(
+        '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
+
+    return JsonResponse({
+        'seller': seller_name,
+        'receipt_id': trade_receipt.receipt_url_string,
+        'trade_message': escape(trade_paste_text),
+        'profit': trade_receipt.profit,
+        'total': trade_receipt.total,
+    }, status=200)
 
 
 @csrf_exempt
@@ -935,7 +1013,8 @@ def new_create_receipt(request):
             trade_receipt.save()
             
             listings_count = TradeReceipt.objects.filter(
-            owner=owner_profile, seller=seller_name).count()
+                owner=owner_profile, seller=seller_name
+            ).count()
             trade_paste_text = owner_profile.settings.receipt_paste_text
 
             # error handling for when trader hasn't yet set any message in Settings:
@@ -984,24 +1063,6 @@ def receipt_view(request, receipt_id=None):
             'error_message': 'Page not found, wrong Receipt ID in the URL'
         }
         return render(request, 'main/error.html', context)
-
-
-def buy_price_from_name(item_name, profile):
-    try:
-        item = Item.objects.get(name=item_name)
-    except Item.DoesNotExist:
-        print(f"Item with name '{item_name}' does not exist.")
-        return 0
-
-    try:
-        listing = Listing.objects.get(owner=profile, item=item)
-        return listing.effective_price
-    except Listing.DoesNotExist:
-        print(f"Listing for item '{item_name}' does not exist for the specified profile.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    return 0
 
 
 def delete_receipt_from_profile(request, receipt_id):

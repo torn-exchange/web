@@ -71,25 +71,25 @@
         </div>
         <div class='col-md-6 col-sm-12 align-content-center text-center'>
             <div class="row">
-                <div class="col-6">
-                    <div class="card mt-3" style="height:200px">
+                <div class="col-md-6 col-sm-12">
+                    <div class="card mt-3">
                         <div class="card-header text-center bg-dark text-gold">
                             <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
                         </div>
-                        <div class="card-body text-left pl-1">
+                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
                             <ul class="list-group list-group-flush">
                                 {% if profile %}
                                     <il class="list-group-item my-0">
                                         <a href="{% url 'edit_price_list' %}">Edit price list</a>
                                     </il>
-                                    <il class="list-group-item my-0">
+                                    <il class="list-group-item my-0 mt-0">
                                         <a href="{% url 'edit_services' %}">Edit custom services</a>
                                     </il>
                                 {% else %}
                                     <il class="list-group-item my-0">
                                         <a href="{% url 'edit_price_list' %}">Create a price list</a>
                                     </il>
-                                    <il class="list-group-item my-0">
+                                    <il class="list-group-item my-0 m-0">
                                         <a href="{% url 'edit_services' %}">Add custom services</a>
                                     </il>
                                 {% endif %}
@@ -98,17 +98,17 @@
                     </div>
                     
                 </div>
-                <div class="col-6">
-                    <div class="card mt-3" style="height:200px">
+                <div class="col-md-6 col-sm-12">
+                    <div class="card mt-3">
                         <div class="card-header text-center bg-dark text-gold">
                             <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
                         </div>
-                        <div class="card-body text-left pl-1">
+                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
                             <ul class="list-group list-group-flush">
-                                <il class="list-group-item my-0">
+                                <il class="list-group-item my-0 mt-0">
                                     <a href="{% url 'listings' %}">Search items and traders</a>
                                 </il>
-                                <il class="list-group-item my-0">
+                                <il class="list-group-item my-0 mt-0">
                                     <a href="{% url 'search_services' %}">Search custom service</a>
                                 </il>
                             </ul>
