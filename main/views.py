@@ -680,7 +680,6 @@ def analytics(request):
     return render(request, 'main/analytics.html', context)
 
 
-@login_required
 def vote_view(request):
     if request.is_ajax and request.method == "POST":
         if request.user.is_authenticated == False:
