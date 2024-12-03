@@ -184,3 +184,5 @@ INTERNAL_IPS = [
     '127.0.0.1',
     'localhost',
 ]
+
+CSRF_FAILURE_VIEW = "main.views.custom_csrf_failure_view"
