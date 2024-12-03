@@ -683,32 +683,51 @@ def analytics(request):
 @login_required
 def vote_view(request):
     if request.is_ajax and request.method == "POST":
+        if request.user.is_authenticated == False:
+            return JsonResponse({
+                "error": "User not logged in",
+            }, status=401)
+        
         profile_name = request.POST.get('owner_username')
         voter_name = request.POST.get('voter_username')
+        
+        if profile_name == voter_name:
+            return JsonResponse({
+                "error": "You can't vote for yourself",
+            }, status=401)
+        
         profile = Profile.objects.filter(name=profile_name).get()
         voter_id = Profile.objects.filter(name=voter_name).get().id
+        
         if voter_id is None:
-            return redirect('login')
+            return JsonResponse({
+                "error": "User not logged in",
+            }, status=401)
+        
         profile_id = profile.id
         direction = request.POST.get('direction')
+        
+        vote_count = profile.votes.count()
+        vote_score = profile.vote_score
 
         direction_to_action = {'up': 0, 'down': 1}
         if profile.votes.exists(voter_id):
-            previous_vote = Vote.objects.filter(
-                user_id=voter_id, object_id=profile_id).get()
+            previous_vote = Vote.objects.filter(user_id=voter_id, object_id=profile_id).get()
             if previous_vote.action == direction_to_action[direction]:
-                pass
+                return JsonResponse({
+                    "error": "You already voted",
+                }, status=400)
             else:
                 if direction == 'up':
                     profile.votes.up(voter_id)
                 elif direction == 'down':
                     profile.votes.down(voter_id)
-
         else:
             if direction == 'up':
                 profile.votes.up(voter_id)
             elif direction == 'down':
                 profile.votes.down(voter_id)
+                
         vote_count = profile.votes.count()
         vote_score = profile.vote_score
         
@@ -717,6 +736,9 @@ def vote_view(request):
             "vote_score": vote_score,
         }, status=200)
 
+    return JsonResponse({
+        "error": "POST request is required for this action.",
+    }, status=400)
 
 # JSON response
 def parse_trade_paste(request: HttpRequest):
@@ -1080,3 +1102,19 @@ def museum_helper(request):
     }
     
     return render(request, 'main/museum_helper.html', context)
+
+
+def custom_csrf_failure_view(request, reason=""):
+    """
+    Handles CSRF failures and returns an appropriate JSON response for APIs.
+    """
+    if request.content_type == "application/json":
+        return JsonResponse(
+            {"error": "CSRF token missing or incorrect.", "details": reason},
+            status=403,
+        )
+    else:
+        return JsonResponse(
+            {"error": "Invalid request. Ensure the CSRF token is included."},
+            status=403,
+        )
