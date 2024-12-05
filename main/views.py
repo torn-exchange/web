@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.clickjacking import xframe_options_exempt
 
 from main.model_utils import get_all_time_leaderboard, get_active_traders, get_most_trades, get_changelog
@@ -680,6 +680,7 @@ def analytics(request):
     return render(request, 'main/analytics.html', context)
 
 
+@csrf_protect
 def vote_view(request):
     if request.is_ajax and request.method == "POST":
         if request.user.is_authenticated == False:
