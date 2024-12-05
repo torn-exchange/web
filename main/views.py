@@ -693,10 +693,24 @@ def vote_view(request):
         if profile_name == voter_name:
             return JsonResponse({
                 "error": "You can't vote for yourself",
-            }, status=401)
+            }, status=400)
         
         profile = Profile.objects.filter(name=profile_name).get()
-        voter_id = Profile.objects.filter(name=voter_name).get().id
+        voter = Profile.objects.filter(name=voter_name).get()
+        voter_id = voter.id
+        
+        try:
+            # Use the logged-in user as the voter
+            voter = request.user.profile  # Assuming a one-to-one relationship between User and Profile
+        except AttributeError:
+            return JsonResponse({
+                "error": "User does not have an associated profile.",
+            }, status=400)
+        
+        if(request.user.profile.torn_id != voter.torn_id):
+            return JsonResponse({
+                "error": "Authenticated user mismatch",
+            }, status=400)
         
         if voter_id is None:
             return JsonResponse({
