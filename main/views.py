@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
@@ -1174,7 +1174,7 @@ def delete_receipt_from_profile(request, receipt_id):
         trade_items = trade_receipt.items_trades.all()
         [a.delete() for a in trade_items]
         trade_receipt.delete()
-    return redirect('analytics')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', 'analytics'))
 
 
 def museum_helper(request):

@@ -1,5 +1,6 @@
 import json
 from html import unescape
+from datetime import datetime
 
 from django.db.models.query import QuerySet
 from django.core.serializers import serialize
@@ -77,6 +78,18 @@ def time_since(value):
     # Returns a string representing "time since" the given datetime.
     if not value:
         return ""
+    
+    # If value is a string, convert it to a datetime object
+    if isinstance(value, str):
+        try:
+            value = datetime.strptime(value, '%Y-%m-%d')  # Assumes date format is 'YYYY-MM-DD'
+            value = timezone.make_aware(value, timezone.get_current_timezone())  # Make the datetime timezone-aware
+        except ValueError:
+            return "Invalid date format"  # Handle invalid string format
+        
+    # Ensure 'value' is timezone-aware
+    if timezone.is_naive(value):
+        value = timezone.make_aware(value, timezone.get_current_timezone())
     
     now = timezone.now()
 

@@ -31,23 +31,25 @@
     <div class="col-8 text-center">
 
       <div class="row m-0 p0">
-        <div class='col-2'></div>
-        <div class='col-4'><strong>Name</strong></div>
-        <div class='col-2'><strong><a title="Order by number of trades" href="?order_by=sellers">Trades</a></strong>
-        </div>
-        <div class='col-3'><strong><a title="ORder by amount of profit" href="?order_by=profit">Profit</a></strong>
-        </div>
+        <div class='col-1'></div>
+        <div class='col-3'><strong>Name</strong></div>
+        <div class='col-1'><strong><a title="Order by number of trades" href="?order_by=sellers">Trades</a></strong></div>
+        <div class='col'><strong><a title="ORder by amount of profit" href="?order_by=profit">Profit</a></strong></div>
+        <div class='col'><strong>Last trade</strong></div>
+        <div class='col'><strong>Time since</strong></div>
       </div>
 
       <hr class="m-0">
 
-      {% for key, value in sellers.items %}
+      {% for name, data in sellers.items %}
       <div class="row m-0 p-0">
-        <div class='col-2 text-center'>#{{forloop.counter}}</div>
-        <div class='col-4'>{{key}} </div>
-        <div class='col-2'>{{value}}</div>
-        {% get_dict_entry top_profits key as profit_per_user%}
-        <div class='col-3'>${{profit_per_user|intcomma}}</div>
+        <div class='col-1 text-center'>#{{forloop.counter}}</div>
+        <div class='col-3'>{{ name }} </div>
+        <div class='col-1'>{{ data.trade_count }}</div>
+        {% get_dict_entry top_profits name as profit_per_user%}
+        <div class='col'>${{profit_per_user|intcomma}}</div>
+        <div class='col'>{{ data.last_traded }} </div>
+        <div class='col'>{{ data.last_traded | time_since }} </div>
       </div>
       {% endfor %}
 

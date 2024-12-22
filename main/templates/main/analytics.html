@@ -94,7 +94,6 @@
       </div>
     </div>
 
-
     <div class="col-md-12 col-sm-12 mt-3">
       {%include 'main/includes/dashboard_cards/latest_trades.html'%}
     </div>
@@ -113,9 +112,9 @@
       name: "Number of Trades",
       data: {{ data_graph_1| safe}}
     }],
-  xaxis: {
-    type: "datetime"
-  }
+    xaxis: {
+      type: "datetime"
+    }
   }
 
 
@@ -130,57 +129,23 @@
       name: "Profits",
       data: {{ data_graph_2| safe}}
     }],
-  dataLabels: {
-    formatter: numberWithCommas,
+    dataLabels: {
+      formatter: numberWithCommas,
+      },
+    xaxis: {
+      type: "datetime"
     },
-  xaxis: {
-    type: "datetime"
-  },
-  yaxis: {
-    labels: {
-      formatter: function (value) {
-        return "$" + numberWithCommas(value);
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return "$" + numberWithCommas(value);
+        }
       }
     }
   }
-  }
-
 
   var chart_2 = new ApexCharts(document.querySelector("#profits_last_week_chart"), options_graph_2);
   chart_2.render();
-
-  //var ctx1 = document.getElementById('profits_last_week_chart').getContext('2d');
-  //console.log(format_values_list({{last_week_profits|safe}}));
-  //var profits_last_week_chart = new Chart(ctx1, {
-  //    type: 'bar',
-  //    data: {
-  //        labels: {{last_week_days|safe}},
-  //        datasets: [{
-  //            data: {{last_week_profits|safe}},
-  //            backgroundColor: 
-  //                'rgba(31,39,57)',
-  //            borderColor:
-  //                'rgba(0, 0, 0)',
-  //            borderWidth: 1
-  //        }]
-  //    },
-  //    options: {
-  //          legend: {
-  //            display: false
-  //        },
-  //        scales: {
-  //            yAxes: [{
-  //                ticks: {
-  //                    beginAtZero: true,
-  //                    callback: function(value, index, values) {
-  //                      return '$' + shortenLargeNumber(value);
-  //                  }
-  //                }
-  //            }]
-  //          }
-  //      }
-  //}
-  //);
 
   function format_values_list(values_list) {
     var output_list = []
