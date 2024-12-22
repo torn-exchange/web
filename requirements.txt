@@ -2,6 +2,7 @@ asgiref==3.7.2
 backports.zoneinfo==0.2.1
 certifi==2020.6.20
 chardet==3.0.4
+charset-normalizer==3.4.0
 crontab==0.22.9
 Django==3.0.8
 django-cors-headers==3.1.0
@@ -20,10 +21,10 @@ psycopg2-binary==2.8.6
 python-dateutil==2.8.1
 python-dotenv==1.0.0
 pytz==2020.1
-requests
+requests==2.32.3
 sentry-sdk==2.19.2
 six==1.15.0
 sqlparse==0.3.1
 typing_extensions==4.9.0
 tzdata==2023.4
-urllib3
+urllib3==2.2.3
