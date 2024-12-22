@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import sentry_sdk
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -186,3 +187,16 @@ INTERNAL_IPS = [
 ]
 
 CSRF_FAILURE_VIEW = "main.views.custom_csrf_failure_view"
+
+if(DEBUG == "true"):
+    SENTRY_DSN=None
+else:
+    SENTRY_DSN=os.getenv('SENTRY_DSN_URL')
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+)
