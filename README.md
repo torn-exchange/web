@@ -27,16 +27,30 @@ This project is only compatible with Python 3.8.10.
     POSTGRES_HOST="localhost"
     POSTGRES_PORT="5432" #default port
 
-    #Django
-    DJANGO_DEBUG="True"
+    # Logging
+    SENTRY_DSN_URL=""
+
+    # Local stuff
+    DJANGO_DEBUG="False"
+
+    CACHE_DIR=""
     ```
 
-4. **Run Migrations**: Apply the database migrations using the following command:
+4. **Set up caching folder**
+    ```
+    mkdir /path/to/cache
+    chmod 755 /path/to/cache
+    ```
+
+    Currently the setup is done for file-based caching. Caching folder should sit outsite the repository/app root folder.
+
+
+5. **Run Migrations**: Apply the database migrations using the following command:
     ```sh
     python manage.py migrate
     ```
 
-5. **Run the Server**: Start the development server using the following command:
+6. **Run the Server**: Start the development server using the following command:
     ```sh
     python manage.py runserver
     ```

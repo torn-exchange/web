@@ -20,10 +20,10 @@ psycopg2-binary==2.8.6
 python-dateutil==2.8.1
 python-dotenv==1.0.0
 pytz==2020.1
-requests==2.24.0
+requests
 sentry-sdk==2.19.2
 six==1.15.0
 sqlparse==0.3.1
 typing_extensions==4.9.0
 tzdata==2023.4
-urllib3==2.2.3
+urllib3

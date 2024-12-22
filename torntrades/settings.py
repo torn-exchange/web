@@ -188,6 +188,10 @@ INTERNAL_IPS = [
 
 CSRF_FAILURE_VIEW = "main.views.custom_csrf_failure_view"
 
+########################
+#### SENTRY LOGGING ####
+########################
+
 if(DEBUG == "true"):
     SENTRY_DSN=None
 else:
@@ -200,3 +204,23 @@ sentry_sdk.init(
     # of transactions for performance monitoring.
     traces_sample_rate=1.0,
 )
+
+
+########################
+#### CACHING ###########
+########################
+
+CACHE_DIR_FOLDER = os.getenv("CACHE_DIR")
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': CACHE_DIR_FOLDER,  # Replace with your desired directory
+        'TIMEOUT': 300,  # Cache timeout in seconds (default is 300 seconds)
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,  # Maximum number of entries in the cache
+            'CULL_FREQUENCY': 3,  # Fraction of entries to cull when max reached
+            'VERSION': 1,
+        },
+    }
+}
