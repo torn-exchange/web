@@ -889,7 +889,6 @@ def parse_trade_paste(request: HttpRequest):
     return JsonResponse({}, status=400)
 
 
-@csrf_exempt
 def extension_get_prices(request):
     if request.is_ajax and request.method == "POST":
         try:
@@ -951,7 +950,6 @@ def extension_get_prices(request):
     return JsonResponse({}, status=400)
 
 
-@csrf_exempt
 def new_extension_get_prices(request):
     if request.method == "POST":
         try:
@@ -1009,7 +1007,6 @@ def new_extension_get_prices(request):
     return JsonResponse({}, status=400)
 
 
-@csrf_exempt
 def create_receipt(request):
     if request.method == "POST":
         item_names = json.loads(request.POST.get('item_names'))
@@ -1088,7 +1085,6 @@ def create_receipt(request):
     }, status=200)
 
 
-@csrf_exempt
 def new_create_receipt(request):
     if request.method == "POST":
         try: 
