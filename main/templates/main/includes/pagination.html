@@ -8,7 +8,7 @@
     {% for num in listings.paginator.page_range%}
         {% if listings.number == num %}
             <a href="?{% param_replace page=num %}" class="p-1"><strong>{{num}}</strong></a>
-            {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} 
+        {% elif num > listings.number|add:'-8' and num < listings.number|add:'8' %} 
             <a href="?{% param_replace page=num %}" class="p-1">{{num}} </a>
         {%endif%}
     {% endfor %}

@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.clickjacking import xframe_options_exempt
+from itertools import islice
 
 from main.model_utils import get_all_time_leaderboard, get_active_traders, get_most_trades, get_changelog
 from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, Company
@@ -675,9 +676,75 @@ def analytics(request):
     except:
         user_settings = None
         
-    context.update({'user_settings': user_settings})
+    # Extract the first 10 items from the dictionary
+    first_10_sellers = dict(islice(context['sellers'].items(), 10))
+    first_30_receipts = context['receipts'][:30]
+        
+    context.update({
+        'user_settings': user_settings,
+        'sellers': first_10_sellers,
+        'receipts': first_30_receipts,
+    })
 
     return render(request, 'main/analytics.html', context)
+
+
+@login_required
+def all_sellers(request: HttpRequest):
+    profile = Profile.objects.filter(user=request.user).get()
+    order_by = request.GET.get('order_by')
+    
+    # TODO: not supporting ordering by profit atm but maybe in the future
+    if order_by == "profit":
+        storage = messages.get_messages(request)
+        storage.used = False
+        messages.error(request, 'Ordering by profit is not yet supported')
+        order_by = "seller"
+        
+    context = return_profile_stats(profile)
+    try:
+        user_settings = Settings.objects.filter(owner=profile).get()
+    except:
+        user_settings = None
+        
+    # set pagination for sellers
+    sellers = list(context["sellers"].items())
+    paginator = Paginator(sellers, 50)
+    page = request.GET.get('page')
+    results = paginator.get_page(page)
+    converted_results = dict(results.object_list)
+        
+    context.update({
+        'page_title': 'List of all sellers - Torn Exchange', 
+        'user_settings': user_settings,
+        'sellers': converted_results,
+        'listings': results # for pagination
+    })
+    
+    return render(request, 'main/all_sellers.html', context)
+
+
+@login_required
+def all_trades(request):
+    profile = Profile.objects.filter(user=request.user).get()
+    context = return_profile_stats(profile)
+    try:
+        user_settings = Settings.objects.filter(owner=profile).get()
+    except:
+        user_settings = None
+        
+    # set pagination for trades
+    paginator = Paginator(context["receipts"], 50)
+    page = request.GET.get('page')
+    results = paginator.get_page(page)
+        
+    context.update({
+        'user_settings': user_settings,
+        'receipts': results,
+        'listings': results # for pagination
+    })
+    
+    return render(request, 'main/all_receipts.html', context)
 
 
 @csrf_protect
@@ -1107,7 +1174,7 @@ def delete_receipt_from_profile(request, receipt_id):
         trade_items = trade_receipt.items_trades.all()
         [a.delete() for a in trade_items]
         trade_receipt.delete()
-    return redirect('analytics')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', 'analytics'))
 
 
 def museum_helper(request):

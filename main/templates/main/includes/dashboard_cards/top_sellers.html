@@ -4,21 +4,21 @@
   <div class="card-header bg-dark text-white">
     Top Sellers
   </div>
-  <div class="card-body small p-0 pl-4 overflow-auto text-responsive" style="height:204px;">
-    <div class="row m-0">
+  <div class="card-body small p-0 overflow-auto text-responsive" style="height:220px;">
+    <div class="row m-0 p0">
       <div class='col-2'></div>
       <div class='col-4'><strong>Name</strong></div>
-      <div class='col-3'><strong>Trades</strong></div>
+      <div class='col-2'><strong>Trades</strong></div>
       <div class='col-3'><strong>Profit</strong></div>
 
     </div>
     <hr class="m-0">
-    {% for key, value in top_sellers.items %}
-    <div class="row">
+    {% for name, data in sellers.items %}
+    <div class="row m-0 p-0">
       <div class='col-2 text-center'>#{{forloop.counter}}</div>
-      <div class='col-4'>{{key}} </div>
-      <div class='col-3'>{{value}}</div>
-      {% get_dict_entry top_profits key as profit_per_user%}
+      <div class='col-4'>{{ name }} </div>
+      <div class='col-2'>{{ data.trade_count }}</div>
+        {% get_dict_entry top_profits name as profit_per_user%}
       <div class='col-3'>${{profit_per_user|intcomma}}</div>
     </div>
     {% endfor %}
