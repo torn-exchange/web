@@ -949,7 +949,7 @@ def extension_get_prices(request):
 
     return JsonResponse({}, status=400)
 
-
+@csrf_exempt
 def new_extension_get_prices(request):
     if request.method == "POST":
         try:
@@ -1084,7 +1084,7 @@ def create_receipt(request):
         'total': trade_receipt.total,
     }, status=200)
 
-
+@csrf_exempt
 def new_create_receipt(request):
     if request.method == "POST":
         try: 
