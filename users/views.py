@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 import json
 from django.views.decorators.csrf import csrf_protect
 import requests
-
+from django.utils.http import url_has_allowed_host_and_scheme
 
 @csrf_protect
 def register(request):
@@ -71,7 +71,7 @@ def login_request(request):
                 
                 messages.success(request, 'Your account has been created')
                 login(request, user)
-                return redirect(request.POST.get('next') or 'home')
+                return redirect(request.GET.get('next') if url_has_allowed_host_and_scheme(request.GET.get('next'), allowed_hosts={request.get_host()}) else 'home')
     else:
         if request.user.is_authenticated:
             messages.error(request, 'You are already logged in!')
