@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -117,7 +118,7 @@ DATABASES = {
         # the name of the depends_on value from docker-compose.yml
         'HOST': os.getenv('POSTGRES_HOST'),
         'PORT': os.getenv('POSTGRES_PORT'),
-        'CONN_MAX_AGE': 600,
+        'CONN_MAX_AGE': 60
     }
 }
 
@@ -203,6 +204,8 @@ sentry_sdk.init(
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     traces_sample_rate=1.0,
+    integrations=[DjangoIntegration()],
+    send_default_pii=True  # Capture user data if applicable
 )
 
 
@@ -223,4 +226,38 @@ CACHES = {
             'VERSION': 1,
         },
     }
+}
+
+
+########################
+#### LOGGING ###########
+########################
+
+ERRORS_FILE = os.getenv("500_ERRORS_FILE")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': ERRORS_FILE,  # Use an absolute path
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,  # Avoid duplicating logs to the root logger
+        },
+    },
 }
