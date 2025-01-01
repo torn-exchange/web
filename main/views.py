@@ -30,6 +30,7 @@ from main.te_utils import categories, merge_items, parse_trade_text, return_item
 from html import escape
 
 
+@cache_page(60 * 60)
 def homepage(request):
     all_time_traders = get_all_time_leaderboard()
     active_traders = get_active_traders()
