@@ -233,31 +233,32 @@ CACHES = {
 #### LOGGING ###########
 ########################
 
-ERRORS_FILE = os.getenv("500_ERRORS_FILE")
+ERROR_LOG = os.getenv("500_ERRORS_FILE")
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+if ERROR_LOG != "":
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+            'file': {
+                'level': 'WARNING',
+                'class': 'logging.FileHandler',
+                'filename': ERROR_LOG,
+            },
         },
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': ERRORS_FILE,  # Use an absolute path
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'WARNING',
+                'propagate': True,
+            },
+            'django.db.backends': {
+                'handlers': ['file'],
+                'level': 'WARNING',
+                'propagate': False,  # Avoid duplicating logs to the root logger
+            },
         },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,  # Avoid duplicating logs to the root logger
-        },
-    },
-}
+    }
