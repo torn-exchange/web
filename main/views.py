@@ -5,7 +5,6 @@ from django.contrib import messages
 from django.conf import settings as project_settings
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.cache import cache_page
 from django.views.decorators.clickjacking import xframe_options_exempt
 from itertools import islice
 
@@ -65,7 +64,6 @@ def about(request):
     return render(request, 'main/about.html', context)
 
 
-@cache_page(60 * 30)
 def listings(request):
     queryset = Listing.objects.all().order_by('-last_updated')
     myFilter = ListingFilter(request.GET, queryset=queryset)
@@ -412,7 +410,6 @@ def edit_price_list(request):
 
 
 @xframe_options_exempt
-@cache_page(60 * 15)
 def price_list(request, identifier=None):
     if identifier is None:
         try:
