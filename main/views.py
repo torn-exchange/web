@@ -411,46 +411,69 @@ def edit_price_list(request):
 
 @xframe_options_exempt
 def price_list(request, identifier=None):
+    """Trader's public price list
+
+    Args:
+        request (HttpObject): Web request or form pOST
+        identifier (string | number, optional): Can be either Torn player name or ID. Defaults to None.
+
+    Returns:
+        render: Rendered HTML template
+    """
     if identifier is None:
-        try:
-            profile = Profile.objects.filter(user=request.user).get()
-            return redirect(reverse('price_list', args=[profile.name]))
-        except:
-            return (redirect(f'login'))
+        if request.user.is_authenticated:
+            profile = (
+                Profile.objects.filter(user=request.user)
+                .order_by('-created_at')
+                .first()
+            )
+            
+            if profile:
+                return redirect(reverse('price_list', args=[profile.name]))
+        
+        messages.error(request, 'You first need to log in to view your price list')
+        return redirect('login')
+
+    if request.user.is_authenticated:
+        profile = (
+            Profile.objects.filter(user=request.user)
+            .order_by('-created_at')
+            .first()
+        )
+        
+        if profile:
+            user_settings = Settings.objects.filter(owner=profile).get()
+        else:
+            user_settings = None
+    else:
+        profile = None
+        user_settings = None
 
     # if the torn_id for the page corresponds to an existing profile
     if Profile.objects.filter(torn_id=identifier).exists():
-        try:
-            # fetches the profile of the visiting user
-            profile = Profile.objects.filter(user=request.user).get()
-        except:
-            profile = None
-            
-        # fetches the profile of the pricelist owner
-        pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
-
-    # fetches the profile of the visiting user using profile name
+        # Fetch the most recent profile with the matching torn_id
+        pricelist_profile = (
+            Profile.objects.filter(torn_id=identifier)
+            .order_by('-created_at')
+            .first()
+        )
     elif Profile.objects.filter(name__iexact=identifier).exists():
-        try:
-            profile = Profile.objects.filter(user=request.user).get()
-        except:
-            profile = None
-        pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
-
+        # Fetch the most recent profile with the matching name
+        pricelist_profile = (
+            Profile.objects.filter(name__iexact=identifier)
+            .order_by('-created_at')
+            .first()
+        )
     else:
         context = {
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
         }
         return render(request, 'main/error.html', context)
 
-
     # COUNTING HITS
-
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
     hit_count_response = HitCountMixin.hit_count(request, hit_count)
 
-    #####
-    
     listings = Listing.objects.filter(
         owner=pricelist_profile).all().order_by('-item__TE_value')
     
@@ -465,11 +488,6 @@ def price_list(request, identifier=None):
     distinct_categories = [a['item__item_type'] for a in all_relevant_items.values('item__item_type').distinct()]
     
     item_types = [x for x in categories() if (x in distinct_categories)]
-
-    if profile:
-        user_settings = Settings.objects.filter(owner=profile).get()
-    else:
-        user_settings = None
         
     owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
     vote_score = pricelist_profile.vote_score
@@ -583,40 +601,54 @@ def edit_services(request):
 
 def services_list(request, identifier=None):
     if identifier is None:
-        try:
-            profile = Profile.objects.filter(user=request.user).get()
-            return redirect(reverse('services_list', args=[profile.name]))
-        except:
-            return (redirect(f'login'))
+        if request.user.is_authenticated:
+            profile = (
+                Profile.objects.filter(user=request.user)
+                .order_by('-created_at')
+                .first()
+            )
+            
+            if profile:
+                return redirect(reverse('services_list', args=[profile.name]))
+        
+        messages.error(request, 'You first need to log in to view your price list')
+        return redirect('login')
+
+    if request.user.is_authenticated:
+        profile = (
+            Profile.objects.filter(user=request.user)
+            .order_by('-created_at')
+            .first()
+        )
+        
+        if profile:
+            user_settings = Settings.objects.filter(owner=profile).get()
+        else:
+            user_settings = None
+    else:
+        profile = None
+        user_settings = None
 
     # if the torn_id for the page corresponds to an existing profile
     if Profile.objects.filter(torn_id=identifier).exists():
-        try:
-            # fetches the profile of the visiting user
-            profile = Profile.objects.filter(user=request.user).get()
-        except:
-            profile = None
-        # fetches the profile of the pricelist owner
-        pricelist_profile = Profile.objects.filter(torn_id=identifier).get()
-
-    # fetches the profile of the visiting user using profile name
+        # Fetch the most recent profile with the matching torn_id
+        pricelist_profile = (
+            Profile.objects.filter(torn_id=identifier)
+            .order_by('-created_at')
+            .first()
+        )
     elif Profile.objects.filter(name__iexact=identifier).exists():
-        try:
-            profile = Profile.objects.filter(user=request.user).get()
-        except:
-            profile = None
-        pricelist_profile = Profile.objects.filter(name__iexact=identifier).get()
-
+        # Fetch the most recent profile with the matching name
+        pricelist_profile = (
+            Profile.objects.filter(name__iexact=identifier)
+            .order_by('-created_at')
+            .first()
+        )
     else:
         context = {
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid service list! Try checking the spelling for any typos.'
         }
         return render(request, 'main/error.html', context)
-
-    if profile:
-        user_settings = Settings.objects.filter(owner=profile).get()
-    else:
-        user_settings = None
     
     owner_services = Services.objects.filter(
         owner=pricelist_profile).all()
@@ -650,7 +682,7 @@ def services_list(request, identifier=None):
 def calculator(request):
     profile = Profile.objects.filter(user=request.user).get()
     all_relevant_items = Item.objects.filter(
-    listing__in=Listing.objects.filter(owner=profile)).all()
+        listing__in=Listing.objects.filter(owner=profile)).all()
     item_types = all_relevant_items.values('item_type').distinct()
     try:
         user_settings = Settings.objects.filter(owner=profile).get()
@@ -833,7 +865,11 @@ def parse_trade_paste(request: HttpRequest):
     """ 
     if request.method == "POST":
         username = request.POST.get('profile', '')
-        profile = Profile.objects.filter(name=username).get()
+        profile = (
+            Profile.objects.filter(name=username)
+            .order_by('-created_at')
+            .first()
+        )
         trade_paste = (request.POST.get('prompt', None))
 
         if trade_paste is not None:
@@ -953,12 +989,18 @@ def new_extension_get_prices(request):
             data = json.loads(request.body)
             user_name = data.get('user_name')
             seller_name = data.get('seller_name')
-            profile = Profile.objects.filter(name__iexact=user_name).get()
+            profile = (
+                Profile.objects.filter(name__iexact=user_name)
+                .order_by('-created_at')
+                .first()
+            )
+            
             items = data.get('items')
             quantities = data.get('quantities')
             items, quantities = return_item_sets(items, quantities)
             listings = []
             items_objects = []
+            
             for i in items:
                 try:
                     # print(i, Listing.objects.get(owner=profile, item__name=i))
@@ -966,13 +1008,16 @@ def new_extension_get_prices(request):
                         owner=profile, item__name=i))
                 except Listing.DoesNotExist:
                     listings.append(None)
+                    
             for i in items:
                 try:
                     items_objects.append(Item.objects.get(name=i))
                 except Item.DoesNotExist:
                     items_objects.append(None)
+                    
             prices = [a.effective_price if a is not None else 0 for a in listings]
             profit_per_item = []
+            
             for i in range(len(listings)):
                 try:
                     profit_per_item.append(
@@ -980,6 +1025,7 @@ def new_extension_get_prices(request):
                 except Exception as e:
                     print(e)
                     profit_per_item.append(0)
+                    
             image_url = [
                 a.image_url if a is not None else '' for a in items_objects]
             market_values = [
