@@ -5,41 +5,41 @@
 {% load static %}
 <div class='container' id='main-container'>
     {% if owner_profile.torn_id == user_profile.torn_id %}
-    {% if user_settings.tutorial == True%}
-    <div class="card bg-info small mt-3">
-        <div class="card-header p-0 m-0">
-            <h5 class='text-center'>
-                Tutorial: Welcome to your Price List
-            </h5>
-        </div>
-        <div class="card-body m-0 p-1">
-            <ul>
-                <li>
-                    Set your buying prices by clicking on the 'Change Prices' button.
-                </li>
-                <li>
-                    Once your prices have been set, you can share the URL of this page to other Torn players, and they
-                    will be able to view your prices and trade with you.
-                </li>
-                <li>
-                    If you have set a profit margin, your prices will automatically update every 10 minutes to match the
-                    market value. Otherwise they will remain the fixed prices which you originally set.
-                </li>
-                <li>
-                    You can add a link to your trades forum thread and customise the message displayed in the textbox at
-                    the top of your price list by visiting your <a href="{% url 'settings' %}">settings</a>.
-                </li>
-            </ul>
-        </div>
-        <div class="card-footer p-0 pb-1">
-            <small class="text-muted text-center pl-2">To turn off help messages go to your <a
-                    href="{% url 'settings' %}">Settings</a>.</small>
+        {% if user_settings.tutorial == True%}
+        <div class="card bg-info small mt-3">
+            <div class="card-header p-0 m-0">
+                <h5 class='text-center'>
+                    Tutorial: Welcome to your Price List
+                </h5>
+            </div>
+            <div class="card-body m-0 p-1">
+                <ul>
+                    <li>
+                        Set your buying prices by clicking on the 'Change Prices' button.
+                    </li>
+                    <li>
+                        Once your prices have been set, you can share the URL of this page to other Torn players, and they
+                        will be able to view your prices and trade with you.
+                    </li>
+                    <li>
+                        If you have set a profit margin, your prices will automatically update every 10 minutes to match the
+                        market value. Otherwise they will remain the fixed prices which you originally set.
+                    </li>
+                    <li>
+                        You can add a link to your trades forum thread and customise the message displayed in the textbox at
+                        the top of your price list by visiting your <a href="{% url 'settings' %}">settings</a>.
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer p-0 pb-1">
+                <small class="text-muted text-center pl-2">To turn off help messages go to your <a
+                        href="{% url 'settings' %}">Settings</a>.</small>
 
+            </div>
         </div>
-    </div>
-
+        {% endif %}
     {% endif %}
-    {% endif %}
+    
     <br>
     <div class=row>
         <div class='col'>
