@@ -11,18 +11,6 @@ from django.utils.timesince import timesince
 
 register = template.Library()
 
-
-@register.filter(name='item_plurals')
-def item_name_plural(item_name):
-    if item_name == 'Defensive':
-        return 'Armor'
-    if item_name in ['Drug', 'Tool', 'Material', 'Car', 'Flower', 'Plushie', 'Booster', 'Enhancer', 'Artifact', 'Energy Drink']:
-        return item_name+'s'
-    if item_name == 'Other':
-        return 'Miscellaneous'
-    return item_name
-
-
 @register.filter(name='jsonify')
 def jsonify(object):
     if isinstance(object, QuerySet):
@@ -57,11 +45,6 @@ def param_replace(context, **kwargs):
     for k in [k for k, v in d.items() if not v]:
         del d[k]
     return d.urlencode()
-
-
-@register.filter
-def get_index(l, i):
-    return l[i]
 
 
 @register.filter(name='replace_spaces')
