@@ -68,7 +68,8 @@ class ListingFilter(django_filters.FilterSet):
             order = self.data['order']
             if order in ['-traders_price', 'traders_price']:
                 queryset = queryset.order_by(order)
-                
+            
+        print("Annotated Queryset:", queryset.query)
         return queryset
     
     status_choices = (
