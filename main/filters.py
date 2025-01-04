@@ -62,6 +62,13 @@ class ListingFilter(django_filters.FilterSet):
                 output_field=IntegerField()  # Final output as Integer
             )   
         )
+        
+        # Ensure the annotated field is used correctly in the queryset
+        if 'order' in self.data:
+            order = self.data['order']
+            if order in ['-traders_price', 'traders_price']:
+                queryset = queryset.order_by(order)
+                
         return queryset
     
     status_choices = (
