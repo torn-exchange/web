@@ -27,19 +27,13 @@ class ListingFilter(django_filters.FilterSet):
         )
     )
     
-    @property
-    def qs(self):
+    def filter_queryset(self, queryset):
         # Annotate the queryset with the computed effective_price
-        queryset = super().qs.annotate(
-            # cannot reuse calculate_effective_price() method here
-            # because this is done on DB level so it needs special SQL-Django ORM mojo
+        queryset = queryset.annotate(
             traders_price = ExpressionWrapper(
                 Round(
                     Case(
-                        # If both discount and price are None, return None
                         When(discount__isnull=True, price__isnull=True, then=Value(None, output_field=IntegerField())),
-                        
-                        # If discount is None and price is not None, use the price
                         When(discount__isnull=True, then=F('price')),
                         
                         # If price is None and discount is not None, calculate the discount price
@@ -59,17 +53,24 @@ class ListingFilter(django_filters.FilterSet):
                         output_field=FloatField()
                     )
                 ),
-                output_field=IntegerField()  # Final output as Integer
-            )   
+                output_field=IntegerField()
+            )
         )
         
+        # Exclude rows where traders_price is 0 or None
+        queryset = queryset.exclude(traders_price=0).exclude(traders_price__isnull=True)
+    
         # Ensure the annotated field is used correctly in the queryset
         if 'order' in self.data:
             order = self.data['order']
             if order in ['-traders_price', 'traders_price']:
                 queryset = queryset.order_by(order)
-                
-        return queryset
+        
+        return super().filter_queryset(queryset)
+    
+    @property
+    def qs(self):
+        return self.filter_queryset(super().qs)
     
     status_choices = (
         ('', 'Any'),
