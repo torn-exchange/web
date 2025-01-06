@@ -137,3 +137,14 @@ def prepopulate_service_desc(service, user_services):
         return ''
     
     return ''
+
+
+@register.filter(name='item_plurals')
+def item_name_plural(item_name):
+    if item_name == 'Defensive':
+        return 'Armor'
+    if item_name in ['Drug', 'Tool', 'Material', 'Car', 'Flower', 'Plushie', 'Booster', 'Enhancer', 'Artifact', 'Energy Drink']:
+        return item_name+'s'
+    if item_name == 'Other':
+        return 'Miscellaneous'
+    return item_name
