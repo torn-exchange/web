@@ -5,8 +5,7 @@ from django.utils.crypto import get_random_string
 
 
 def generate_url_string():
-    string = get_random_string(10)
-    return string
+    return get_random_string(10)
 
 
 ### MODEL ENUMS ###
@@ -145,8 +144,7 @@ class Listing(models.Model):
 
     @property
     def profit_per_item(self):
-        profit = (self.item.TE_value)-(self.effective_price)
-        return profit
+        return (self.item.TE_value)-(self.effective_price)
 
 
 class ItemTrade(models.Model):
@@ -187,7 +185,6 @@ class ItemTrade(models.Model):
         profit = (self.TE_value_at_save*self.quantity) - \
             (self.price * self.quantity)
         return profit
-
 
 class TradeReceipt(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
