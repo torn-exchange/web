@@ -51,6 +51,7 @@ CORS_ALLOW_METHODS = [
     'GET',
     'POST',
     'OPTIONS',
+    'HEAD',
 ]
 
 # Application definition
