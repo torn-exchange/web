@@ -50,6 +50,7 @@ CORS_ALLOW_HEADER = ['access-control-allow-origin']
 CORS_ALLOW_METHODS = [
     'GET',
     'POST',
+    'OPTIONS',
 ]
 
 # Application definition
