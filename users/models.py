@@ -48,6 +48,7 @@ class Settings(models.Model):
         Profile, on_delete=models.CASCADE, related_name='settings')
     trade_list_description = models.CharField(
         max_length=500, null=True, blank=True)
+    trade_enable_sets = models.BooleanField(default=True)
     service_list_description = models.CharField(
         max_length=500, null=True, blank=True)
     link_to_forum_post = models.CharField(

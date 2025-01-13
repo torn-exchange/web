@@ -874,8 +874,9 @@ def parse_trade_paste(request: HttpRequest):
 
         if trade_paste is not None:
             name, item_list, item_quantities = parse_trade_text(trade_paste)
-
-            item_list, item_quantities = return_item_sets(item_list, item_quantities)
+            
+            if profile.settings.trade_enable_sets:
+                item_list, item_quantities = return_item_sets(item_list, item_quantities)
             
             # Fetch all items in one query
             items = Item.objects.filter(name__in=item_list)
@@ -935,7 +936,9 @@ def extension_get_prices(request):
             
             quantities = json.loads(request.POST.get('quantities'))
             
-            items, quantities = return_item_sets(items, quantities)
+            if profile.settings.trade_enable_sets:
+                items, quantities = return_item_sets(items, quantities)
+                
             listings = []
             items_objects = []
             for i in items:
@@ -997,7 +1000,10 @@ def new_extension_get_prices(request):
             
             items = data.get('items')
             quantities = data.get('quantities')
-            items, quantities = return_item_sets(items, quantities)
+            
+            if profile.settings.trade_enable_sets:
+                items, quantities = return_item_sets(items, quantities)
+                
             listings = []
             items_objects = []
             
