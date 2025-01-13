@@ -115,9 +115,12 @@ class Listing(models.Model):
     
     @property
     def effective_price(self):
-       
         # Return computed effective price (read-only)
         return self.calculate_effective_price()
+        
+        # decide on rounding options
+        # rounding_option = self.owner.settings.rounding_option
+        # return self.check_rounding(base_price, rounding_option)
     
     # Computation logic for effective price
     def calculate_effective_price(self):
@@ -136,6 +139,15 @@ class Listing(models.Model):
         
         return round(np.nan_to_num(np.nanmin([discount_price, self.price]))) 
 
+    def check_rounding(self, price, rounding_option):
+        base_price = round(price)
+        
+        if rounding_option == "up":
+            return round_to_nearest_100(base_price, True)
+        elif rounding_option == "down":
+            return round_to_nearest_100(base_price, False)
+        
+        return base_price
     class Meta:
         unique_together = (("owner", "item"),)
 
@@ -204,3 +216,24 @@ class TradeReceipt(models.Model):
     @property
     def profit(self):
         return sum([a.profit for a in self.items_trades.all()])
+
+
+def round_to_nearest_100(value, round_up=True):
+    """
+    Rounds the number to the nearest 100 based on the round_up flag.
+    Numbers below 200 are not rounded.
+
+    Args:
+        value (int): The number to round.
+        round_up (bool): If True, round upward. If False, round downward.
+
+    Returns:
+        int: The rounded number.
+    """
+    if value < 200:
+        return value  # Numbers below $200 are not rounded
+
+    if round_up:
+        return (value + 99) // 100 * 100  # Round upward
+    else:
+        return value // 100 * 100  # Round downward

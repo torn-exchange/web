@@ -48,6 +48,19 @@ class Settings(models.Model):
         Profile, on_delete=models.CASCADE, related_name='settings')
     trade_list_description = models.CharField(
         max_length=500, null=True, blank=True)
+    
+    ROUNDING_CHOICES = [
+        ('none', 'No Rounding'),
+        ('up', 'Round to Nearest 100 Up'),
+        ('down', 'Round to Nearest 100 Down'),
+    ]
+    rounding_option = models.CharField(
+        max_length=10,
+        choices=ROUNDING_CHOICES,
+        default='none',
+        verbose_name="Rounding Option"
+    )
+        
     service_list_description = models.CharField(
         max_length=500, null=True, blank=True)
     link_to_forum_post = models.CharField(
