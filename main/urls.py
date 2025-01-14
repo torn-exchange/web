@@ -18,6 +18,8 @@ from django.conf import settings
 from django.views.generic import TemplateView
 
 from . import views
+from . import api
+
 urlpatterns = [
     path('', views.homepage, name='home'),
     path('edit_price_list', views.edit_price_list, name='edit_price_list'),
@@ -53,6 +55,9 @@ urlpatterns = [
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
+    path('api/', api.api_home, name='api_home'),
+    path('api/test', api.test, name='test'),
+    path('api/get_item_price', api.get_item_price, name='get_item_price'),
 ]
 
 
