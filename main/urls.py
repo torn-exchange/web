@@ -56,7 +56,8 @@ urlpatterns = [
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
     path('api/', api.api_home, name='api_home'),
-    path('api/test', api.test, name='test')
+    path('api/test', api.test, name='test'),
+    path('api/get_item_price', api.get_item_price, name='get_item_price'),
 ]
 
 
