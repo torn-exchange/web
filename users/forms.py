@@ -24,6 +24,7 @@ class SettingsForm(forms.ModelForm):
             'selling_losses',
             'losses_message',
             'trade_list_description',
+            'trade_enable_sets',
             'service_list_description',
             'link_to_forum_post',
             'receipt_paste_text',
@@ -43,6 +44,7 @@ class SettingsForm(forms.ModelForm):
         self.fields['receipt_paste_text'].label = "Receipt Paste Text"
         self.fields['tutorial'].label = "Show page tutorials"
         self.fields['trade_list_description'].label = "Price list description"
+        self.fields['trade_enable_sets'].label = "Enable Plushies and Flowers sets"
         self.fields['service_list_description'].label = "Service list description"
         self.fields['job_seeking'].label = 'Looking for jobs'
         self.fields['selling_company_price_negotiable'].label = 'Price negotiable'
@@ -59,6 +61,7 @@ class SettingsForm(forms.ModelForm):
                   placeholder="Welcome to my price list. Click Start Trade now to start a trade. (Emojis are allowed 🤑) "),
             Field(PrependedText('link_to_forum_post',
                   'https//:www.torn.com/'), placeholder='To'),
+            Field('trade_enable_sets'),
             Field('receipt_paste_text', placeholder='''Paste your receipt message here, you will be able to copy this to the clipboard later. 
 You can use the following variables in your message:
 [[seller_name]] - The name of the seller
