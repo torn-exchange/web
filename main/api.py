@@ -126,7 +126,7 @@ def TE_price(request):
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
 @ce
-def get_item_listening(request):
+def get_item_listenings(request):
     # This is that one where you get all the listings for a specific item on the database and having ranking options
     # Example URL usage: /api/get_item_listening?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
     if request.method == 'GET':
