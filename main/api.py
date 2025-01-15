@@ -81,7 +81,8 @@ def get_profile_details(request):
                 "data": {
                     "name": profile.name,
                     "torn_id": profile.torn_id,
-                    "api_key": profile.api_key,
+                    "activity_status": profile.activity_status,
+                    "last_active": profile.last_active,
                     "created_at": profile.created_at,
                     "updated_at": profile.updated_at,
                 }
