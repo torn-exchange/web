@@ -4,6 +4,9 @@ from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import Listing, Profile, Item
 
+# This variable should make typing faster
+ce = csrf_exempt # Do we have a variable naming scheme? 
+
 """
 The idea here is that /api will respond with a html page and then all the endpoints
 will fall under /api/endpoint/
@@ -16,7 +19,7 @@ def api_home(request):
     return render(request, 'main/api_home.html')
 
 
-@csrf_exempt
+@ce
 def test(request):
     if request.method == 'GET':
         try:
@@ -28,7 +31,7 @@ def test(request):
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
 
-@csrf_exempt
+@ce
 def get_item_price(request):
     if request.method == 'GET':
         try:
@@ -60,7 +63,7 @@ def get_item_price(request):
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
-@csrf_exempt
+@ce
 def get_profile_details(request):
     """
     Example URL usage:
@@ -95,3 +98,30 @@ def get_profile_details(request):
             })
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
+
+@ce
+def TE_price(request):
+    # Gets the TE MV from the database and compares it to torn MV
+    # ExAmple URL usage: /api/TE_price?item_id=<ITEM_ID>
+    if request.method == 'GET':
+        try:
+            item_id = request.GET.get('item_id')
+            item = get_object_or_404(Item, item_id=item_id)
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "item": item.name,
+                    "te_price": item.te_price
+                }
+            })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid request parameters", 
+                "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
