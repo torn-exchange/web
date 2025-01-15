@@ -1,11 +1,8 @@
 import json
-
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import Listing, Profile, Item
-
-from .profile_stats import return_profile_stats
 
 """
 The idea here is that /api will respond with a html page and then all the endpoints
@@ -23,8 +20,7 @@ def api_home(request):
 def test(request):
     if request.method == 'GET':
         try:
-            result = f"API is working"
-
+            result = "API is working"
             return JsonResponse({"status": "success", "result": result})
         except json.JSONDecodeError:
             return JsonResponse({"status": "error", "message": "Invalid JSON"})
@@ -34,7 +30,6 @@ def test(request):
 
 @csrf_exempt
 def get_item_price(request):
-    
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
@@ -56,11 +51,46 @@ def get_item_price(request):
                 })
             else:
                 return JsonResponse({"status": "error", "message": "Listing not found"})
-
         except Exception as E:
             return JsonResponse({
                 "status": "error", 
-                "message": f"Invalid request parameters", "error": str(E)
+                "message": "Invalid request parameters", 
+                "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
+@csrf_exempt
+def get_profile_details(request):
+    """
+    Example URL usage:
+    /api/get_profile_details?user_id=<USER_ID>&api_key=<API_KEY>
+    """
+    if request.method == 'GET':
+        try:
+            user_id = request.GET.get('user_id')
+            api_key = request.GET.get('api_key')
+            
+            profile = get_object_or_404(Profile, torn_id=user_id)
+
+            if profile.api_key != api_key:
+                return JsonResponse({"status": "error", "message": "Authentication failed"})
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "name": profile.name,
+                    "torn_id": profile.torn_id,
+                    "api_key": profile.api_key,
+                    "created_at": profile.created_at,
+                    "updated_at": profile.updated_at,
+                }
+            })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid request parameters", 
+                "error": str(E)
             })
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
