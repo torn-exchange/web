@@ -125,3 +125,37 @@ def TE_price(request):
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
+@ce
+def get_item_listening(request):
+    # This is that one where you get all the listings for a specific item on the database and having ranking options
+    # Example URL usage: /api/get_item_listening?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
+    if request.method == 'GET':
+        try:
+            item_id = request.GET.get('item_id')
+            sort_by = request.GET.get('sort_by')
+            order = request.GET.get('order') # Will work on this later
+
+            item = get_object_or_404(Item, item_id=item_id)
+            listings = Listing.objects.filter(item=item).order_by(sort_by)
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "item": item.name,
+                    "listings": [
+                        {
+                            "trader": listing.owner.name,
+                            "price": listing.effective_price,
+                            "item": listing.item.name
+                        } for listing in listings
+                    ]
+                }
+            })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid request parameters", 
+                "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
