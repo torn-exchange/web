@@ -126,17 +126,23 @@ def TE_price(request):
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
 @ce
+@csrf_exempt
 def get_prices(request):
-    # This is that one where you get all the listings for a specific item on the database and having ranking options
-    # Example URL usage: /api/get_item_listening?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
+    """
+    Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
+    """
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
-            sort_by = request.GET.get('sort_by')
-            order = request.GET.get('order') # Will work on this later
+            sort_by = request.GET.get('sort_by', 'price')  # Default sort by price
+            order = request.GET.get('order', 'asc')  # Default order ascending
 
             item = get_object_or_404(Item, item_id=item_id)
-            listings = Listing.objects.filter(item=item).order_by(sort_by)
+            listings = Listing.objects.filter(item=item)
+
+            if order == 'desc':
+                sort_by = f'-{sort_by}'
+            listings = listings.order_by(sort_by)
 
             return JsonResponse({
                 "status": "success",
