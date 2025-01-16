@@ -66,7 +66,9 @@ urlpatterns = [
     path('api/te_price', api.TE_price, name='TE_price'),
     path('api/fetch_prices', api.fetch_prices, name='fetch_prices'),
     path('api/fetch_best_price', api.fetch_best_price, name='fetch_best_price'),
-
+    path('api/get_item_price', api.get_item_price, name='get_item_price'),
+    path('api/receipts', api.receipts, name='api_receipts'),
+    path('api/sellers', api.sellers, name='api_sellers'),
 ]
 
 if settings.DEBUG:

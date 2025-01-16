@@ -707,10 +707,14 @@ def analytics(request):
         user_settings = Settings.objects.filter(owner=profile).get()
     except:
         user_settings = None
-        
-    # Extract the first 10 items from the dictionary
-    first_10_sellers = dict(islice(context['sellers'].items(), 10))
-    first_30_receipts = context['receipts'][:30]
+    
+    if len(context['sellers']) > 0:
+        # Extract the first 10 items from the dictionary
+        first_10_sellers = dict(islice(context['sellers'].items(), 10))
+        first_30_receipts = context['receipts'][:30]
+    else:
+        first_10_sellers = {}
+        first_30_receipts = {}
         
     context.update({
         'user_settings': user_settings,

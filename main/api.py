@@ -1,9 +1,14 @@
+import csv
 import json
+from io import StringIO
+
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Listing, Profile, Item
+
+from main.profile_stats import return_profile_stats
+from .models import Item, Listing, Profile, TradeReceipt
 
 # This variable should make typing faster
 ce = csrf_exempt
@@ -63,6 +68,7 @@ def price(request):
             })
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
 
 @ce
 def get_profile_details(request):
@@ -213,3 +219,138 @@ def fetch_best_price(request):
             })
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
+@csrf_exempt
+def receipts(request):
+    if request.method == 'GET':
+        try:
+            key = request.GET.get('key')
+            output_format = request.GET.get('format')
+            page = int(request.GET.get('page', 1))
+            per_page = int(request.GET.get('per_page', 100))
+            
+            profile = Profile.objects.filter(api_key=key).get()
+            receipts = TradeReceipt.objects.filter(owner=profile).all().order_by('-created_at')
+            
+            paginator = Paginator(receipts, per_page)
+            try:
+                paged_receipts = paginator.page(page)
+            except PageNotAnInteger:
+                paged_receipts = paginator.page(1)
+            except EmptyPage:
+                paged_receipts = paginator.page(paginator.num_pages)
+            
+            data = [
+                {
+                    "created_at": receipt.created_at,
+                    "seller": receipt.seller,
+                    "total": receipt.total,
+                    "profit": receipt.profit,
+                    "url": f'tornexchange.com/receipt/{receipt.receipt_url_string}',
+                }
+                for receipt in paged_receipts
+            ]
+            
+            if output_format == "csv":
+                return export_receipts_csv(data)
+            
+            return JsonResponse({
+                    "status": "success",
+                    "meta": {
+                        "count": receipts.count(),
+                        "page": page,
+                        "per_page": per_page,
+                        "total_pages": paginator.num_pages,
+                    },
+                    "data": data
+                })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error", 
+                "message": f"Invalid request parameters", "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
+
+@csrf_exempt
+def sellers(request):
+    if request.method == 'GET':
+        try:
+            key = request.GET.get('key')
+            outputFormat = request.GET.get('format')
+            
+            profile = Profile.objects.filter(api_key=key).get()
+            raw_data = return_profile_stats(profile)
+            
+            sellers = raw_data['sellers']
+            profits = raw_data['top_profits']
+            
+            data = [{
+                "name": name,
+                "trades": int(item['trade_count']),
+                "profit": int(profits.get(name, 0)),
+                "last_traded": str(item['last_traded']),
+                }
+                for name, item in sellers.items()
+            ]
+            
+            if outputFormat == "csv":
+                return export_sellers_csv(data)
+            
+            return JsonResponse({
+                    "status": "success",
+                    "meta": {
+                        "count": len(sellers),
+                    },
+                    "data": data
+                })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error", 
+                "message": f"Invalid request parameters", "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+
+
+def export_receipts_csv(data):
+    # Create an in-memory file-like object
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=["created_at", "seller", "url"])
+    
+    # Write the header
+    writer.writeheader()
+
+    # Write the data rows
+    for row in data:
+        writer.writerow(row)
+
+    # Prepare the HTTP response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="receipts.csv"'
+
+    # Write the CSV data to the response
+    response.write(output.getvalue())
+    return response
+
+
+def export_sellers_csv(data):
+    # Create an in-memory file-like object
+    output = StringIO()
+    writer = csv.DictWriter(output, fieldnames=["name", "trades", "profit", "last_traded"])
+    
+    # Write the header
+    writer.writeheader()
+
+    # Write the data rows
+    for row in data:
+        writer.writerow(row)
+
+    # Prepare the HTTP response
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="receipts.csv"'
+
+    # Write the CSV data to the response
+    response.write(output.getvalue())
+    return response
