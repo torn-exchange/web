@@ -20,9 +20,9 @@ class ListingFilter(django_filters.FilterSet):
     order_by = OrderingFilter(
         label='Sort By', 
         choices=(
-            ('-traders_price', 'Price (Highest to Lowest'),
+            ('-traders_price', 'Price (Highest to Lowest)'),
             ('traders_price', 'Price (Lowest to Highest)'),
-            ('-owner__vote_score', 'Rating (Highest to Lowest'),
+            ('-owner__vote_score', 'Rating (Highest to Lowest)'),
             ('owner__vote_score', 'Rating (Lowest to Highest)'),
         )
     )
