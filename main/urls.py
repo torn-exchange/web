@@ -56,6 +56,7 @@ urlpatterns = [
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt')),
     
     # API
     path('api/', api.api_home, name='api_home'),
