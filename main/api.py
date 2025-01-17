@@ -2,6 +2,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Listing, Profile, Item
 
 # This variable should make typing faster
@@ -124,13 +125,14 @@ def TE_price(request):
 @ce
 def fetch_prices(request):
     """
-    Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
+    Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
     """
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
             sort_by = request.GET.get('sort_by', 'price')  # Default sort by price
             order = request.GET.get('order', 'asc')  # Default order ascending
+            page = request.GET.get('page', '1')
 
             item = get_object_or_404(Item, item_id=item_id)
             listings = Listing.objects.filter(item=item)
@@ -139,16 +141,31 @@ def fetch_prices(request):
                 sort_by = f'-{sort_by}'
             listings = listings.order_by(sort_by)
 
+            paginator = Paginator(listings, 10)  # Show 10 per page
+
+            try:
+                page = int(page)
+                paged_listings = paginator.page(page)
+            except PageNotAnInteger:
+                paged_listings = paginator.page(1)
+            except EmptyPage:
+                paged_listings = paginator.page(paginator.num_pages)
+
             return JsonResponse({
                 "status": "success",
                 "data": {
                     "item": item.name,
+                    "meta": {
+                        "total_listings": paginator.count,
+                        "total_pages": paginator.num_pages,
+                        "current_page": paged_listings.number,
+                    },
                     "listings": [
                         {
                             "trader": listing.owner.name,
                             "price": listing.effective_price,
                             "item": listing.item.name
-                        } for listing in listings
+                        } for listing in paged_listings
                     ]
                 }
             })
@@ -156,7 +173,7 @@ def fetch_prices(request):
             return JsonResponse({
                 "status": "error",
                 "message": "Invalid request parameters", 
-                "error": str(E)
+                "error": str(E),
             })
     else:
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
@@ -164,23 +181,30 @@ def fetch_prices(request):
 @ce
 def fetch_best_price(request):
     """
-    Example URL usage: /api/get_best_price?item_id=<ITEM_ID>
+    Example URL usage: /api/fetch_best_price?item_id=<ITEM_ID>
     """
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
             item = get_object_or_404(Item, item_id=item_id)
 
-            listing = Listing.objects.filter(item=item).order_by('effective_price').first()
+            listing = Listing.objects.filter(item=item).order_by('price').first()
 
-            return JsonResponse({
-                "status": "success",
-                "data": {
-                    "item": item.name,
-                    "trader": listing.owner.name,
-                    "price": listing.effective_price
-                }
-            })
+            if listing:
+                return JsonResponse({
+                    "status": "success",
+                    "data": {
+                        "item": item.name,
+                        "trader": listing.owner.name,
+                        "price": listing.effective_price,
+                    }
+                })
+            else:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "No listings found for the specified item"
+                })
+            
         except Exception as E:
             return JsonResponse({
                 "status": "error",
