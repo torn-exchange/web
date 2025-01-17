@@ -5,11 +5,11 @@ from django.http import JsonResponse
 from .models import Listing, Profile, Item
 
 # This variable should make typing faster
-ce = csrf_exempt # Do we have a variable naming scheme? 
+ce = csrf_exempt
 
 """
 The idea here is that /api will respond with a html page and then all the endpoints
-will fall under /api/endpoint/
+will fall under /api/endpoint
 
 so I will start of with a /api/test endpoint that will respond with json output of the api status
 
@@ -32,7 +32,7 @@ def test(request):
 
 
 @ce
-def get_item_price(request):
+def price(request):
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
@@ -67,17 +67,12 @@ def get_item_price(request):
 def get_profile_details(request):
     """
     Example URL usage:
-    /api/get_profile_details?user_id=<USER_ID>&api_key=<API_KEY>
+    /api/get_profile_details?user_id=<USER_ID>
     """
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
-            api_key = request.GET.get('api_key')
-            
             profile = get_object_or_404(Profile, torn_id=user_id)
-
-            if profile.api_key != api_key:
-                return JsonResponse({"status": "error", "message": "Authentication failed"})
 
             return JsonResponse({
                 "status": "success",
@@ -113,7 +108,8 @@ def TE_price(request):
                 "status": "success",
                 "data": {
                     "item": item.name,
-                    "te_price": item.te_price
+                    "te_price": item.TE_value,
+                    "torn_price": item.market_value
                 }
             })
         except Exception as E:
@@ -126,8 +122,7 @@ def TE_price(request):
         return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
 
 @ce
-@csrf_exempt
-def get_prices(request):
+def fetch_prices(request):
     """
     Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>
     """
@@ -155,6 +150,35 @@ def get_prices(request):
                             "item": listing.item.name
                         } for listing in listings
                     ]
+                }
+            })
+        except Exception as E:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid request parameters", 
+                "error": str(E)
+            })
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+    
+@ce
+def fetch_best_price(request):
+    """
+    Example URL usage: /api/get_best_price?item_id=<ITEM_ID>
+    """
+    if request.method == 'GET':
+        try:
+            item_id = request.GET.get('item_id')
+            item = get_object_or_404(Item, item_id=item_id)
+
+            listing = Listing.objects.filter(item=item).order_by('effective_price').first()
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "item": item.name,
+                    "trader": listing.owner.name,
+                    "price": listing.effective_price
                 }
             })
         except Exception as E:
