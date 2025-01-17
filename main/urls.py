@@ -60,10 +60,10 @@ urlpatterns = [
     # API
     path('api/', api.api_home, name='api_home'),
     path('api/test', api.test, name='test'),
-    path('api/price', api.get_item_price, name='get_item_price'),
+    path('api/price', api.price, name='price'),
     path('api/get_profile_details', api.get_profile_details, name='get_profile_details'),
     path('api/te_price', api.TE_price, name='TE_price'),
-    path('api/fetch_prices', api.get_prices, name='get_prices'),
+    path('api/fetch_prices', api.fetch_prices, name='fetch_prices'),
 ]
 
 if settings.DEBUG:
