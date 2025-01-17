@@ -222,6 +222,14 @@ def fetch_best_price(request):
 
 @csrf_exempt
 def receipts(request):
+    """Get all receipts for a user
+
+    Args:
+        request (HttpRequest): HttpRequest object
+
+    Returns:
+        JSON: structured data of all receipts for a user
+    """    
     if request.method == 'GET':
         try:
             key = request.GET.get('key')
@@ -275,6 +283,14 @@ def receipts(request):
 
 @csrf_exempt
 def sellers(request):
+    """Get all sellers (customers) for a user
+
+    Args:
+        request (HTTPRequest): HTTPRequest object
+
+    Returns:
+        JSON: structured data of all sellers for a user
+    """    
     if request.method == 'GET':
         try:
             key = request.GET.get('key')
@@ -317,7 +333,7 @@ def sellers(request):
 def export_receipts_csv(data):
     # Create an in-memory file-like object
     output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=["created_at", "seller", "url"])
+    writer = csv.DictWriter(output, fieldnames=["created_at", "seller", "total", "profit", "url"])
     
     # Write the header
     writer.writeheader()
