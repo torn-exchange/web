@@ -6,6 +6,7 @@ from itertools import islice
 
 from django.conf import settings as project_settings
 from django.contrib import messages
+from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F
@@ -30,14 +31,26 @@ from vote.models import Vote
 
 
 def homepage(request):
-    all_time_traders = get_all_time_leaderboard()
-    active_traders = get_active_traders()
-    most_receipts = get_most_trades()
-    created_today, changes_this_week, changes_this_month = get_changelog()
+    cached_data = cache.get('hompeage_data')
     
+    if cached_data:
+        print("Using cached data for homepage")
+        # Unpack the cached data
+        all_time_traders, active_traders, most_receipts, created_today, changes_this_week, changes_this_month = cached_data
+    else:
+        print("Computing data for homepage")
+        # Compute the data if not available in the cache
+        all_time_traders = get_all_time_leaderboard()
+        active_traders = get_active_traders()
+        most_receipts = get_most_trades()
+        created_today, changes_this_week, changes_this_month = get_changelog()
+        
+        # Cache the computed data
+        cache.set('hompeage_data', (all_time_traders, active_traders, most_receipts, created_today, changes_this_week, changes_this_month), 60*60*1)
+     
     try:
-        profile = Profile.objects.filter(user=request.user).get()
-        user_settings = Settings.objects.filter(owner=profile).get()
+        profile = Profile.objects.select_related('settings').get(user=request.user)
+        user_settings = profile.settings
     except:
         profile = None
         user_settings = None
