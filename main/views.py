@@ -1251,3 +1251,10 @@ def custom_csrf_failure_view(request, reason=""):
             {"error": "Invalid request. Ensure the CSRF token is included."},
             status=403,
         )
+
+
+def custom_404(request, exception=None):
+    context = {
+        'error_message': 'Page not found'
+    }
+    return render(request, 'main/error.html', context, status=404)

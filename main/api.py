@@ -30,11 +30,11 @@ def test(request):
     if request.method == 'GET':
         try:
             result = "API is working"
-            return JsonResponse({"status": "success", "result": result})
+            return js("success", result)
         except json.JSONDecodeError:
-            return JsonResponse({"status": "error", "message": "Invalid JSON"})
+            return je("Invalid JSON")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
 
 @ce
@@ -59,22 +59,18 @@ def price(request):
                     }
                 })
             else:
-                return JsonResponse({"status": "error", "message": "Listing not found"})
+                return je("Listing not found")
         except Exception as E:
-            return JsonResponse({
-                "status": "error", 
-                "message": "Invalid request parameters", 
-                "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
 
 @ce
-def get_profile_details(request):
+def profile(request):
     """
     Example URL usage:
-    /api/get_profile_details?user_id=<USER_ID>
+    /api/profile?user_id=<USER_ID>
     """
     if request.method == 'GET':
         try:
@@ -93,13 +89,9 @@ def get_profile_details(request):
                 }
             })
         except Exception as E:
-            return JsonResponse({
-                "status": "error",
-                "message": "Invalid request parameters", 
-                "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
 
 @ce
@@ -110,26 +102,22 @@ def TE_price(request):
         try:
             item_id = request.GET.get('item_id')
             item = get_object_or_404(Item, item_id=item_id)
-
-            return JsonResponse({
-                "status": "success",
-                "data": {
+            
+            data = {
                     "item": item.name,
                     "te_price": item.TE_value,
                     "torn_price": item.market_value
                 }
-            })
+
+            return js(data)
         except Exception as E:
-            return JsonResponse({
-                "status": "error",
-                "message": "Invalid request parameters", 
-                "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
+
 
 @ce
-def fetch_prices(request):
+def listings(request):
     """
     Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
     """
@@ -176,18 +164,15 @@ def fetch_prices(request):
                 }
             })
         except Exception as E:
-            return JsonResponse({
-                "status": "error",
-                "message": "Invalid request parameters", 
-                "error": str(E),
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
-    
+        return je("Invalid HTTP method")
+
+
 @ce
-def fetch_best_price(request):
+def best_listing(request):
     """
-    Example URL usage: /api/fetch_best_price?item_id=<ITEM_ID>
+    Example URL usage: /api/best_listing?item_id=<ITEM_ID>
     """
     if request.method == 'GET':
         try:
@@ -197,30 +182,21 @@ def fetch_best_price(request):
             listing = Listing.objects.filter(item=item).order_by('price').first()
 
             if listing:
-                return JsonResponse({
-                    "status": "success",
-                    "data": {
+                return js({
                         "item": item.name,
                         "trader": listing.owner.name,
                         "price": listing.effective_price,
-                    }
-                })
+                    })
             else:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "No listings found for the specified item"
-                })
+                return je("No listings found for the specified item")
             
         except Exception as E:
-            return JsonResponse({
-                "status": "error",
-                "message": "Invalid request parameters", 
-                "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
-@csrf_exempt
+
+@ce
 def receipts(request):
     """Get all receipts for a user
 
@@ -260,28 +236,23 @@ def receipts(request):
             ]
             
             if output_format == "csv":
-                return export_receipts_csv(data)
+                return export_to_csv(data, 'receipts')
             
-            return JsonResponse({
-                    "status": "success",
-                    "meta": {
-                        "count": receipts.count(),
-                        "page": page,
-                        "per_page": per_page,
-                        "total_pages": paginator.num_pages,
-                    },
-                    "data": data
-                })
+            meta = {
+                "count": receipts.count(),
+                "page": page,
+                "per_page": per_page,
+                "total_pages": paginator.num_pages,
+            }
+            
+            return js(data, meta)
         except Exception as E:
-            return JsonResponse({
-                "status": "error", 
-                "message": f"Invalid request parameters", "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
 
-@csrf_exempt
+@ce
 def sellers(request):
     """Get all sellers (customers) for a user
 
@@ -312,61 +283,54 @@ def sellers(request):
             ]
             
             if outputFormat == "csv":
-                return export_sellers_csv(data)
+                return export_to_csv(data, 'sellers')
             
-            return JsonResponse({
-                    "status": "success",
-                    "meta": {
-                        "count": len(sellers),
-                    },
-                    "data": data
-                })
+            meta = {
+                "count": len(sellers),
+            }
+            
+            return js(data, meta)
         except Exception as E:
-            return JsonResponse({
-                "status": "error", 
-                "message": f"Invalid request parameters", "error": str(E)
-            })
+            return je("Invalid request parameters")
     else:
-        return JsonResponse({"status": "error", "message": "Invalid HTTP method"})
+        return je("Invalid HTTP method")
 
 
-def export_receipts_csv(data):
-    # Create an in-memory file-like object
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=["created_at", "seller", "total", "profit", "url"])
+## HELPER FUNCTIONS
+
+def export_to_csv(data, filename):
+    """
+    Exports data to CSV format.
     
-    # Write the header
-    writer.writeheader()
-
-    # Write the data rows
-    for row in data:
-        writer.writerow(row)
-
-    # Prepare the HTTP response
+    :param data: List of dictionaries containing the data to be exported.
+    :param filename: The name of the file to be exported.
+    :return: HttpResponse with CSV data.
+    """
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="receipts.csv"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
 
-    # Write the CSV data to the response
-    response.write(output.getvalue())
+    writer = csv.writer(response)
+    
+    if data:
+        # Write headers
+        writer.writerow(data[0].keys())
+        
+        # Write data rows
+        for row in data:
+            writer.writerow(row.values())
+
     return response
 
 
-def export_sellers_csv(data):
-    # Create an in-memory file-like object
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=["name", "trades", "profit", "last_traded"])
-    
-    # Write the header
-    writer.writeheader()
+def api_404(request, exception=None):
+    return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
 
-    # Write the data rows
-    for row in data:
-        writer.writerow(row)
 
-    # Prepare the HTTP response
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="receipts.csv"'
+def js(data, meta=None):
+    if(meta):
+        return JsonResponse({"status": "success", "meta": meta, "data": data})
+    return JsonResponse({"status": "success", "data": data})
 
-    # Write the CSV data to the response
-    response.write(output.getvalue())
-    return response
+
+def je(message):
+    return JsonResponse({"status": "error", "message": message})
