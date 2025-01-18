@@ -69,12 +69,12 @@ urlpatterns = [
     
     # API
     path('api/', api.api_home, name='api_home'),
-    path('api/test', api.test, name='test'),
-    path('api/price', api.price, name='price'),
-    path('api/profile', api.profile, name='profile'),
-    path('api/te_price', api.TE_price, name='TE_price'),
-    path('api/listings', api.listings, name='listings'),
-    path('api/best_listing', api.best_listing, name='best_listing'),
+    path('api/status', api.test, name='api_status'),
+    path('api/price', api.price, name='api_price'),
+    path('api/profile', api.profile, name='api_profile'),
+    path('api/te_price', api.TE_price, name='api_TE_price'),
+    path('api/listings', api.listings, name='api_listings'),
+    path('api/best_listing', api.best_listing, name='api_best_listing'),
     path('api/receipts', api.receipts, name='api_receipts'),
     path('api/sellers', api.sellers, name='api_sellers'),
 ]
