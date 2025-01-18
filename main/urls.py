@@ -15,10 +15,17 @@ Including another URLconf
 """
 from django.urls import path, include
 from django.conf import settings
+from django.conf.urls import handler404
 from django.views.generic import TemplateView
 
 from . import views
 from . import api
+
+def custom_404_handler(request, exception=None):
+    if request.path.startswith('/api/'):
+        return api.api_404(request, exception)
+    else:
+        return views.custom_404(request, exception)
 
 urlpatterns = [
     # REGULAR SITE
@@ -55,19 +62,24 @@ urlpatterns = [
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
+    
+    # STATIC FILES
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt')),
     
     # API
     path('api/', api.api_home, name='api_home'),
-    path('api/test', api.test, name='test'),
-    path('api/price', api.price, name='price'),
-    path('api/get_profile_details', api.get_profile_details, name='get_profile_details'),
-    path('api/te_price', api.TE_price, name='TE_price'),
-    path('api/fetch_prices', api.fetch_prices, name='fetch_prices'),
-    path('api/fetch_best_price', api.fetch_best_price, name='fetch_best_price'),
-
+    path('api/status', api.test, name='api_status'),
+    path('api/price', api.price, name='api_price'),
+    path('api/profile', api.profile, name='api_profile'),
+    path('api/te_price', api.TE_price, name='api_TE_price'),
+    path('api/listings', api.listings, name='api_listings'),
+    path('api/best_listing', api.best_listing, name='api_best_listing'),
+    path('api/receipts', api.receipts, name='api_receipts'),
+    path('api/sellers', api.sellers, name='api_sellers'),
 ]
+
+handler404 = 'main.urls.custom_404_handler'
 
 if settings.DEBUG:
     import debug_toolbar

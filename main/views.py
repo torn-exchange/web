@@ -1,32 +1,31 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
-from django.contrib import messages
-from django.conf import settings as project_settings
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.clickjacking import xframe_options_exempt
+import json
+import re
+from html import escape
 from itertools import islice
 
-from main.model_utils import get_all_time_leaderboard, get_active_traders, get_most_trades, get_changelog
-from .models import Item, Listing, Service, Services, TradeReceipt, ItemTrade, Company
-from .filters import ListingFilter, EmployeeListingFilter, CompanyListingFilter, ServicesFilter
-from users.models import Profile, Settings
-from users.forms import SettingsForm
+from django.conf import settings as project_settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-import re
-import json
 from django.db.models import F
-from .profile_stats import return_profile_stats
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
-
-# Create your views here.
-from vote.models import Vote
-from hitcount.views import HitCountMixin
 from hitcount.models import HitCount
-from main.te_utils import categories, merge_items, parse_trade_text, return_item_sets, dictionary_of_categories, service_categories, get_services_view
-
-from html import escape
+from hitcount.views import HitCountMixin
+from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter
+from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_changelog,
+                              get_most_trades)
+from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt
+from main.profile_stats import return_profile_stats
+from main.te_utils import (categories, dictionary_of_categories, get_services_view,
+                           merge_items, parse_trade_text, return_item_sets, service_categories)
+from users.forms import SettingsForm
+from users.models import Profile, Settings
+from vote.models import Vote
 
 
 def homepage(request):
@@ -707,10 +706,14 @@ def analytics(request):
         user_settings = Settings.objects.filter(owner=profile).get()
     except:
         user_settings = None
-        
-    # Extract the first 10 items from the dictionary
-    first_10_sellers = dict(islice(context['sellers'].items(), 10))
-    first_30_receipts = context['receipts'][:30]
+    
+    if len(context['sellers']) > 0:
+        # Extract the first 10 items from the dictionary
+        first_10_sellers = dict(islice(context['sellers'].items(), 10))
+        first_30_receipts = context['receipts'][:30]
+    else:
+        first_10_sellers = {}
+        first_30_receipts = {}
         
     context.update({
         'user_settings': user_settings,
@@ -1247,3 +1250,10 @@ def custom_csrf_failure_view(request, reason=""):
             {"error": "Invalid request. Ensure the CSRF token is included."},
             status=403,
         )
+
+
+def custom_404(request, exception=None):
+    context = {
+        'error_message': 'Page not found'
+    }
+    return render(request, 'main/error.html', context, status=404)
