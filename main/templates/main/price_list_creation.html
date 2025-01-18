@@ -5,6 +5,13 @@
 
 <div class='container'>
 
+    <!-- CUSTOM COLOR FOR TORNPAL LINKS -->
+    <style>
+        .link-blue a {
+            color: #007bff;
+        }
+    </style>
+
     {% if user_settings.tutorial == True%}
     <div class="card bg-info small mt-3">
         <div class="card-header p-0 m-0">
@@ -160,7 +167,13 @@
                                     <tr class="m-0 p-0">
                                         <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
                                                 src="{{ item.image_url }}" style="width:50%;"></td>
-                                        <td style='width:13%;' class='text-center'>{{item.name}}</td>
+                                        <td style='width:13%;' class='text-center link-blue'>
+                                            <a href="https://tornpal.com/markets/item/{{ item.item_id }}?referer=tornexchange.com" 
+                                            title="Open TornPal to check latest market offer" 
+                                            target="_blank">
+                                                {{item.name}}
+                                            </a>
+                                        </td>
                                         <td style='width:15%;' class='text-center torn_market_value'>
                                             ${{item.market_value|intcomma}}
                                         </td>
