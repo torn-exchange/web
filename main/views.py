@@ -449,15 +449,11 @@ def price_list(request, identifier=None):
 
     if request.user.is_authenticated:
         profile = (
-            Profile.objects.filter(user=request.user)
+            Profile.objects.select_related('settings').filter(user=request.user)
             .order_by('-created_at')
             .first()
         )
-        
-        if profile:
-            user_settings = Settings.objects.filter(owner=profile).get()
-        else:
-            user_settings = None
+        user_settings = profile.settings
     else:
         profile = None
         user_settings = None
@@ -473,40 +469,50 @@ def price_list(request, identifier=None):
     elif Profile.objects.filter(name__iexact=identifier).exists():
         # Fetch the most recent profile with the matching name
         pricelist_profile = (
-            Profile.objects.filter(name__iexact=identifier)
+            Profile.objects.select_related('settings').filter(name__iexact=identifier)
             .order_by('-created_at')
             .first()
         )
+        owner_settings = pricelist_profile.settings
     else:
         context = {
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
         }
         return render(request, 'main/error.html', context)
-
+    
     # COUNTING HITS
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
-    hit_count_response = HitCountMixin.hit_count(request, hit_count)
-
-    listings = Listing.objects.filter(
-        owner=pricelist_profile).all().order_by('-item__TE_value')
+    HitCountMixin.hit_count(request, hit_count)
     
-    try:
-        last_updated = listings.order_by(
-            '-item__last_updated').first().item.last_updated
-    except AttributeError:
-        last_updated = None
-    
-    all_relevant_items = Listing.objects.filter(owner=pricelist_profile).select_related('item').order_by('-item__TE_value')
+    cached_data = cache.get(f'price_list_{pricelist_profile.torn_id}')
+    if cached_data:
+        # Unpack the cached data
+        all_relevant_items, last_updated, listings, last_receipt = cached_data
+    else:
+        # Compute the data if not available in the cache
+        all_relevant_items = Listing.objects.filter(
+            owner=pricelist_profile).select_related('item').order_by('-item__TE_value')
+        
+        listings = Listing.objects.filter(owner=pricelist_profile).all().order_by('-item__TE_value')
+        last_receipt = TradeReceipt.objects.filter(owner=pricelist_profile).last()
+        
+        try:
+            last_updated = listings.order_by(
+                '-item__last_updated').first().item.last_updated
+        except AttributeError:
+            last_updated = None
+        
+        # Cache the computed data
+        cache.set(f'price_list_{pricelist_profile.torn_id}', (all_relevant_items, last_updated, listings, last_receipt), 60*60*1)
     
     distinct_categories = [a['item__item_type'] for a in all_relevant_items.values('item__item_type').distinct()]
     
     item_types = [x for x in categories() if (x in distinct_categories)]
         
-    owner_settings = Settings.objects.filter(owner=pricelist_profile).get()
+    
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
     
-    last_receipt = TradeReceipt.objects.filter(owner=pricelist_profile).last()
     time_since_last_trade = getattr(last_receipt, "created_at", None)
     
     context = {
