@@ -55,12 +55,14 @@ urlpatterns = [
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
-    path('<str:invalid_path>', views.custom_404, name='custom_404'),
     
     # STATIC FILES
-    path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
-    path('robots.txt', TemplateView.as_view(template_name='robots.txt')),
-    
+    path('ads.txt', views.render_static_plaintext, {'file': 'ads.txt'}, name='ads.txt'),
+    path('robots.txt', views.render_static_plaintext, {'file': 'robots.txt'}, name='robots.txt'),
+
+    # handle paths that doesn't exist
+    path('<str:invalid_path>', views.custom_404, name='custom_404'),
+
     # API
     path('api/', api.api_home, name='api_home'),
     path('api/swagger.yaml', api.swag_yaml, name='Swagger'),
