@@ -47,8 +47,8 @@ def export_to_csv(data, filename):
 
     return response
 
-
-def api_404(request, exception=None):
+@ce
+def api_404(request, invalid_path=None):
     return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
 
 

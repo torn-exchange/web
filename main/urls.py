@@ -78,6 +78,8 @@ urlpatterns = [
     path('api/best_listing', api.best_listing, name='api_best_listing'),
     path('api/receipts', api.receipts, name='api_receipts'),
     path('api/sellers', api.sellers, name='api_sellers'),
+    # handle api/ paths that doesn't exist
+    path('api/<str:invalid_path>', api.api_404, name='api_404'),
 ]
 
 handler404 = 'main.urls.custom_404_handler'
