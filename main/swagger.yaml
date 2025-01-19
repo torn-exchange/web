@@ -73,7 +73,7 @@ paths:
                     type: string
                     example: "Active"
 
-  /api/TE_price:
+  /api/te_price:
     get:
       summary: Get TE and Torn prices
       parameters:
