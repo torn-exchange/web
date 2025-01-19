@@ -22,6 +22,49 @@ so I will start of with a /api/test endpoint that will respond with json output 
 
 """
 
+### HELPER FUNCTIONS ###
+
+def export_to_csv(data, filename):
+    """
+    Exports data to CSV format.
+    
+    :param data: List of dictionaries containing the data to be exported.
+    :param filename: The name of the file to be exported.
+    :return: HttpResponse with CSV data.
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+
+    writer = csv.writer(response)
+    
+    if data:
+        # Write headers
+        writer.writerow(data[0].keys())
+        
+        # Write data rows
+        for row in data:
+            writer.writerow(row.values())
+
+    return response
+
+
+def api_404(request, exception=None):
+    return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
+
+
+def js(data, meta=None):
+    if(meta):
+        return JsonResponse({"status": "success", "meta": meta, "data": data})
+    return JsonResponse({"status": "success", "data": data})
+
+
+def je(message):
+    return JsonResponse({"status": "error", "message": message})
+
+
+
+### API functions ###
+
 @ce
 def swag_yaml(request):
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -313,41 +356,3 @@ def sellers(request):
         return je("Invalid HTTP method")
 
 
-## HELPER FUNCTIONS
-
-def export_to_csv(data, filename):
-    """
-    Exports data to CSV format.
-    
-    :param data: List of dictionaries containing the data to be exported.
-    :param filename: The name of the file to be exported.
-    :return: HttpResponse with CSV data.
-    """
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
-
-    writer = csv.writer(response)
-    
-    if data:
-        # Write headers
-        writer.writerow(data[0].keys())
-        
-        # Write data rows
-        for row in data:
-            writer.writerow(row.values())
-
-    return response
-
-
-def api_404(request, exception=None):
-    return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
-
-
-def js(data, meta=None):
-    if(meta):
-        return JsonResponse({"status": "success", "meta": meta, "data": data})
-    return JsonResponse({"status": "success", "data": data})
-
-
-def je(message):
-    return JsonResponse({"status": "error", "message": message})
