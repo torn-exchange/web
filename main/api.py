@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from io import StringIO
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -21,8 +22,66 @@ so I will start of with a /api/test endpoint that will respond with json output 
 
 """
 
+### HELPER FUNCTIONS ###
+
+def export_to_csv(data, filename):
+    """
+    Exports data to CSV format.
+    
+    :param data: List of dictionaries containing the data to be exported.
+    :param filename: The name of the file to be exported.
+    :return: HttpResponse with CSV data.
+    """
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+
+    writer = csv.writer(response)
+    
+    if data:
+        # Write headers
+        writer.writerow(data[0].keys())
+        
+        # Write data rows
+        for row in data:
+            writer.writerow(row.values())
+
+    return response
+
+@ce
+def api_404(request, invalid_path=None):
+    return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
+
+
+def js(data, meta=None):
+    if(meta):
+        return JsonResponse({"status": "success", "meta": meta, "data": data})
+    return JsonResponse({"status": "success", "data": data})
+
+
+def je(message):
+    return JsonResponse({"status": "error", "message": message})
+
+
+
+### API functions ###
+
+@ce
+def swag_yaml(request):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, 'swagger.yaml')
+    
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+
+        return HttpResponse(file_content, content_type='text/plain')
+    
+    except FileNotFoundError:
+        return HttpResponse("File not found.", status=404)
+
+
 def api_home(request):
-    return render(request, 'main/api_home.html')
+    return render(request, 'swagger.html')
 
 
 @ce
@@ -39,6 +98,7 @@ def test(request):
 
 @ce
 def price(request):
+    # Example usage: /api/price?item_id=<ITEM_ID>?user_id=<USER_ID>
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
@@ -296,41 +356,3 @@ def sellers(request):
         return je("Invalid HTTP method")
 
 
-## HELPER FUNCTIONS
-
-def export_to_csv(data, filename):
-    """
-    Exports data to CSV format.
-    
-    :param data: List of dictionaries containing the data to be exported.
-    :param filename: The name of the file to be exported.
-    :return: HttpResponse with CSV data.
-    """
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
-
-    writer = csv.writer(response)
-    
-    if data:
-        # Write headers
-        writer.writerow(data[0].keys())
-        
-        # Write data rows
-        for row in data:
-            writer.writerow(row.values())
-
-    return response
-
-
-def api_404(request, exception=None):
-    return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
-
-
-def js(data, meta=None):
-    if(meta):
-        return JsonResponse({"status": "success", "meta": meta, "data": data})
-    return JsonResponse({"status": "success", "data": data})
-
-
-def je(message):
-    return JsonResponse({"status": "error", "message": message})
