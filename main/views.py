@@ -1252,7 +1252,7 @@ def custom_csrf_failure_view(request, reason=""):
         )
 
 
-def custom_404(request, exception=None):
+def custom_404(request, invalid_path=None):
     context = {
         'error_message': 'Page not found'
     }

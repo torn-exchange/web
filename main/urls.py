@@ -15,17 +15,10 @@ Including another URLconf
 """
 from django.urls import path, include
 from django.conf import settings
-from django.conf.urls import handler404
 from django.views.generic import TemplateView
 
 from . import views
 from . import api
-
-def custom_404_handler(request, exception=None):
-    if request.path.startswith('/api/'):
-        return api.api_404(request, exception)
-    else:
-        return views.custom_404(request, exception)
 
 urlpatterns = [
     # REGULAR SITE
@@ -62,6 +55,7 @@ urlpatterns = [
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
+    path('<str:invalid_path>', views.custom_404, name='custom_404'),
     
     # STATIC FILES
     path('ads.txt', TemplateView.as_view(template_name='ads.txt')),
@@ -81,8 +75,6 @@ urlpatterns = [
     # handle api/ paths that doesn't exist
     path('api/<str:invalid_path>', api.api_404, name='api_404'),
 ]
-
-handler404 = 'main.urls.custom_404_handler'
 
 if settings.DEBUG:
     import debug_toolbar
