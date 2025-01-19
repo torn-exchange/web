@@ -57,8 +57,8 @@ urlpatterns = [
     path('museum_helper', views.museum_helper, name='museum_helper'),
     
     # STATIC FILES
-    path('ads.txt', views.render_static_plaintext, {'file': 'ads.txt'}, name='ads.txt'),
-    path('robots.txt', views.render_static_plaintext, {'file': 'robots.txt'}, name='robots.txt'),
+    path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
+    path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),
 
     # handle paths that doesn't exist
     path('<str:invalid_path>', views.custom_404, name='custom_404'),

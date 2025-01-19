@@ -1259,7 +1259,7 @@ def custom_404(request, invalid_path=None):
     }
     return render(request, 'main/error.html', context, status=404)
 
-def render_static_plaintext(request, file):
+def render_static(request, file):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, 'static', 'main' ,file)
     with open(file_path, 'r') as file:
