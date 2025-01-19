@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: TE API
+  version: 1.0.0
+  description: API documentation for the Torn Exchange API.
+
+paths:
+  /api/status:
+    get:
+      summary: Check API status
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Working"
+
+  /api/price:
+    get:
+      summary: Get item price
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Price details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  price:
+                    type: integer
+                    example: 100
+                  item:
+                    type: string
+        '404':
+          description: Not found
+
+  /api/profile:
+    get:
+      summary: Get user profile
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  activity_status:
+                    type: string
+                    example: "Active"
+
+  /api/TE_price:
+    get:
+      summary: Get TE and Torn prices
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item prices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  te_price:
+                    type: integer
+                  torn_price:
+                    type: integer
+
+  /api/listings:
+    get:
+      summary: List item listings
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            default: price
+            enum:
+              - price
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trader:
+                          type: string
+                        price:
+                          type: integer
+
+  /api/best_listing:
+    get:
+      summary: Best item listing
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Best listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trader:
+                    type: string
+                  price:
+                    type: integer
+
+  /api/receipts:
+    get:
+      summary: User trade receipts
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Receipts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipts:
+                    type: array
+                    items:
+                      type: object
+
+  /api/sellers:
+    get:
+      summary: Sellers information
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+      responses:
+        '200':
+          description: Sellers data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object

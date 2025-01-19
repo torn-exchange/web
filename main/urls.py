@@ -69,6 +69,7 @@ urlpatterns = [
     
     # API
     path('api/', api.api_home, name='api_home'),
+    path('api/swagger.yaml', api.swag_yaml, name='Swagger'),
     path('api/status', api.test, name='api_status'),
     path('api/price', api.price, name='api_price'),
     path('api/profile', api.profile, name='api_profile'),

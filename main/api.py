@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from io import StringIO
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -21,8 +22,23 @@ so I will start of with a /api/test endpoint that will respond with json output 
 
 """
 
+@ce
+def swag_yaml(request):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, 'swagger.yaml')
+    
+    try:
+        with open(file_path, 'r') as file:
+            file_content = file.read()
+
+        return HttpResponse(file_content, content_type='text/plain')
+    
+    except FileNotFoundError:
+        return HttpResponse("File not found.", status=404)
+
+
 def api_home(request):
-    return render(request, 'main/api_home.html')
+    return render(request, 'swagger.html')
 
 
 @ce
@@ -39,6 +55,7 @@ def test(request):
 
 @ce
 def price(request):
+    # Example usage: /api/price?item_id=<ITEM_ID>?user_id=<USER_ID>
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
