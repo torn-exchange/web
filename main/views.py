@@ -1,5 +1,6 @@
 import json
 import re
+import os
 from html import escape
 from itertools import islice
 
@@ -8,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import F
-from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -1257,3 +1258,10 @@ def custom_404(request, invalid_path=None):
         'error_message': 'Page not found'
     }
     return render(request, 'main/error.html', context, status=404)
+
+def render_static(request, file):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, 'static', 'main' ,file)
+    with open(file_path, 'r') as file:
+        return HttpResponse(file.read(), content_type='text/plain')
+   
