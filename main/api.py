@@ -361,9 +361,10 @@ def sellers(request):
 def update_price(request):
     if request.method == 'POST':
         try:
-            key = request.POST.get('key').strip()
-            item_id = request.POST.get('item_id')
-            new_price = request.POST.get('new_price')
+            data = json.loads(request.body)
+            key = data.get('key')
+            item_id = data.get('item_id')
+            new_price = data.get('new_price')
 
             if not key or not item_id or not new_price:
                 return je("Missing required parameters")
@@ -386,6 +387,47 @@ def update_price(request):
             else:
                 return je("Listing not found")
         except Exception as E:
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")
+
+@ce
+def delete_listing(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            key = data.get('key')
+            item_id = data.get('item_id')
+
+            # Log the received parameters
+            print(f"Received parameters: key={key}, item_id={item_id}")
+
+            if not key or not item_id:
+                print("Missing required parameters")
+                return je("Missing required parameters")
+
+            key = key.strip()
+            item_id = item_id.strip()
+
+            try:
+                profile = Profile.objects.filter(api_key=key).get()
+                print(f"Profile found: {profile}")
+            except Profile.DoesNotExist:
+                print(f"Profile with api_key={key} does not exist")
+                return je("Profile matching query does not exist")
+
+            item = get_object_or_404(Item, item_id=item_id)
+            listing = Listing.objects.filter(owner=profile, item=item).first()
+
+            if listing:
+                listing.delete()
+                print(f"Deleted listing: {listing}")
+                return js("Listing deleted successfully")
+            else:
+                print("Listing not found")
+                return je("Listing not found")
+        except Exception as E:
+            print(f"Exception: {E}")
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")

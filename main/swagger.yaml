@@ -287,4 +287,59 @@ paths:
                     type: string
                     example: "Invalid HTTP method"
 
+  /api/delete_listing:
+    post:
+      summary: Delete user listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                item_id:
+                  type: string
+      responses:
+        '200':
+          description: Listing deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Listing deleted successfully"
+        '404':
+          description: Listing not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Listing not found"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request parameters"
+        '405':
+          description: Invalid HTTP method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid HTTP method"
 
