@@ -241,8 +241,10 @@ paths:
               properties:
                 key:
                   type: string
-                item_id:
-                  type: string
+                item_ids:
+                  type: array
+                  items:
+                    type: string
                 new_price:
                   type: integer
       responses:
@@ -255,7 +257,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Price updated successfully"
+                    example: "Prices updated successfully for items: item1, item2"
         '404':
           description: Listing not found
           content:
@@ -299,8 +301,10 @@ paths:
               properties:
                 key:
                   type: string
-                item_id:
-                  type: string
+                item_ids:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: Listing deleted successfully
@@ -311,7 +315,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Listing deleted successfully"
+                    example: "Listings deleted successfully for items: item1, item2"
         '404':
           description: Listing not found
           content:
