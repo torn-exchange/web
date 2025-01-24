@@ -358,3 +358,29 @@ def sellers(request):
         return je("Invalid HTTP method")
 
 
+@ce 
+def update_price(request):
+    # Updates the user listing price
+    # Curl command for testing:
+    # curl -X POST -d "key=API_KEY&item_id=ITEM_ID&new_price=NEW_PRICE" 127.0.0.1:3000/api/update_price
+
+    if request.method == 'POST':
+        try:
+            key = request.POST.get('key')
+            item_id = request.POST.get('item_id')
+            new_price = request.POST.get('new_price')
+
+            profile = Profile.objects.filter(api_key=key).get()
+            item = get_object_or_404(Item, item_id=item_id)
+            listing = Listing.objects.filter(owner=profile, item=item).first()
+
+            if listing:
+                listing.effective_price = new_price
+                listing.save()
+                return js("Price updated successfully")
+            else:
+                return je("Listing not found")
+        except Exception as E:
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")
