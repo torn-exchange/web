@@ -246,7 +246,7 @@ paths:
                 key:
                   type: string
                   description: API key for authentication
-                  example: GmEDEepscpPHvEY9
+                  example: GmEDEepscpPHvEYlo
                 item_id:
                   type: integer
                   description: ID of the item
