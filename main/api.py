@@ -386,7 +386,6 @@ def update_price(request):
             else:
                 return je("Listing not found")
         except Exception as E:
-            print(f"Exception: {E}")
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
