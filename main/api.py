@@ -397,11 +397,7 @@ def delete_listing(request):
             key = data.get('key')
             item_id = data.get('item_id')
 
-            # Log the received parameters
-            print(f"Received parameters: key={key}, item_id={item_id}")
-
             if not key or not item_id:
-                print("Missing required parameters")
                 return je("Missing required parameters")
 
             key = key.strip()
@@ -409,9 +405,7 @@ def delete_listing(request):
 
             try:
                 profile = Profile.objects.filter(api_key=key).get()
-                print(f"Profile found: {profile}")
             except Profile.DoesNotExist:
-                print(f"Profile with api_key={key} does not exist")
                 return je("Profile matching query does not exist")
 
             item = get_object_or_404(Item, item_id=item_id)
@@ -419,13 +413,10 @@ def delete_listing(request):
 
             if listing:
                 listing.delete()
-                print(f"Deleted listing: {listing}")
                 return js("Listing deleted successfully")
             else:
-                print("Listing not found")
                 return je("Listing not found")
         except Exception as E:
-            print(f"Exception: {E}")
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
