@@ -397,6 +397,7 @@ def modify_listing(request):
             else:
                 return je("No listings were modified")
         except Exception as E:
+            print(f"Exception: {E}")
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
