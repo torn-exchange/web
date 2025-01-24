@@ -361,10 +361,10 @@ def update_price(request):
         try:
             data = json.loads(request.body)
             key = data.get('key')
-            item_id = data.get('item_id')
+            item_ids = data.get('item_ids', [])
             new_price = data.get('new_price')
 
-            if not key or not item_id or not new_price:
+            if not key or not item_ids or not new_price:
                 return je("Missing required parameters")
 
             try:
@@ -372,18 +372,23 @@ def update_price(request):
             except Profile.DoesNotExist:
                 return je("Profile matching query does not exist")
 
-            item = get_object_or_404(Item, item_id=item_id)
-            listing = Listing.objects.filter(owner=profile, item=item).first()
+            updated_listings = []
+            for item_id in item_ids:
+                item = get_object_or_404(Item, item_id=item_id)
+                listing = Listing.objects.filter(owner=profile, item=item).first()
 
-            if listing:
-                try:
-                    listing.price = int(new_price)
-                    listing.save(update_fields=['price'])
-                    return js("Price updated successfully")
-                except Exception as e:
-                    return je("Error updating listing")
+                if listing:
+                    try:
+                        listing.price = int(new_price)
+                        listing.save(update_fields=['price'])
+                        updated_listings.append(item_id)
+                    except Exception as e:
+                        continue
+
+            if updated_listings:
+                return js(f"Prices updated successfully for items: {', '.join(updated_listings)}")
             else:
-                return je("Listing not found")
+                return je("No listings were updated")
         except Exception as E:
             return je("Invalid request parameters")
     else:
@@ -395,27 +400,32 @@ def delete_listing(request):
         try:
             data = json.loads(request.body)
             key = data.get('key')
-            item_id = data.get('item_id')
+            item_ids = data.get('item_ids', [])
 
-            if not key or not item_id:
+            if not key or not item_ids:
                 return je("Missing required parameters")
 
             key = key.strip()
-            item_id = item_id.strip()
 
             try:
                 profile = Profile.objects.filter(api_key=key).get()
             except Profile.DoesNotExist:
                 return je("Profile matching query does not exist")
 
-            item = get_object_or_404(Item, item_id=item_id)
-            listing = Listing.objects.filter(owner=profile, item=item).first()
+            deleted_listings = []
+            for item_id in item_ids:
+                item_id = item_id.strip()
+                item = get_object_or_404(Item, item_id=item_id)
+                listing = Listing.objects.filter(owner=profile, item=item).first()
 
-            if listing:
-                listing.delete()
-                return js("Listing deleted successfully")
+                if listing:
+                    listing.delete()
+                    deleted_listings.append(item_id)
+
+            if deleted_listings:
+                return js(f"Listings deleted successfully for items: {', '.join(deleted_listings)}")
             else:
-                return je("Listing not found")
+                return je("No listings were deleted")
         except Exception as E:
             return je("Invalid request parameters")
     else:
