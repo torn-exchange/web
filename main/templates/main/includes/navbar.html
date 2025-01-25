@@ -8,10 +8,10 @@
   </button>
 
   <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="" class="mainlogo-small  ml-3"></a>
+      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE" class="mainlogo-small ml-3"></a>
 
   <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" alt="" class="mainlogo ml-sm-0" style="max-width: 300px;"></a>
+      src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0" style="max-width: 300px;"></a>
   <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">
     {% if user.is_authenticated%}
     <ul class="navbar-nav ml-auto">

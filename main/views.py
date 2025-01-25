@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -24,7 +24,7 @@ from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_services_view,
-                           merge_items, parse_trade_text, return_item_sets, service_categories)
+                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
 from users.forms import SettingsForm
 from users.models import Profile, Settings
 from vote.models import Vote
@@ -34,11 +34,9 @@ def homepage(request):
     cached_data = cache.get('hompeage_data')
     
     if cached_data:
-        print("Using cached data for homepage")
         # Unpack the cached data
         all_time_traders, active_traders, most_receipts, created_today, changes_this_week, changes_this_month = cached_data
     else:
-        print("Computing data for homepage")
         # Compute the data if not available in the cache
         all_time_traders = get_all_time_leaderboard()
         active_traders = get_active_traders()
@@ -78,7 +76,7 @@ def about(request):
 
 
 def listings(request):
-    queryset = Listing.objects.all().order_by('-last_updated')
+    queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
     myFilter = ListingFilter(request.GET, queryset=queryset)
 
     try:
@@ -101,7 +99,7 @@ def listings(request):
         results = paginator.get_page(page)
 
     except Exception as e:
-        print(e)
+        log_error(e)
         profile = None
         user_settings = None
         results = None
@@ -146,7 +144,7 @@ def search_services(request: HttpRequest):
         results = paginator.get_page(page)
 
     except Exception as e:
-        print(e)
+        log_error(e)
         profile = None
         user_settings = None
         results = None
@@ -459,20 +457,14 @@ def price_list(request, identifier=None):
         user_settings = None
 
     # if the torn_id for the page corresponds to an existing profile
-    if Profile.objects.filter(torn_id=identifier).exists():
-        # Fetch the most recent profile with the matching torn_id
-        pricelist_profile = (
-            Profile.objects.filter(torn_id=identifier)
-            .order_by('-created_at')
-            .first()
-        )
-    elif Profile.objects.filter(name__iexact=identifier).exists():
-        # Fetch the most recent profile with the matching name
-        pricelist_profile = (
-            Profile.objects.select_related('settings').filter(name__iexact=identifier)
-            .order_by('-created_at')
-            .first()
-        )
+    pricelist_profile = (
+        Profile.objects.select_related('settings')
+        .filter(Q(torn_id=identifier) | Q(name__iexact=identifier))
+        .order_by('-created_at')
+        .first()
+    )
+
+    if pricelist_profile:
         owner_settings = pricelist_profile.settings
     else:
         context = {
@@ -491,14 +483,15 @@ def price_list(request, identifier=None):
     else:
         # Compute the data if not available in the cache
         all_relevant_items = Listing.objects.filter(
-            owner=pricelist_profile).select_related('item').order_by('-item__TE_value')
+            owner=pricelist_profile).select_related('owner', 'item').order_by('-item__TE_value')
         
-        listings = Listing.objects.filter(owner=pricelist_profile).all().order_by('-item__TE_value')
-        last_receipt = TradeReceipt.objects.filter(owner=pricelist_profile).last()
+        listings = Listing.objects.filter(
+            owner=pricelist_profile).select_related('owner', 'item').all().order_by('-item__TE_value')
+        
+        last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
         
         try:
-            last_updated = listings.order_by(
-                '-item__last_updated').first().item.last_updated
+            last_updated = listings.order_by('-item__last_updated').first().item.last_updated
         except AttributeError:
             last_updated = None
         
@@ -983,14 +976,14 @@ def extension_get_prices(request):
                     profit_per_item.append(
                         listings[i].profit_per_item*quantities[i])
                 except Exception as e:
-                    print(e)
+                    log_error(e)
                     profit_per_item.append(0)
             image_url = [
                 a.image_url if a is not None else '' for a in items_objects]
             market_values = [
                 a.TE_value if a is not None else 0 for a in items_objects]
         except Exception as e:
-            print(e)
+            log_error(e)
             return JsonResponse({}, status=400)
 
         data = {
@@ -1052,7 +1045,7 @@ def new_extension_get_prices(request):
                     profit_per_item.append(
                         listings[i].profit_per_item*quantities[i])
                 except Exception as e:
-                    print(e)
+                    log_error(e)
                     profit_per_item.append(0)
                     
             image_url = [
@@ -1061,6 +1054,7 @@ def new_extension_get_prices(request):
                 a.TE_value if a is not None else 0 for a in items_objects]
         
         except Exception as e:
+            log_error(e)
             return JsonResponse({'error_message': "unknown error, please report to admin"}, status=400)
 
         data = {
@@ -1214,7 +1208,7 @@ def new_create_receipt(request):
                     }
             
         except Exception as e:
-            print(e)
+            log_error(e)
             return JsonResponse({'error_message': "unknown error, please report to admin"}, status=400)
         
     return JsonResponse(data=data, status=200)
