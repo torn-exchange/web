@@ -219,6 +219,15 @@ CACHE_DIR_FOLDER = os.getenv("CACHE_DIR")
 
 CACHES = {
     'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-name',  # Optional, used to identify the cache instance.
+        'TIMEOUT': 300,  # Cache timeout in seconds (default: 300 seconds or 5 minutes).
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,  # Maximum number of entries before older items are evicted.
+            'CULL_FREQUENCY': 3,  # Fraction of entries to evict when the max is reached.
+        },
+    },
+    'file': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': CACHE_DIR_FOLDER,  # Replace with your desired directory
         'TIMEOUT': 300,  # Cache timeout in seconds (default is 300 seconds)

@@ -1,4 +1,7 @@
 import re
+import os
+import sentry_sdk
+
 from datetime import datetime
 from typing import List, OrderedDict, Tuple
 from django.db.models.query import QuerySet
@@ -211,3 +214,22 @@ def get_services_view(selected_services) -> dict:
     SERVICES_CHOICES = OrderedDict(sorted(services_choices_unsorted.items()))
     
     return SERVICES_CHOICES
+
+
+def log_error(e):
+    """
+    Logs an error message based on the DEBUG setting.
+
+    If the DEBUG setting is True, the error message is printed to the console.
+    If the DEBUG setting is False, the error message is sent to Sentry.
+
+    Args:
+        e (Exception): The exception to be logged.
+    """    
+    DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
+    
+    if DEBUG:
+        print(e)
+    else:
+        sentry_sdk.capture_exception(e)
+

@@ -22,7 +22,7 @@
                     </h4>
                 </div>
                 <div>
-                    {% if not listings.object_list%}
+                    {% if number_of_items == 0 %}
                     <p>
                         {% if error %}
                         {{error}}
