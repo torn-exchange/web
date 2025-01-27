@@ -810,9 +810,18 @@ def vote_view(request):
             return JsonResponse({
                 "error": "You can't vote for yourself",
             }, status=400)
+    
+        profile = (
+            Profile.objects.filter(name=profile_name)
+            .order_by('-created_at')
+            .first()
+        )
         
-        profile = Profile.objects.filter(name=profile_name).get()
-        voter = Profile.objects.filter(name=voter_name).get()
+        voter = (
+            Profile.objects.filter(name=voter_name)
+            .order_by('-created_at')
+            .first()
+        )
         voter_id = voter.id
         
         try:

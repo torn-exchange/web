@@ -3,9 +3,10 @@
 {% load humanize %}
 {% load custom_tags %}
 {% load static %}
-<div class='container' id='main-container'>
+<div class="container" id="main-container">
     {% if owner_profile.torn_id == user_profile.torn_id %}
-        {% if user_settings.tutorial == True%}
+        {% if user_settings.tutorial == True %}
+        <!-- TUTORIAL -->
         <div class="card bg-info small mt-3">
             <div class="card-header p-0 m-0">
                 <h5 class='text-center'>
@@ -41,13 +42,16 @@
     {% endif %}
     
     <br>
-    <div class=row>
+
+    <div class="row">
         <div class='col'>
             <div class="card">
                 <div class='card-title justify-content-center'>
-                    <div class='row'>
-                        <div class="order-last col-md-1 col-2 ml-0 p-0 b-1 order-md-first">
-                            <div class="m-auto bg-white text-left voting-div p-3 pl-0 ml-0 m-0  d-block text-left ">
+                    <!-- VOTE + TITLE ROW -->
+                    <div class='row col-12 text-center p-2 d-flex flex-column flex-md-row justify-content-between align-items-center'>
+                        <!-- VOTE -->
+                        <div class="order-last col-md-1 col-1 ml-0 p-0 order-md-first">
+                            <div class="m-auto bg-white text-left voting-div p-3 pl-0 ml-0 m-0 d-block text-left">
                                 {% csrf_token %}
                                 <div class="row up text-left" id="vote-up"></div>
                                 <div class="text-center m-auto" id="vote-score">{{vote_score}}</div>
@@ -55,9 +59,10 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 col-6 pt-2 mt-2 pl-4 ml-2 text-center">
+                        <!-- TITLE -->
+                        <div class="col-md-10 col-12 p-0 m-0 text-center">
                             &nbsp;&nbsp;&nbsp;&nbsp;
-                            <h3 class="text-left float-right mt-3 m-0 p-0 allerta-font">
+                            <h3 class="text-center m-0 p-0 allerta-font">
                                 {% if owner_profile.activity_status == 'Online' %}
                                 <img src="{% static '/main/images/crown-online.png' %}" class='mb-2'
                                     style="height:20px; width:auto;">
@@ -71,14 +76,33 @@
                                 {{owner_profile.name}}'s Trading List
                             </h3>
                         </div>
-                        <div class="col text-right">
-                            <div class='row justify-content-end m-1 p-1 pt-0 mt-0 float-right'>
-                                {% if not owner_settings.link_to_forum_post%}
 
-                                {% else %}
+                        <div class="col-md-1 col-12"></div>
+                    </div>
+
+                    <!-- DESCRIPTION ROW -->
+                    <div class='row col-12 text-center p-2'>
+                        <div class="col text-center p-1 ml-2">
+                            {% if owner_settings.trade_list_description == None %}
+                            <h5 class="p-1">
+                                Welcome to {{owner_profile.name}}'s price list. Click Start Trade now to start a trade.
+                            </h5>
+                            {% else %}
+                            <h5 class="p-1">
+                                {{owner_settings.trade_list_description}}
+                            </h5>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- BUTTONS -->
+                    <div class='row col-12 text-center p-2'>
+                        <div class="col text-center">
+                            <div class='row justify-content-center m-1 p-1 pt-0 mt-0'>
+                                {% if owner_settings.link_to_forum_post %}
                                 <div class='m-1 ml-0'>
-                                    <a class='btn btn-primary' target="_blank"
-                                        href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">Reviews
+                                    <a class='btn btn-primary' target="_blank" href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">
+                                        Reviews
                                     </a>
                                 </div>
                                 {% endif %}
@@ -89,27 +113,18 @@
                                 </div>
                                 {% if owner_profile.torn_id == user_profile.torn_id %}
                                 <div class='m-1 ml-0'>
-                                    <a class='btn btn-primary ' href="{% url 'edit_price_list' %}">Change Prices</a>
+                                    <a class='btn btn-warning' href="{% url 'edit_price_list' %}">Change Prices</a>
                                 </div>
                                 <div class='m-1 ml-0'>
                                     <a class='btn btn-primary' href="{% url 'calculator' %}">Trade Calculator</a>
                                 </div>
                                 {% endif %}
+                                <div class='m-1 ml-0'>
+                                    <a class='btn btn-info' target="_blank" href="https://tornpal.com/profile/{{owner_profile.torn_id}}?ref=2507441">
+                                        TornPal Profile
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="card-text"></div>
-                    <div class='col-12 row text-center p-2'>
-                        <div class="col text-center p-1 ml-2">
-                            {% if owner_settings.trade_list_description == None %}
-                            <h5 class="p-1 text-responsive">
-                                Welcome to {{owner_profile.name}}'s price list. Click Start Trade now to start a trade.
-                            </h5>
-                            {% else %}
-                            <h5 class="p-1 text-responsive">
-                                {{owner_settings.trade_list_description}}
-                            </h5>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -124,6 +139,7 @@
     </div>
 </div>
 
+<!-- PRICE LIST -->
 <div class="container">
     <div class="text-left text-muted">
         Last trade made by this trader: {{time_since_last_trade|naturaltime}}
@@ -173,6 +189,7 @@
         {% endfor %}
     </div>
 </div>
+
 <script>
     const show_message = function(type, message) {
         $('.alert-success').remove()
