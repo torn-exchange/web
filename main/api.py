@@ -356,15 +356,16 @@ def sellers(request):
         return je("Invalid HTTP method")
 
 @ce 
-def update_price(request):
+def modify_listing(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             key = data.get('key')
             item_ids = data.get('item_ids', [])
             new_price = data.get('new_price')
+            action = data.get('action')
 
-            if not key or not item_ids or not new_price:
+            if not key or not item_ids or not action:
                 return je("Missing required parameters")
 
             try:
@@ -372,60 +373,27 @@ def update_price(request):
             except Profile.DoesNotExist:
                 return je("Profile matching query does not exist")
 
-            updated_listings = []
+            modified_listings = []
             for item_id in item_ids:
                 item = get_object_or_404(Item, item_id=item_id)
                 listing = Listing.objects.filter(owner=profile, item=item).first()
 
                 if listing:
-                    try:
-                        listing.price = int(new_price)
-                        listing.save(update_fields=['price'])
-                        updated_listings.append(item_id)
-                    except Exception as e:
-                        continue
+                    if action == 'update' and new_price:
+                        try:
+                            listing.price = int(new_price)
+                            listing.save(update_fields=['price'])
+                            modified_listings.append(item_id)
+                        except Exception as e:
+                            continue
+                    elif action == 'delete':
+                        listing.delete()
+                        modified_listings.append(item_id)
 
-            if updated_listings:
-                return js(f"Prices updated successfully for items: {', '.join(updated_listings)}")
+            if modified_listings:
+                return js(f"Listings modified successfully for items: {', '.join(modified_listings)}")
             else:
-                return je("No listings were updated")
-        except Exception as E:
-            return je("Invalid request parameters")
-    else:
-        return je("Invalid HTTP method")
-
-@ce
-def delete_listing(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            key = data.get('key')
-            item_ids = data.get('item_ids', [])
-
-            if not key or not item_ids:
-                return je("Missing required parameters")
-
-            key = key.strip()
-
-            try:
-                profile = Profile.objects.filter(api_key=key).get()
-            except Profile.DoesNotExist:
-                return je("Profile matching query does not exist")
-
-            deleted_listings = []
-            for item_id in item_ids:
-                item_id = item_id.strip()
-                item = get_object_or_404(Item, item_id=item_id)
-                listing = Listing.objects.filter(owner=profile, item=item).first()
-
-                if listing:
-                    listing.delete()
-                    deleted_listings.append(item_id)
-
-            if deleted_listings:
-                return js(f"Listings deleted successfully for items: {', '.join(deleted_listings)}")
-            else:
-                return je("No listings were deleted")
+                return je("No listings were modified")
         except Exception as E:
             return je("Invalid request parameters")
     else:
