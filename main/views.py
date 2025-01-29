@@ -544,7 +544,6 @@ def edit_services(request):
         }
         return render(request, 'main/error.html', context)
     
-    # data_dict = {}
     cats = service_categories()
     user_services = Services.objects.select_related('owner', 'service').filter(owner=profile)
         
