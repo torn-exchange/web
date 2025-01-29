@@ -514,6 +514,7 @@ def price_list(request, identifier=None):
         description = 'Welcome to '+pricelist_profile.name+'\'s price list. Click Start Trade now to start a trade.'
     
     context = {
+        'page_type': 'trade',
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
         'content_title': pricelist_profile.name+'\'s Trading List',
         'description': description,
@@ -689,6 +690,7 @@ def services_list(request, identifier=None):
         description = 'Welcome to '+pricelist_profile.name+'\'s price list for custom services.'
     
     context = {
+        'page_type': 'service',
         'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
         'content_title': pricelist_profile.name+'\'s Custom Services',
         'description': description,

@@ -48,34 +48,48 @@
                 <div class='row col-12 text-center p-2'>
                     <div class="col text-center">
                         <div class='row justify-content-center m-1 p-1 pt-0 mt-0'>
-                            {% if owner_settings.link_to_forum_post %}
+                            <div class='m-1 ml-0'>
+                                <a class='btn btn-info' target="_blank"
+                                    href="https://www.torn.com/profiles.php?XID={{owner_profile.torn_id}}">Profile</a>
+                            </div>
+
+                            <div class='m-1 ml-0'>
+                                <a class='btn btn-info' target="_blank" href="https://tornpal.com/profile/{{owner_profile.torn_id}}?ref=2507441">
+                                    TornPal Profile
+                                </a>
+                            </div>
+
+                            {% if page_type == "trade" and owner_settings.link_to_forum_post %}
                             <div class='m-1 ml-0'>
                                 <a class='btn btn-primary' target="_blank" href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">
                                     Reviews
                                 </a>
                             </div>
                             {% endif %}
+
+                            {% if page_type == "trade" %}
                             <div class='m-1 ml-0'>
                                 <a class='btn btn-primary' target="_blank" href="https://www.torn.com/trade.php#step=start&userID={{owner_profile.torn_id}}">
                                     Start Trade
                                 </a>
                             </div>
-                            {% if owner_profile.torn_id == user_profile.torn_id %}
+                            {% endif %}
+
+                            {% if owner_profile.torn_id == user_profile.torn_id and page_type == "trade" %}
+                            <div class='m-1 ml-0'>
+                                <a class='btn btn-warning' href="{% url 'calculator' %}">Trade Calculator</a>
+                            </div>
+
                             <div class='m-1 ml-0'>
                                 <a class='btn btn-warning' href="{% url 'edit_price_list' %}">Change Prices</a>
                             </div>
+                            {% endif %}
+
+                            {% if owner_profile.torn_id == user_profile.torn_id and page_type == "service" %}
                             <div class='m-1 ml-0'>
                                 <a class='btn btn-warning' href="{% url 'edit_services' %}">Edit Services</a>
                             </div>
-                            <div class='m-1 ml-0'>
-                                <a class='btn btn-primary' href="{% url 'calculator' %}">Trade Calculator</a>
-                            </div>
                             {% endif %}
-                            <div class='m-1 ml-0'>
-                                <a class='btn btn-info' target="_blank" href="https://tornpal.com/profile/{{owner_profile.torn_id}}?ref=2507441">
-                                    TornPal Profile
-                                </a>
-                            </div>
                         </div>
                     </div>
                 </div>
