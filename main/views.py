@@ -508,8 +508,15 @@ def price_list(request, identifier=None):
     
     time_since_last_trade = getattr(last_receipt, "created_at", None)
     
+    if owner_settings.trade_list_description:
+        description = owner_settings.trade_list_description
+    else:
+        description = 'Welcome to '+pricelist_profile.name+'\'s price list. Click Start Trade now to start a trade.'
+    
     context = {
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
+        'content_title': pricelist_profile.name+'\'s Trading List',
+        'description': description,
         'items': all_relevant_items,
         'item_types': item_types,
         'owner_profile': pricelist_profile,
@@ -676,8 +683,15 @@ def services_list(request, identifier=None):
     # Convert the set to a list if needed
     distinct_categories = list(distinct_categories)
     
+    if owner_settings.service_list_description:
+        description = owner_settings.service_list_description
+    else:
+        description = 'Welcome to '+pricelist_profile.name+'\'s price list for custom services.'
+    
     context = {
         'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
+        'content_title': pricelist_profile.name+'\'s Custom Services',
+        'description': description,
         'services': owner_services,
         'distinct_categories': distinct_categories,
         'owner_profile': pricelist_profile,
