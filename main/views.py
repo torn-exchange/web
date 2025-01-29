@@ -3,6 +3,7 @@ import re
 import os
 from html import escape
 from itertools import islice
+from collections import defaultdict
 
 from django.conf import settings as project_settings
 from django.contrib import messages
@@ -508,8 +509,16 @@ def price_list(request, identifier=None):
     
     time_since_last_trade = getattr(last_receipt, "created_at", None)
     
+    if owner_settings.trade_list_description:
+        description = owner_settings.trade_list_description
+    else:
+        description = 'Welcome to '+pricelist_profile.name+'\'s price list. Click Start Trade now to start a trade.'
+    
     context = {
+        'page_type': 'trade',
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
+        'content_title': pricelist_profile.name+'\'s Trading List',
+        'description': description,
         'items': all_relevant_items,
         'item_types': item_types,
         'owner_profile': pricelist_profile,
@@ -535,16 +544,16 @@ def edit_services(request):
         }
         return render(request, 'main/error.html', context)
     
-    data_dict = {}
     cats = service_categories()
-    user_services = Services.objects.filter(owner=profile)
+    user_services = Services.objects.select_related('owner', 'service').filter(owner=profile)
         
-    for category in cats:
-        data_dict.update({category: Service.objects.filter(
-            category=category).order_by('name')
-        })
+    services = Service.objects.filter(category__in=cats).order_by('category', 'name')
+    data_dict = defaultdict(list)
+
+    for service in services:
+        data_dict[service.category].append(service)
     
-    user_settings = Settings.objects.filter(owner=profile).get()
+    user_settings = profile.settings
     
     context = {
         'page_title': 'Edit Services - Torn Exchange',
@@ -676,8 +685,16 @@ def services_list(request, identifier=None):
     # Convert the set to a list if needed
     distinct_categories = list(distinct_categories)
     
+    if owner_settings.service_list_description:
+        description = owner_settings.service_list_description
+    else:
+        description = 'Welcome to '+pricelist_profile.name+'\'s price list for custom services.'
+    
     context = {
+        'page_type': 'service',
         'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
+        'content_title': pricelist_profile.name+'\'s Custom Services',
+        'description': description,
         'services': owner_services,
         'distinct_categories': distinct_categories,
         'owner_profile': pricelist_profile,
@@ -810,9 +827,18 @@ def vote_view(request):
             return JsonResponse({
                 "error": "You can't vote for yourself",
             }, status=400)
+    
+        profile = (
+            Profile.objects.filter(name=profile_name)
+            .order_by('-created_at')
+            .first()
+        )
         
-        profile = Profile.objects.filter(name=profile_name).get()
-        voter = Profile.objects.filter(name=voter_name).get()
+        voter = (
+            Profile.objects.filter(name=voter_name)
+            .order_by('-created_at')
+            .first()
+        )
         voter_id = voter.id
         
         try:

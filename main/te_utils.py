@@ -54,7 +54,6 @@ def service_categories():
         'Company specials',
         'Software',
         'Attacking',
-        'Custom services',
         'Other'
     ]
 

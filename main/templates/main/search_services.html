@@ -94,7 +94,7 @@
                     <div class='card listing-card  m-0 mb-1 p-0'>
                         <div class="card-header m-0 p-0">
                             <div class="row pl-1 m-auto">
-                                <div class="col-9 mb-0">
+                                <div class="col-8 mb-0">
                                     <div class='row m-auto'>
 
                                         <div class="p-2 col-2 text-left">
@@ -117,20 +117,24 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col">
+                                <div class="col-4">
                                     <div class="row">
 
-
-                                        <div class="col">
+                                        <div class="col-4">
                                             <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
                                                 class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(223, 239,243);"> Service Price List </a>
+                                                style="background-color: rgb(223, 239,243);"> Service List</a>
                                         </div>
-                                        <div class="col">
+                                        <div class="col-4">
                                             <a target="_blank"
                                                 href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}"
                                                 class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(235, 244,225);"> Contact Now </a>
+                                                style="background-color: rgb(235, 244,225);"> Contact Now</a>
+                                        </div>
+                                        <div class="col-4">
+                                            <a target="_blank" href="https://tornpal.com/profile/{{listing.owner.torn_id}}?ref=2507441"
+                                                class="badge badge-light text-black pl-2 pr-2"
+                                                style="background-color: rgb(223, 239,243);"> TornPal</a>
                                         </div>
                                     </div>
                                 </div>
