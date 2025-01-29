@@ -3,6 +3,7 @@ import re
 import os
 from html import escape
 from itertools import islice
+from collections import defaultdict
 
 from django.conf import settings as project_settings
 from django.contrib import messages
@@ -543,16 +544,17 @@ def edit_services(request):
         }
         return render(request, 'main/error.html', context)
     
-    data_dict = {}
+    # data_dict = {}
     cats = service_categories()
-    user_services = Services.objects.filter(owner=profile)
+    user_services = Services.objects.select_related('owner', 'service').filter(owner=profile)
         
-    for category in cats:
-        data_dict.update({category: Service.objects.filter(
-            category=category).order_by('name')
-        })
+    services = Service.objects.filter(category__in=cats).order_by('category', 'name')
+    data_dict = defaultdict(list)
+
+    for service in services:
+        data_dict[service.category].append(service)
     
-    user_settings = Settings.objects.filter(owner=profile).get()
+    user_settings = profile.settings
     
     context = {
         'page_title': 'Edit Services - Torn Exchange',
