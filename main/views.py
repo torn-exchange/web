@@ -1322,6 +1322,8 @@ def tutorial(request):
         if response.status_code == 200:
             data = response.json()
             html_content = data.get("thread", {}).get("content_raw", "<p>No content available.</p>")
+            
+            cache.set("tutorial_data", html_content, 60*60*24)
         else:
             html_content = "<p>Failed to fetch data.</p>"
         
@@ -1330,8 +1332,9 @@ def tutorial(request):
         'html_content': html_content
     }
     
+    link = '<a href="https://www.torn.com/forums.php#/p=threads&f=61&t=16447032&b=0&a=0" target="_blank">here</a>'
     messages.info(request, 
-        mark_safe('<b>Note</b>: original tutorial can be found on Torn forum <a href="https://www.torn.com/forums.php#/p=threads&f=61&t=16447032&b=0&a=0" target="_blank">here</a>.')
+        mark_safe(f'<b>Note</b>: This page is automatically updated from original tutorial that can be found on Torn forum {link}.')
         )
 
     return render(request, "main/tutorial.html", context)
