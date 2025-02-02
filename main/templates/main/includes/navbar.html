@@ -8,10 +8,12 @@
   </button>
 
   <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE" class="mainlogo-small ml-3"></a>
-
+      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE"
+      class="mainlogo-small ml-3"></a>
   <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0" style="max-width: 300px;"></a>
+      src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0"
+      style="max-width: 300px;"></a>
+
   <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">
     {% if user.is_authenticated%}
     <ul class="navbar-nav ml-auto">
@@ -46,12 +48,16 @@
           <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>
         </div>
       </li>
-      <li class='{% if request.path == "/api"%} active {% endif %} nav-item float-right'><a class="nav-link"
-        href='{% url "api_home" %}' target="_blank">API</a></li>
-      <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
-          href='{% url "about" %}'>About</a></li>
-      <li class='{% if request.path == "/logout/"%} active {% endif %} nav-item float-right'><a class="nav-link"
-          href='{% url "logout" %}'>Log Out</a></li>
+      <li class='nav-item float-right'>
+        <a class="nav-link" href='{% url "api_home" %}' target="_blank">API</a>
+      </li>
+      <li class='{% if request.path == "/how-to-use-torn-exchange/"%} active {% endif %} nav-item float-right'>
+        <a class="nav-link" href='{% url "forum_tutorial" %}'>Tutorial</a>
+      </li>
+      <li class='{% if request.path == "/about/"%} active {% endif %} nav-item float-right'>
+        <a class="nav-link" href='{% url "about" %}'>About</a>
+      </li>
+      <li class='nav-item float-right'><a class="nav-link" href='{% url "logout" %}'>Log Out</a></li>
 
     </ul>
     {% else %}

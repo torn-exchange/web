@@ -1,6 +1,7 @@
 import json
 import re
 import os
+import requests
 from html import escape
 from itertools import islice
 from collections import defaultdict
@@ -14,6 +15,7 @@ from django.db.models import F, Q
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
@@ -1298,9 +1300,41 @@ def custom_404(request, invalid_path=None):
     }
     return render(request, 'main/error.html', context, status=404)
 
+
 def render_static(request, file):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, 'static', 'main' ,file)
     with open(file_path, 'r') as file:
         return HttpResponse(file.read(), content_type='text/plain')
-   
+
+
+def tutorial(request):
+    data = cache.get("tutorial_data")
+    if data:
+        html_content = data
+    else:
+        api_url = "https://api.torn.com/v2/forum/16447032/thread"
+        headers = {
+            "Authorization": "ApiKey " + os.getenv("SYSTEM_API_KEY")
+        }
+        response = requests.get(api_url, headers=headers)
+
+        if response.status_code == 200:
+            data = response.json()
+            html_content = data.get("thread", {}).get("content_raw", "<p>No content available.</p>")
+            
+            cache.set("tutorial_data", html_content, 60*60*24)
+        else:
+            html_content = "<p>Failed to fetch data.</p>"
+        
+    context = {
+        'page_title': 'Torn Exchange Tutorial',
+        'html_content': html_content
+    }
+    
+    link = '<a href="https://www.torn.com/forums.php#/p=threads&f=61&t=16447032&b=0&a=0" target="_blank">here</a>'
+    messages.info(request, 
+        mark_safe(f'<b>Note</b>: This page is automatically updated from original tutorial that can be found on Torn forum {link}.')
+        )
+
+    return render(request, "main/tutorial.html", context)
