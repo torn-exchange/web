@@ -59,6 +59,7 @@
             </h1>
         </div>
     </div>
+
     <div class='row'>
         <div class='col-md-3 col-sm-12'>
             <!-- {%include 'main/includes/top_active_traders.html'%} -->
@@ -71,6 +72,7 @@
         </div>
         <div class='col-md-6 col-sm-12 align-content-center text-center'>
             <div class="row">
+                <!-- FOR TRADERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
                         <div class="card-header text-center bg-dark text-gold">
@@ -79,25 +81,27 @@
                         <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
                             <ul class="list-group list-group-flush">
                                 {% if profile %}
-                                    <il class="list-group-item my-0">
-                                        <a href="{% url 'edit_price_list' %}">Edit price list</a>
-                                    </il>
-                                    <il class="list-group-item my-0 mt-0">
-                                        <a href="{% url 'edit_services' %}">Edit custom services</a>
-                                    </il>
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'edit_price_list' %}">Edit price list</a>
+                                </il>
+                                <il class="list-group-item my-0 mt-0">
+                                    <a href="{% url 'edit_services' %}">Edit custom services</a>
+                                </il>
                                 {% else %}
-                                    <il class="list-group-item my-0">
-                                        <a href="{% url 'edit_price_list' %}">Create a price list</a>
-                                    </il>
-                                    <il class="list-group-item my-0 m-0">
-                                        <a href="{% url 'edit_services' %}">Add custom services</a>
-                                    </il>
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'edit_price_list' %}">Create a price list</a>
+                                </il>
+                                <il class="list-group-item my-0 m-0">
+                                    <a href="{% url 'edit_services' %}">Add custom services</a>
+                                </il>
                                 {% endif %}
                             </ul>
                         </div>
                     </div>
-                    
+
                 </div>
+
+                <!-- FOR SELLERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
                         <div class="card-header text-center bg-dark text-gold">
@@ -114,38 +118,76 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
 
+            <!-- BREAKLINE -->
             <div class="row mt-3">
                 <div class="col-12">
                     <hr />
                 </div>
             </div>
 
-
-            <img src="{% static '/main/images/logocentral.png' %}" class='img-fluid logocentral mt-3'
-                style="max-width: 50% !important;" alt="TORN EXCHANGE">
-            <p>
-            </p>
             <div class="pt-3">
                 {% if not profile %}
-                <div class="btn btn-primary">
-                    <a class="allerta-font h5 text-white" href="{% url 'login' %}"> Join Now </a>
-                </div>
+                <div class="mb-3">
+                    <div class="btn btn-primary">
+                        <a class="allerta-font h5 text-white" href="{% url 'login' %}"> Join Now </a>
+                    </div>
+                </div>                
                 {% endif %}
-                <p class="mt-2">
-                    <p><h3><span style="color:red">New!</span> Check out <a href="{% url 'api_home' %}">Torn Exchange API</a>!</h3></p>
-                    <p>Want to know more about Torn Exchange?
-                        <br>
-                        Visit our <u>
-                            <a href="https://www.torn.com/forums.php#/p=threads&f=67&t=16383769&b=0&a=0">forum thread</a>
-                        </u>
-                        or join our <a href='https://discord.gg/8NstjM2fbb'><u>Discord server</u></a>.
-                    </p>
+
+                <!-- LATEST FEATURES -->
+                <div class="card">
+                    <div class="card-header text-center bg-dark text-gold">
+                        <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
+                    </div>
+                    <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
+                        <ul class="pl-3">
+                            <li class="mb-2">
+                                <a href="{% url 'api_home' %}" class="text-decoration-none">Torn Exchange API</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'forum_tutorial' %}" class="text-decoration-none">Tutorial: How to Trade with TE</a></li>
+                            <li class="mb-2">Added TornPal button to price list and services</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- WHAT IS TE -->
+                <div class="card mt-3">
+                    <div class="card-header text-center bg-dark text-white">
+                        <i class="fa-solid fa-question-circle"></i> What is Torn Exchange?
+                    </div>
+                    <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
+                        <p>
+                            Torn Exchange is a platform for Torn players to trade items, services and in-game currency.
+                            It is a community driven project which aims to provide a safe and easy way to trade with
+                            other
+                            players.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BREAKLINE -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <hr />
+                    </div>
+                </div>
+
+                <p>Want to know more about Torn Exchange?
+                    <br>
+                    Visit our <u>
+                        <a href="https://www.torn.com/forums.php#/p=threads&f=67&t=16383769&b=0&a=0">forum thread</a>
+                    </u>
+                    or join our <a href='https://discord.gg/8NstjM2fbb'><u>Discord server</u></a>.
                 </p>
+
             </div>
+
+            <!-- PROMO TEXT -->
             <div class="row mt-5 card-text">
                 <div class='col'>
                     <i class="fas fa-user-group h3"></i>
@@ -173,6 +215,7 @@
             </div>
 
         </div>
+
         <div class="col-md-3 col-sm-12">
             {%include 'main/includes/changelog.html'%}
             <p class="p-4 small mr-3 text-center">

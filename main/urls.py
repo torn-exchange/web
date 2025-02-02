@@ -55,6 +55,7 @@ urlpatterns = [
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
+    path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
