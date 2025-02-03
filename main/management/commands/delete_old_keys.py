@@ -1,5 +1,6 @@
 import json
 import requests
+import  concurrent.futures
 
 from django.db import connection, reset_queries
 from django.core.management.base import BaseCommand
@@ -11,9 +12,16 @@ class Command(BaseCommand):
     def _prune(self):
         profiles = get_profiles_with_keys()
                 
-        ids_to_prune = [
-            profile.id for profile in profiles if not ping_torn_api(profile.api_key)
-        ]
+        def check_profile(profile):
+            return profile.id if not ping_torn_api(profile.api_key) else None
+
+        MAX_THREADS = 4
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+            results = list(executor.map(check_profile, profiles))
+
+        # Filter out None values
+        ids_to_prune = [result for result in results if result is not None]
         
         print("New invalid keys to delete:", len(ids_to_prune))
         
