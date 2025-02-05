@@ -31,6 +31,7 @@ class Profile(VoteModel, models.Model, HitCountMixin):
     te_plus_days = models.IntegerField(null=True)
     active_trader = models.BooleanField(default=False)
     hidden_categories = JSONField(default=dict)
+    order_categories = JSONField(default=list)
 
     def save(self, *args, **kwargs):
         try:
