@@ -135,7 +135,7 @@ def profile(request):
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
-            profile = get_object_or_404(Profile, torn_id=user_id)
+            profile = Profile.objects.select_related('settings').filter(torn_id=user_id).get()
 
             return JsonResponse({
                 "status": "success",
@@ -146,6 +146,8 @@ def profile(request):
                     "last_active": profile.last_active,
                     "created_at": profile.created_at,
                     "updated_at": profile.updated_at,
+                    "votes": profile.vote_score,
+                    "reviews": profile.settings.link_to_forum_post,
                 }
             })
         except Exception as E:
