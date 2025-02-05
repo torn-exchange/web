@@ -24,6 +24,8 @@ urlpatterns = [
     # REGULAR SITE
     path('', views.homepage, name='home'),
     path('edit_price_list', views.edit_price_list, name='edit_price_list'),
+    path('manage_price_list', views.manage_price_list, name='manage_price_list'),
+    path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
     path('prices/<str:identifier>/', views.price_list, name='price_list'),
     path('prices/', views.price_list, name='price_list'),
     path('calculator', views.calculator, name='calculator'),

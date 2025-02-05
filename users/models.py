@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from vote.models import VoteModel
+from django.contrib.postgres.fields import JSONField
 from django.contrib.contenttypes.fields import GenericRelation
 from hitcount.models import HitCountMixin, HitCount
 from django.utils import timezone
@@ -29,6 +30,7 @@ class Profile(VoteModel, models.Model, HitCountMixin):
     te_plus_status = models.BooleanField(default=False)
     te_plus_days = models.IntegerField(null=True)
     active_trader = models.BooleanField(default=False)
+    hidden_categories = JSONField(default=dict)
 
     def save(self, *args, **kwargs):
         try:

@@ -1,0 +1,104 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<div class='container'>
+    <h2 class="text-center mt-3 allerta-font p-2">Price List Management</h2>
+    <!-- PAGE DESCRIPTION -->
+
+    <div class="row">
+        <div class="col-12">
+            <hr>
+        </div>
+    </div>
+
+    <form id='management_form' method="post">
+        {% csrf_token %}
+        <button class='btn btn-primary float-right m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;"
+            id="submit-management"> Submit </button>
+
+        <div class="row">
+            <div class='card col-12 m-2 p-0'> 
+                <div class='card-header text-center font-weight-bold m-0'>
+                    General
+                </div>
+    
+                <div class='card-body m-0 p-0'>
+                    <ul>
+                        <li>Title</li>
+                        <li>Description</li>
+                        <li>Rounding</li>
+                        <li>Enable sets</li>
+                    </ul>
+                </div>
+            </div>
+    
+            <div class='card col-12 m-2 p-0'> 
+                <div class='card-header text-center font-weight-bold m-0'>
+                    Toggle Category Visibility
+                </div>
+    
+                <div class='card-body m-3 p-0 pb-2'>
+                    <ul class="list-unstyled">
+                        {% for category in cats %}
+                        <li>
+                            <div class="custom-control custom-switch">
+                                <input 
+                                    type="checkbox" 
+                                    class="custom-control-input toggle-category" 
+                                    id="hide_{{category}}" 
+                                    name="hide_{{category}}" 
+                                    data-category="{{category}}"
+                                    {% if category in hidden_categories %}checked{% endif %}>
+                                <label class="custom-control-label" for="hide_{{category}}">{{category}}</label>
+                            </div>
+                        </li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            </div>
+    
+            <div class='card col-12 m-2 p-0'> 
+                <div class='card-header text-center font-weight-bold m-0'>
+                    Category Reordering
+                </div>
+    
+                <div class='card-body m-3 p-0 pb-2'>
+                    COMING SOON
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.toggle-category').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const category = this.getAttribute('data-category');
+                    const isChecked = this.checked;
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+                    fetch("{% url 'toggle_category_visibility' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ category: category, is_checked: isChecked })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(`Category ${category} visibility toggled.`);
+                        } else {
+                            console.error(`Failed to toggle visibility for category ${category}.`);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+    </script>
+
+{% endblock %}

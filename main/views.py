@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.http import require_POST
 
 from hitcount.models import HitCount
 from hitcount.views import HitCountMixin
@@ -320,7 +321,11 @@ def settings(request, option=None):
 
 @login_required
 def edit_price_list(request):
-    profile = Profile.objects.filter(user=request.user).get()
+    profile = (
+        Profile.objects.select_related('settings').filter(user=request.user)
+        .order_by('-created_at')
+        .first()
+    )
     
     all_traders_prices = Listing.objects.filter(owner=profile).select_related('item').order_by('-item__TE_value')
      
@@ -335,7 +340,7 @@ def edit_price_list(request):
         cat_items = merge_items(cat_items, all_traders_prices)
         data_dict.update({category: cat_items})
 
-    user_settings = Settings.objects.filter(owner=profile).get()
+    user_settings = profile.settings
     
     context = {
         'page_title': 'Edit Prices - Torn Exchange',
@@ -897,6 +902,7 @@ def vote_view(request):
         "error": "POST request is required for this action.",
     }, status=400)
 
+
 # JSON response
 def parse_trade_paste(request: HttpRequest):
     """Parse trade text from Calculator page and match them with trader's price list
@@ -1028,6 +1034,7 @@ def extension_get_prices(request):
         return JsonResponse(data, status=200)
 
     return JsonResponse({}, status=400)
+
 
 @csrf_exempt
 def new_extension_get_prices(request):
@@ -1177,6 +1184,7 @@ def create_receipt(request):
         'profit': trade_receipt.profit,
         'total': trade_receipt.total,
     }, status=200)
+
 
 @csrf_exempt
 def new_create_receipt(request):
@@ -1338,3 +1346,35 @@ def tutorial(request):
         )
 
     return render(request, "main/tutorial.html", context)
+
+
+@login_required
+def manage_price_list(request):
+    profile = request.user.profile
+    
+    context = {
+        'page_title': 'Manage Price List - Torn Exchange',
+        'cats': categories(),
+        'hidden_categories': profile.hidden_categories,
+    }
+    
+    return render(request, 'main/manage_price_list.html', context)
+
+
+@login_required
+@csrf_exempt
+@require_POST
+def toggle_category_visibility(request):
+    data = json.loads(request.body)
+    category = data.get('category')
+    is_checked = data.get('is_checked')
+    profile = request.user.profile
+
+    if is_checked:
+        profile.hidden_categories[category] = True
+    else:
+        if category in profile.hidden_categories:
+            del profile.hidden_categories[category]
+
+    profile.save()
+    return JsonResponse({'success': True})
