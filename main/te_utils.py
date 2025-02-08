@@ -74,7 +74,7 @@ def get_ordered_categories(
                 category_positions[str(cat)] = len(ordered_categories) + i
     else:
         # Use default positions if no custom order
-        category_positions = {str(cat): i for i, cat in enumerate(distinct_categories)}
+        category_positions = {str(cat): i for i, cat in enumerate(categories())}
     
     # Filter and sort categories
     item_types = [
