@@ -15,7 +15,7 @@
       style="max-width: 300px;"></a>
 
   <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">
-    {% if user.is_authenticated%}
+    
     <ul class="navbar-nav ml-auto">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
@@ -36,7 +36,11 @@
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
-          {{ user.profile.name }}
+          {% if user.is_authenticated%}
+            {{ user.profile.name }}
+          {% else %}
+            User
+          {% endif %}
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href='{% url "price_list" %}'>My Price List</a>
@@ -57,33 +61,12 @@
       <li class='{% if request.path == "/about/"%} active {% endif %} nav-item float-right'>
         <a class="nav-link" href='{% url "about" %}'>About</a>
       </li>
+      {% if user.is_authenticated%}
       <li class='nav-item float-right'><a class="nav-link" href='{% url "logout" %}'>Log Out</a></li>
-
-    </ul>
-    {% else %}
-
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-          aria-haspopup="true" aria-expanded="false">
-          Listings
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href='{% url "listings" %}'>Item Prices</a>
-          <a class="dropdown-item" href='{% url "search_services" %}'>Search custom services</a>
-          <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
-          <a class="dropdown-item" href='{% url "revives_listings" %}'>Revivers</a>
-          <a class="dropdown-item" href='{% url "losses_listings" %}'>Loss Sellers</a>
-          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies for Sale</a>
-          <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
-          <a class="dropdown-item" href='{% url "museum_helper" %}'>Museum Helper</a>
-        </div>
-      </li>
-      <li class='{% if request.path == "/about"%} active {% endif %} nav-item float-right'><a class="nav-link"
-          href='{% url "about" %}'>About</a></li>
+      {% else %}
       <li class='{% if request.path == "/login/" %} active {% endif %} nav-item float-right'><a
-          class="nav-link float-right" href='{% url "login" %}'>Log in</a></li>
+        class="nav-link float-right" href='{% url "login" %}'>Log in</a></li>
+      {% endif %}
     </ul>
-    {% endif %}
   </div>
 </nav>
