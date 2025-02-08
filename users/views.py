@@ -55,9 +55,7 @@ def login_request(request):
                 
                 user = User.objects.filter(profile=profile).get()
                 login(request, user)
-                
-                print("0001", request.GET.get('next'))
-                
+                                
                 return redirect(request.GET.get('next') or 'home')
             else:  # register
 

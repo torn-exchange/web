@@ -1,6 +1,7 @@
 import json
 import re
 import os
+from typing import List
 import requests
 from html import escape
 from itertools import islice
@@ -27,7 +28,7 @@ from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_
                               get_most_trades)
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt
 from main.profile_stats import return_profile_stats
-from main.te_utils import (categories, dictionary_of_categories, get_services_view,
+from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
 from users.forms import SettingsForm
 from users.models import Profile, Settings
@@ -442,7 +443,7 @@ def price_list(request, identifier=None):
     if identifier is None:
         if request.user.is_authenticated:
             profile = (
-                Profile.objects.filter(user=request.user)
+                Profile.objects.select_related('settings').filter(user=request.user)
                 .order_by('-created_at')
                 .first()
             )
@@ -487,29 +488,30 @@ def price_list(request, identifier=None):
     cached_data = cache.get(f'price_list_{pricelist_profile.torn_id}')
     if cached_data:
         # Unpack the cached data
-        all_relevant_items, last_updated, listings, last_receipt = cached_data
+        all_relevant_items, last_updated, last_receipt = cached_data
     else:
         # Compute the data if not available in the cache
         all_relevant_items = Listing.objects.filter(
             owner=pricelist_profile).select_related('owner', 'item').order_by('-item__TE_value')
         
-        listings = Listing.objects.filter(
-            owner=pricelist_profile).select_related('owner', 'item').all().order_by('-item__TE_value')
-        
         last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
         
         try:
-            last_updated = listings.order_by('-item__last_updated').first().item.last_updated
+            last_updated = all_relevant_items.order_by('-item__last_updated').first().item.last_updated
         except AttributeError:
             last_updated = None
         
         # Cache the computed data
-        cache.set(f'price_list_{pricelist_profile.torn_id}', (all_relevant_items, last_updated, listings, last_receipt), 60*60*1)
+        cache.set(f'price_list_{pricelist_profile.torn_id}', (all_relevant_items, last_updated, last_receipt), 60*60*1)
     
-    distinct_categories = [a['item__item_type'] for a in all_relevant_items.values('item__item_type').distinct()]
+    distinct_categories: List[str] = list(
+        all_relevant_items.values_list('item__item_type', flat=True)
+        .distinct()
+        .order_by('item__item_type')
+    )
     
-    item_types = [x for x in categories() if (x in distinct_categories)]
-        
+    # item_types = [x for x in categories() if (x in distinct_categories)]
+    item_types = get_ordered_categories(distinct_categories, pricelist_profile.hidden_categories, pricelist_profile.order_categories)
     
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
@@ -1350,12 +1352,23 @@ def tutorial(request):
 
 @login_required
 def manage_price_list(request):
-    profile = request.user.profile
+    cats = categories()
+    
+    profile = (
+        Profile.objects.select_related('settings')
+        .filter(user_id=request.user.profile.user_id)
+        .order_by('-created_at')
+        .first()
+    )
+
+    if profile.order_categories:
+        cats = profile.order_categories
     
     context = {
         'page_title': 'Manage Price List - Torn Exchange',
-        'cats': categories(),
         'hidden_categories': profile.hidden_categories,
+        'categories': cats,
+        'owner_profile': profile,
     }
     
     return render(request, 'main/manage_price_list.html', context)
@@ -1370,11 +1383,24 @@ def toggle_category_visibility(request):
     is_checked = data.get('is_checked')
     profile = request.user.profile
 
+    # checked means it is NOT hidden
     if is_checked:
-        profile.hidden_categories[category] = True
-    else:
         if category in profile.hidden_categories:
             del profile.hidden_categories[category]
+    else:
+        profile.hidden_categories[category] = True
 
+    profile.save()
+    return JsonResponse({'success': True})
+
+
+@csrf_exempt
+@require_POST
+def save_category_order(request):
+    data = json.loads(request.body)
+    order = data.get('order')
+    profile = request.user.profile
+
+    profile.order_categories = order
     profile.save()
     return JsonResponse({'success': True})
