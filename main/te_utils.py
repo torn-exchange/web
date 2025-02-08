@@ -5,6 +5,7 @@ import sentry_sdk
 from datetime import datetime
 from typing import List, OrderedDict, Tuple
 from django.db.models.query import QuerySet
+from typing import List, Optional, Dict
 
 from main.models import Service
 
@@ -37,6 +38,53 @@ def categories():
         'Basic Properties',
         'Fully Upgraded Properties',
     ]
+
+
+def get_ordered_categories(
+    distinct_categories: List[str],
+    hidden_categories: Dict[str, bool],
+    ordered_categories: Optional[List[str]] = None
+) -> List[str]:
+    """
+    Get ordered list of categories, excluding hidden ones.
+    
+    Args:
+        distinct_categories: List of available categories
+        hidden_categories: Dict of hidden category states
+        ordered_categories: Optional list of how categories should be ordered
+    
+    Returns:
+        List[str]: Ordered list of visible categories
+    """
+    
+    # old behaviour without hidden nor ordered categories
+    if not hidden_categories and not ordered_categories:
+        return [x for x in categories() if (x in distinct_categories)]
+    
+    # Create position mapping
+    category_positions: Dict[str, int] = {}
+    if ordered_categories:
+        # Add ordered categories first
+        for i, cat in enumerate(ordered_categories):
+            category_positions[str(cat)] = i
+        
+        # Add remaining categories with higher position
+        for i, cat in enumerate(distinct_categories):
+            if cat not in category_positions:
+                category_positions[str(cat)] = len(ordered_categories) + i
+    else:
+        # Use default positions if no custom order
+        category_positions = {str(cat): i for i, cat in enumerate(distinct_categories)}
+    
+    # Filter and sort categories
+    item_types = [
+        str(x) for x in distinct_categories 
+        if str(x) not in hidden_categories
+    ]
+    
+    item_types.sort(key=lambda x: category_positions.get(str(x), float('inf')))
+    
+    return item_types
 
 
 def dictionary_of_categories():
