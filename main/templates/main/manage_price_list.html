@@ -8,6 +8,13 @@
     <!-- PAGE DESCRIPTION -->
 
     <div class="row">
+        <div class="text-center col-12">
+          <a class='btn btn-primary' href="{% url 'price_list' %}"><i class="fa-solid fa-user-tie"></i> My Price List</a>
+          <a class='btn btn-primary' href="{% url 'edit_price_list' %}"><i class="fa-solid fa-receipt"></i> Edit Prices</a>
+        </div>
+      </div>
+
+    <div class="row mt-3 mb-3">
         <div class="col-12">
             <hr>
         </div>
@@ -15,8 +22,8 @@
 
     <form id='management_form' method="post">
         {% csrf_token %}
-        <button class='btn btn-primary float-right m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;"
-            id="submit-management"> Submit </button>
+        <button class='btn btn-primary float-right m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;" title="Not yet functional"
+            id="submit-management" disabled> Submit </button>
 
         <div class="row">
             <div class='card col-12 m-2 p-0'>
@@ -25,42 +32,31 @@
                 </div>
 
                 <div class='card-body m-0 p-0'>
-                    <!-- Title Row -->
+
                     <div class="form-group row m-2">
-                        <div class="col-12">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Title</span>
-                                </div>
-                                <input type="text" class="form-control" value="{{ owner_profile.name }}'s Price List"
-                                    disabled>
-                            </div>
+                        <div class="col-12 col-md-2">
+                            Title
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <input type="text" class="form-control" value="{{ owner_profile.name }}'s Price List" disabled> 
                         </div>
                     </div>
 
-                    <!-- Description Row -->
                     <div class="form-group row m-2">
-                        <div class="col-12">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Description</span>
-                                </div>
-                                <textarea class="form-control" rows="3"
-                                    disabled>{{ owner_profile.settings.trade_list_description }}</textarea>
-                            </div>
+                        <div class="col-12 col-md-2">
+                            Description
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <textarea class="form-control" rows="3" disabled>{{ owner_profile.settings.trade_list_description }}</textarea>
                         </div>
                     </div>
 
-                   <!-- Trade Message Row -->
                    <div class="form-group row m-2">
-                    <div class="col-12">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">Description</span>
-                            </div>
-                            <textarea class="form-control" rows="3"
-                                disabled>{{ owner_profile.settings.receipt_paste_text }}</textarea>
-                        </div>
+                    <div class="col-12 col-md-2">
+                        Trade message
+                    </div>
+                    <div class="col-12 col-md-10">
+                        <textarea class="form-control" rows="3" disabled>{{ owner_profile.settings.receipt_paste_text }}</textarea>
                     </div>
                 </div>
 
@@ -78,7 +74,7 @@
                     <div class="form-group row m-2">
                         <div class="col-12">
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="setsCheck" disabled>
+                                <input type="checkbox" class="custom-control-input" id="setsCheck" {% if owner_profile.settings.trade_enable_sets %}checked{% endif %} disabled>
                                 <label class="custom-control-label" for="setsCheck">Enable sets</label>
                             </div>
                         </div>
