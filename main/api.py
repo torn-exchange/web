@@ -357,4 +357,46 @@ def sellers(request):
     else:
         return je("Invalid HTTP method")
 
+@ce 
+def modify_listing(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            key = data.get('key')
+            item_ids = data.get('item_ids', [])
+            new_price = data.get('new_price')
+            action = data.get('action')
 
+            if not key or not item_ids or not action:
+                return je("Missing required parameters")
+
+            try:
+                profile = Profile.objects.filter(api_key=key).get()
+            except Profile.DoesNotExist:
+                return je("Profile matching query does not exist")
+
+            modified_listings = []
+            for item_id in item_ids:
+                item = get_object_or_404(Item, item_id=item_id)
+                listing = Listing.objects.filter(owner=profile, item=item).first()
+
+                if listing:
+                    if action == 'update' and new_price:
+                        try:
+                            listing.price = int(new_price)
+                            listing.save(update_fields=['price'])
+                            modified_listings.append(item_id)
+                        except Exception as e:
+                            continue
+                    elif action == 'delete':
+                        listing.delete()
+                        modified_listings.append(item_id)
+
+            if modified_listings:
+                return js(f"Listings modified successfully for items: {', '.join(modified_listings)}")
+            else:
+                return je("No listings were modified")
+        except Exception as E:
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")
