@@ -1394,6 +1394,7 @@ def toggle_category_visibility(request):
     return JsonResponse({'success': True})
 
 
+@login_required
 @csrf_exempt
 @require_POST
 def save_category_order(request):

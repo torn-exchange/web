@@ -83,6 +83,10 @@
                             <div class='m-1 ml-0'>
                                 <a class='btn btn-warning' href="{% url 'edit_price_list' %}">Change Prices</a>
                             </div>
+
+                            <div class='m-1 ml-0'>
+                                <a class='btn btn-warning' href="{% url 'manage_price_list' %}"><i class="fa-solid fa-gear"></i> Manage Price List</a>
+                            </div>
                             {% endif %}
 
                             {% if owner_profile.torn_id == user_profile.torn_id and page_type == "service" %}
