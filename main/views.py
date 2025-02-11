@@ -739,12 +739,21 @@ def calculator(request):
 
 @login_required
 def analytics(request):
-    profile = Profile.objects.filter(user=request.user).get()
+    cache_key = f'analytics_data_{request.user.username}'
+    cached_data = cache.get(cache_key)
+    
+    if cached_data:
+        print("cached data")
+        return render(request, 'main/analytics.html', cached_data)
+
+    print("WHY NOT CACHED?!")
+    profile = (
+        Profile.objects
+        .select_related('settings')  # Eager load settings
+        .get(user=request.user)
+    )
+    
     context = return_profile_stats(profile)
-    try:
-        user_settings = Settings.objects.filter(owner=profile).get()
-    except:
-        user_settings = None
     
     if len(context['sellers']) > 0:
         # Extract the first 10 items from the dictionary
@@ -755,10 +764,12 @@ def analytics(request):
         first_30_receipts = {}
         
     context.update({
-        'user_settings': user_settings,
+        'user_settings': profile.settings,
         'sellers': first_10_sellers,
         'receipts': first_30_receipts,
     })
+    
+    cache.set(cache_key, context, 60*60*1)
 
     return render(request, 'main/analytics.html', context)
 

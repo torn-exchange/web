@@ -88,7 +88,7 @@
         </div>
         <div class="card-body">
           <div class="chart-container" style="position: relative;">
-            <div id="profits_last_week_chart"></div>
+            <div id="total_profits"></div>
           </div>
         </div>
       </div>
@@ -101,21 +101,21 @@
 </div>
 </div>
 
-
 <script>
   Apex.colors = ['#1f2739']
+
   var options_graph_1 = {
     chart: {
       type: 'bar'
     },
     series: [{
       name: "Number of Trades",
-      data: {{ data_graph_1| safe}}
+      data: {{ data_graph_1| safe }}
     }],
     xaxis: {
       type: "datetime"
     }
-  }
+  };
 
 
   var chart_1 = new ApexCharts(document.querySelector("#number_of_trades_chart"), options_graph_1);
@@ -127,7 +127,7 @@
     },
     series: [{
       name: "Profits",
-      data: {{ data_graph_2| safe}}
+      data: {{ data_graph_2| safe }}
     }],
     dataLabels: {
       formatter: numberWithCommas,
@@ -142,9 +142,9 @@
         }
       }
     }
-  }
+  };
 
-  var chart_2 = new ApexCharts(document.querySelector("#profits_last_week_chart"), options_graph_2);
+  var chart_2 = new ApexCharts(document.querySelector("#total_profits"), options_graph_2);
   chart_2.render();
 
   function format_values_list(values_list) {

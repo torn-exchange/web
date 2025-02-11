@@ -195,7 +195,7 @@ CSRF_FAILURE_VIEW = "main.views.custom_csrf_failure_view"
 #### SENTRY LOGGING ####
 ########################
 
-if(DEBUG == "true"):
+if(DEBUG):
     SENTRY_DSN=None
 else:
     SENTRY_DSN=os.getenv('SENTRY_DSN_URL')
