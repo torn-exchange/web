@@ -245,12 +245,10 @@ paths:
               properties:
                 key:
                   type: string
-                  description: API key for authentication
-                  example: GmEDEepscpPHvEY9
-                item_id:
-                  type: integer
-                  description: ID of the item
-                  example: 1
+                item_ids:
+                  type: array
+                  items:
+                    type: string
                 new_price:
                   type: integer
                   description: New price for the item (optional)
