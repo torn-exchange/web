@@ -103,7 +103,7 @@
                     <ul id="sortable" class="list-unstyled">
                         {% for category in categories %}
                         <li data-category="{{ category }}" class="d-flex align-items-center">
-                            <i class="fas fa-grip-lines mr-4 handle" style="cursor: move;"></i>
+                            <i class="fas fa-grip-lines handle" style="cursor: move; padding: 10px 15px;"></i>
                             <div class="custom-control custom-switch mr-4">
                                 <input type="checkbox" class="custom-control-input toggle-category"
                                     id="hide_{{ category }}" name="hide_{{ category }}" data-category="{{ category }}"
@@ -132,6 +132,7 @@
 
 <!-- SCRIPTS -->
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 <script type="text/javascript">
     function toggleSpinner(show) {
         $('#spinner').toggleClass('d-none', !show);
@@ -170,10 +171,13 @@
 
         $("#sortable").sortable({
             handle: ".handle",
+            delay: 150,  // Delay before sorting starts
+            distance: 10,  // Minimum distance before sorting starts
+            tolerance: "pointer",  // Use pointer location for sorting
             update: function (event, ui) {
                 toggleSpinner(true);
                 var order = $(this).sortable('toArray', { attribute: 'data-category' });
-                console.log(order);
+                
                 var csrfToken = $('[name=csrfmiddlewaretoken]').val();
 
                 $.ajax({
