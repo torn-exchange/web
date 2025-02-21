@@ -59,10 +59,10 @@
             <input type="search" class="form-control rounded border border-primary" id="searchInput" placeholder="Search for an item...">  
         </div>
     </div>
-    <div class='row'>
+    <div class='row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3'>
         {% for itype in item_types %}
 
-        {% if forloop.counter0|divisibleby:4 %}
+        {% comment %} {% if forloop.counter0|divisibleby:4 %}
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
         <!-- TE-SquareAds -->
         <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5083091252165465"
@@ -70,39 +70,41 @@
         <script>
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
-        {% endif %}
+        {% endif %} {% endcomment %}
         
-        <div class="col-sm-12 col-md-4 col-lg-4 category">
+        <div class="col category">
             <div class='card price_table'>
-                <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
-                    <h5 class="text-white allerta-font ">
+                <div class="card-header mb-0 pb-0 p-1 text-center">
+                    <h5 class="allerta-font">
                         {{itype|item_plurals}}
                     </h5>
                 </div>
-                <table class="table table-hover header-fixed table-sm table-responsive">
-                    <thead>
-                        <tr>
-                            <th style="width: 20%;" scope="col" class="p-0 m-0">Image</th>
-                            <th style="width: 50%;" scope="col" class="p-0 m-0">Item Name</th>
-                            <th style="width: 30%;" scope="col" class="p-0 m-0">Buy Price</th>
-                        </tr>
-                    </thead>
-                    <tbody class="my_tbody">
-                        {%for item in items%}
-                        {% if item.item.item_type == itype%}
-                        <tr class="row-striped p-0 item">
-                            </td>
-                            <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
-                            <td style="width: 50%;" class="p-0 m-0 item-name">{{item.item.name}}</td>
-                            <td style="width: 30%;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
-                        </tr>
-                        {% endif%}
-                        {%endfor%}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;" scope="col" class="p-0 m-0"></th>
+                                <th style="width: 50%;" scope="col" class="p-0 m-0">Item Name</th>
+                                <th style="width: 30%;" scope="col" class="p-0 m-0">Buy Price</th>
+                            </tr>
+                        </thead>
+                        <tbody class="my_tbody">
+                            {%for item in items%}
+                            {% if item.item.item_type == itype%}
+                            <tr class="row-striped p-0 item">
+                                </td>
+                                <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
+                                <td style="width: 50%;" class="p-0 m-0 item-name">{{item.item.name}}</td>
+                                <td style="width: 30%;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
+                            </tr>
+                            {% endif%}
+                            {%endfor%}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        <br>
+        
         {% endfor %}
     </div>
 </div>
@@ -203,48 +205,4 @@
     });
 </script>
 
-<style>
-    .voting-div {
-        height: 90px;
-        width: 60px;
-    }
-
-    #vote-up {
-        margin: 0 auto;
-        padding-left: 20px;
-        background-image:url("{% static '/main/images/upvote.png'%}");
-        background-repeat: no-repeat;
-        background-size: contain;
-        display: block;
-        height: 20%;
-        width: auto;
-        object-fit: contain;
-    }
-
-    #vote-up:hover {
-        background-image:url("{% static '/main/images/upvote-hover.png'%}");
-
-    }
-
-    #vote-down {
-        margin: 0 auto;
-        align-content: center;
-        background-repeat: no-repeat;
-        background-size: contain;
-        height: 20%;
-        width: auto;
-        display: block;
-        object-fit: contain;
-        background-image:url("{% static '/main/images/downvote.png'%}");
-    }
-
-    #vote-count {
-        height: 20px;
-
-    }
-
-    #vote-down:hover {
-        background-image:url("{% static '/main/images/downvote-hover.png'%}");
-    }
-</style>
 {% endblock content %}

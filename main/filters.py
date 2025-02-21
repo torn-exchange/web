@@ -176,11 +176,11 @@ class EmployeeListingFilter(django_filters.FilterSet):
     )
 
     man_range = RangeFilter(widget=RangeWidget(attrs={
-                            "placeholder": "", "class": "offset-1 col-5 form-control"}), label='Manual Labor', field_name='work_stats_man', lookup_expr='range')
+                            "placeholder": "", "class": "col-5 form-control"}), label='Manual Labor', field_name='work_stats_man', lookup_expr='range')
     int_range = RangeFilter(widget=RangeWidget(attrs={
-                            "placeholder": "", "class": "offset-1 col-5 form-control"}), label='Intelligence', field_name='work_stats_int', lookup_expr='range')
+                            "placeholder": "", "class": "col-5 form-control"}), label='Intelligence', field_name='work_stats_int', lookup_expr='range')
     end_range = RangeFilter(widget=RangeWidget(attrs={
-                            "placeholder": "", "class": "offset-1 col-5 form-control"}), label='Endurance', field_name='work_stats_end', lookup_expr='range')
+                            "placeholder": "", "class": "col-5 form-control"}), label='Endurance', field_name='work_stats_end', lookup_expr='range')
 
     model_name_contains = CharFilter(
         label='Player Name', field_name='name', lookup_expr='icontains')

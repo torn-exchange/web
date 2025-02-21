@@ -103,7 +103,7 @@
 
 
 <script>
-  Apex.colors = ['#1f2739']
+  Apex.colors = ['#ffffff']
   var options_graph_1 = {
     chart: {
       type: 'bar'
@@ -113,7 +113,19 @@
       data: {{ data_graph_1| safe}}
     }],
     xaxis: {
-      type: "datetime"
+      type: "datetime",
+      labels: {
+          style: {
+              colors: '#ffffff'  // X-axis labels color
+          }
+      }
+    },
+    yaxis: {
+        labels: {
+            style: {
+                colors: '#ffffff'  // Y-axis labels color
+            }
+        }
     }
   }
 
@@ -133,12 +145,20 @@
       formatter: numberWithCommas,
       },
     xaxis: {
-      type: "datetime"
+      type: "datetime",
+      labels: {
+          style: {
+              colors: '#ffffff'  // X-axis labels color
+          }
+      }
     },
     yaxis: {
       labels: {
         formatter: function (value) {
           return "$" + numberWithCommas(value);
+        },
+        style: {
+          colors: '#ffffff'  // Y-axis labels color
         }
       }
     }

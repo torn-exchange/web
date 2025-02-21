@@ -25,14 +25,14 @@
                 <div class='card-body m-0 p-0 pb-2'>
                 {% for cat in data_dict %}
                 <div class="col-sm-12">
-                    <a class="btn btn-primary btn-square m-0" data-toggle="collapse"
+                    <a class="btn btn-primary btn-square m-0" data-bs-toggle="collapse"
                     href="#collapse_{{cat|replace_spaces}}" role="button" aria-expanded="false"
                     aria-controls="collapseExample" style="width: 100%;">
                     {{cat}}
                 </a>
                 <br>
                 <div class="collapse" id="collapse_{{cat|replace_spaces}}">
-                    <div class="row">
+                    <div class="row g-0">
                         <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
                             <thead>
                                 <tr>
@@ -73,15 +73,18 @@
                                         </div>
                                     </td>
                                     <td style='width:1%;' class='text-center'>
-                                        <div class='input-group  mb-1'>
-                                            <input type="checkbox" class="form-control form-control-sm"
-                                                name="{{service}}_checkbox" />
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="form-check m-0">
+                                                <input type="checkbox" class="form-check-input" 
+                                                       name="{{service}}_checkbox" 
+                                                       id="{{service}}_checkbox">
+                                            </div>
                                         </div>
                                     </td>
                                 {% endfor %}
                             </tbody>                       
                         </table>
-                    </div>
+                    
                 </div>
                 </div>
                 {% endfor %}

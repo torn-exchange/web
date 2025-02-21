@@ -14,7 +14,7 @@
                     <a href="{% url 'price_list' item.trader_name %}"> {{item.trader_name}} </a>
                 </div>
                 <div class="col-3 small  pl-0 pr-0 text-right">
-                    {{item.trade_count}} <i class="fas fa-star small"></i>
+                    <small>{{item.trade_count}} <i class="fas fa-star small"></i></small>
                 </div>
             </div>
             {% if forloop.counter != 10%}
