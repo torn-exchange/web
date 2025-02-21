@@ -161,7 +161,8 @@
                     $(json.items).each(function (i, item) {
                         total_price += json.price[i] * json.qty[i]
                         profit_from_trade += (json.market_prices[i] - json.price[i]) * json.qty[i]
-                        $('<tbody>').html("<tr class='text-center row-striped input-row'><td '><img style='max-width:90%;'src='" + json.img_url[i] + "'></td>" +
+                        $('<tbody>').html("<tr class='text-center row-striped input-row'>" +
+                            "<td class='text-center><img style='max-width:90%;'src='" + json.img_url[i] + "'></td>" +
                             "<td class='text-center name_input'>" + json.items[i] + "</td>" +
                             "<td class='text-center quantity quantity_input' >" + numberWithCommas(json.qty[i]) + "</td>" +
                             "<td class='text-center market-price'>$" + numberWithCommas(json.market_prices[i]) + "</td>" +
@@ -395,19 +396,16 @@
 
 <style>
     #table-div {
-        background-color: white;
         margin-top: 20px;
         border: black;
         border-radius: 1px;
     }
 
     table {
-        background-color: #ffffff !important;
         border: black;
     }
 
     table td {
-        background-color: #ffffff !important;
         border: black;
         border-radius: 1px;
     }

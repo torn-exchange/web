@@ -1,0 +1,72 @@
+/* PRICE LIST STYLES */
+
+.price_table {
+    height: 500px;  /* Fixed height for all cards */
+    display: flex;
+    flex-direction: column;
+}
+
+.price_table .card-header {
+    flex: 0 0 auto;  /* Don't allow header to grow/shrink */
+}
+
+.price_table .table-responsive {
+    flex: 1 1 auto;  /* Allow table to grow/shrink */
+    overflow-y: auto;  /* Enable vertical scrolling */
+    max-height: calc(100% - 50px);  /* Subtract header height */
+}
+
+/* GOLD STANDARD =) */
+
+:root {
+    --bs-gold: #daa520;  /* Using Bootstrap naming convention */
+  }
+  
+  /* Text color utility */
+  .text-gold {
+    color: var(--bs-gold) !important;
+  }
+  
+  /* Background color utility */
+  .bg-gold {
+    background-color: var(--bs-gold) !important;
+  }
+  
+  /* Border color utility */
+  .border-gold {
+    border-color: var(--bs-gold) !important;
+  }
+
+/* VOTING */
+
+.voting-div {
+    height: 90px;
+    width: 60px;
+}
+
+#vote-up, #vote-down {
+    margin: 0 auto;
+    display: block;
+    cursor: pointer;
+    color: var(--bs-secondary);  /* Default color */
+    transition: color 0.2s ease;
+}
+
+#vote-up:hover {
+    color: var(--bs-success);  /* Green on hover */
+}
+
+#vote-down:hover {
+    color: var(--bs-danger);   /* Red on hover */
+}
+
+#vote-count {
+    height: 20px;
+    text-align: center;
+}
+
+/* FOOTER */
+
+.discord-logo {
+    filter: brightness(1.5) contrast(0.9);  /* Brighter but slightly less contrast */
+}

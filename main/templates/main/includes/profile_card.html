@@ -8,11 +8,23 @@
                 <div class='row col-12 text-center p-2 d-flex flex-column flex-md-row justify-content-between align-items-center'>
                     <!-- VOTE -->
                     <div class="order-last col-md-1 col-1 ml-0 p-0 order-md-first">
-                        <div class="m-auto bg-white text-left voting-div p-3 pl-0 ml-0 m-0 d-block text-left">
+                        <div class="m-auto text-left voting-div p-3 pl-0 ml-0 m-0 d-block text-left">
                             {% csrf_token %}
-                            <div class="row up text-left" id="vote-up"></div>
+                            <div class="row up text-left">
+                                <a href="#" id="vote-up">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                                    </svg>
+                                </a>
+                            </div>
                             <div class="text-center m-auto" id="vote-score">{{vote_score}}</div>
-                            <div class="row down text-left" id="vote-down"></div>
+                            <div class="row down text-left">
+                                <a href="#" id="vote-down">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -47,20 +59,20 @@
                 <!-- BUTTONS -->
                 <div class='row col-12 text-center p-2'>
                     <div class="col text-center">
-                        <div class='row justify-content-center m-1 p-1 pt-0 mt-0'>
-                            <div class='m-1 ml-0'>
+                        <div class='d-flex flex-wrap justify-content-center m-1 p-1 pt-0 mt-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-info' target="_blank"
                                     href="https://www.torn.com/profiles.php?XID={{owner_profile.torn_id}}">Profile</a>
                             </div>
 
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-info' target="_blank" href="https://tornpal.com/profile/{{owner_profile.torn_id}}?ref=2507441">
                                     TornPal Profile
                                 </a>
                             </div>
 
                             {% if page_type == "trade" and owner_settings.link_to_forum_post %}
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-primary' target="_blank" href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">
                                     Reviews
                                 </a>
@@ -68,7 +80,7 @@
                             {% endif %}
 
                             {% if page_type == "trade" %}
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-primary' target="_blank" href="https://www.torn.com/trade.php#step=start&userID={{owner_profile.torn_id}}">
                                     Start Trade
                                 </a>
@@ -76,21 +88,21 @@
                             {% endif %}
 
                             {% if owner_profile.torn_id == user_profile.torn_id and page_type == "trade" %}
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-warning' href="{% url 'calculator' %}">Trade Calculator</a>
                             </div>
 
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-warning' href="{% url 'edit_price_list' %}">Change Prices</a>
                             </div>
 
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-warning' href="{% url 'manage_price_list' %}"><i class="fa-solid fa-gear"></i> Manage Price List</a>
                             </div>
                             {% endif %}
 
                             {% if owner_profile.torn_id == user_profile.torn_id and page_type == "service" %}
-                            <div class='m-1 ml-0'>
+                            <div class='m-1'>
                                 <a class='btn btn-warning' href="{% url 'edit_services' %}">Edit Services</a>
                             </div>
                             {% endif %}

@@ -34,22 +34,20 @@
         {% for listing in listings%}
         <div class="col-md-3 col-sm-6 p-1">
             <div class="card mt-3 p-0 m-0">
-                <div class="card-header bg-dark text-white small p-0">
-                    <div class="row">
-                        <div class='col p-2 pl-4'>
-                            <div class='float-left'>
-                                {% if listing.activity_status == 'Online' %}
-                                <img src="{% static '/main/images/crown-online.png' %}" style="max-width:5%;">
-                                {% elif listing.activity_status == 'Idle' %}
-                                <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 5%;">
-                                {% elif listing.activity_status == 'Offline' %}
-                                <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 5%;">
-                                {% endif %}
-                                <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
-                                    class="text-white font-weight-bold text-center pr-3">
-                                    &nbsp; {{listing.name}}
-                                </a>
-                            </div>
+                <div class="card-header bg-dark text-white small p-2">
+                    <div class="d-flex align-items-center">
+                        <div class="status-icon me-2">
+                            {% if listing.activity_status == 'Online' %}
+                            <img src="{% static '/main/images/crown-online.png' %}" style="max-width:5%;">
+                            {% elif listing.activity_status == 'Idle' %}
+                            <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 5%;">
+                            {% elif listing.activity_status == 'Offline' %}
+                            <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 5%;">
+                            {% endif %}
+                            <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
+                                class="text-white font-weight-bold text-center pr-3">
+                                &nbsp; {{listing.name}}
+                            </a>
                         </div>
                     </div>
                 </div>

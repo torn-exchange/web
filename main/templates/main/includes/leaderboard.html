@@ -6,15 +6,15 @@
         <div class="card-body overflow-auto pt-3">
 
             {% for profile in top_50%}
-            <div class="row small pl-1 pr-1">
-                <div class="col-3 small pl-0 pr-0">
+            <div class="row pl-1 pr-1">
+                <div class="col-3 pl-0 pr-0">
                     <strong>#{{forloop.counter}} </strong>
                 </div>
-                <div class="col-6 small pl-0 pr-0">
-                    <a href="{% url 'price_list' profile.name %}"> {{profile.name}} </a>
+                <div class="col-6 pl-0 pr-0">
+                    <a href="{% url 'price_list' profile.name %}">{{profile.name}}</a>
                 </div>
-                <div class="col-3 small  pl-0 pr-0 text-right">
-                    {{profile.vote_score}} <i class="fas fa-star small"></i>
+                <div class="col-3 pl-0 pr-0 text-right">
+                    <small>{{profile.vote_score}} <i class="fas fa-star small"></i></small>
                 </div>
             </div>
             {% if forloop.counter != 10%}

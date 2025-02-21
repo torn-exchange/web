@@ -74,8 +74,8 @@
                         your own service list now.
                     </p>
                     <p class="ml-5 p-0 m-0 pb-2">
-                        <div class="btn btn-dark">
-                            <a class="allerta-font h5 text-white" href="{% url 'edit_services' %}"> Add Your Service Now </a>
+                        <div class="btn btn-primary">
+                            <a class="allerta-font h5" href="{% url 'edit_services' %}"> Add Your Service Now </a>
                         </div>
                     </p>
                     
@@ -91,13 +91,13 @@
                 <small class="text-muted ml-4"> {{number_of_items}} services found in your search.</small>
                 {% for listing in listings%}
                 <div class='col-12'>
-                    <div class='card listing-card  m-0 mb-1 p-0'>
+                    <div class='card listing-card m-0 mb-1 p-0'>
                         <div class="card-header m-0 p-0">
-                            <div class="row pl-1 m-auto">
-                                <div class="col-8 mb-0">
-                                    <div class='row m-auto'>
-
-                                        <div class="p-2 col-2 text-left">
+                            <div class="row p2">
+                                <!-- Status Icon & Name -->
+                                <div class="col-12 col-md-8 mb-2 mb-md-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2" style="width: 30px;">
                                             {% if listing.owner.activity_status == 'Online' %}
                                                 <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">&nbsp;
                                             {% elif listing.owner.activity_status == 'Idle' %}
@@ -106,43 +106,39 @@
                                                 <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">&nbsp;
                                             {% endif %}
                                         </div>
-                                        <div class="col text-left">
-                                            <div class="pl-3 text-left">
+                                        <div class="text-gold">
                                                 {{listing.owner.name}}[{{listing.owner.torn_id}}]
-                                            </div>
                                         </div>
-                                        <div class="pl-1 col">
+                                        <div class="ms-3 text-gold">
                                             <i class="fas fa-star small mr-2 mb-2 size-2x">
-                                            </i>{{listing.owner.vote_score}}
+                                            </i> {{listing.owner.vote_score}}
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4">
-                                    <div class="row">
 
-                                        <div class="col-4">
-                                            <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
-                                                class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(223, 239,243);"> Service List</a>
-                                        </div>
-                                        <div class="col-4">
-                                            <a target="_blank"
-                                                href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}"
-                                                class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(235, 244,225);"> Contact Now</a>
-                                        </div>
-                                        <div class="col-4">
-                                            <a target="_blank" href="https://tornpal.com/profile/{{listing.owner.torn_id}}?ref=2507441"
-                                                class="badge badge-light text-black pl-2 pr-2"
-                                                style="background-color: rgb(223, 239,243);"> TornPal</a>
-                                        </div>
+                                <!-- Action Buttons -->
+                                <div class="col-12 col-md-4">
+                                    <div class="d-flex justify-content-around gap-2">
+                                         <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
+                                            class="badge badge-light text-black pl-2 pr-2"
+                                            style="background-color: rgb(223, 239,243);"> Service List</a>
+                                    
+                                        <a target="_blank"
+                                            href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}"
+                                            class="badge badge-light text-black pl-2 pr-2"
+                                            style="background-color: rgb(235, 244,225);"> Contact Now</a>
+                                    
+                                        <a target="_blank" href="https://tornpal.com/profile/{{listing.owner.torn_id}}?ref=2507441"
+                                            class="badge badge-light text-black pl-2 pr-2"
+                                            style="background-color: rgb(223, 239,243);"> TornPal</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-text">
-                            <div class='row'>
-                                <div class="pl-4 col-5">
+                            <div class='row align-items-center'>
+                                <!-- Item details -->
+                                <div class="col-9 col-md-10">
                                     <div class='row'>
                                         <div class="col">
                                             <p class="mb-0">
@@ -153,7 +149,7 @@
                                             </p>
                                             <p class="mb-0">
                                                 <strong>Asking Price:</strong>
-                                                <a class=' badge badge-success text-black'>
+                                                <a class='badge text-white b'>
                                                     ${{listing.money_price|intcomma}}
                                                 </a>
                                             </p>
