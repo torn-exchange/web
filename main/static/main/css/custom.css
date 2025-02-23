@@ -1,3 +1,44 @@
+/* NAVBAR STYLES ARE ALWAYS THE SAME */
+
+/* Navbar styling for both themes */
+.navbar {
+    background-color: #000000 !important;
+}
+
+/* Override Bootstrap's bg-dark class */
+.bg-dark {
+    color: white !important;
+    background-color: #000000 !important;
+}
+
+/* Ensure dropdown menus match the theme */
+.navbar .dropdown-menu {
+    color: 333333 !important;
+    background-color: #000000;
+}
+
+/* Dropdown item hover states */
+.navbar .dropdown-menu .dropdown-item:hover {
+    color: white !important;
+    background-color: #1a1a1a;
+}
+
+/* Dropdown divider color */
+.navbar .dropdown-divider {
+    border-color: #999999 !important;
+}
+
+/* Force these styles in both themes */
+[data-bs-theme=light] .navbar .dropdown-menu,
+[data-bs-theme=dark] .navbar .dropdown-menu {
+    background-color: #000000 !important;
+}
+
+[data-bs-theme=light] .navbar .dropdown-item,
+[data-bs-theme=dark] .navbar .dropdown-item {
+    color: #999999 !important;
+}
+
 /* PRICE LIST STYLES */
 
 .price_table {

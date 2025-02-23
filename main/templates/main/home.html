@@ -3,14 +3,8 @@
 {% load static %}
 
 <div class='container'>
-    <div class="alert alert-dismissible alert-secondary">
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        <h4 class="alert-heading">Dark Theme is here!</h4>
-        <p class="mb-0">We're ironing out UI bugs caused by dark theme switch. If you see any, please report them with screenshots on our Discord.</p>
-    </div>
-    
     {% if user_settings.tutorial == True%}
-    <div class="card bg-info small mt-3">
+    <div class="card bg-secondary small mt-3">
         <div class="card-header p-0 m-0">
             <h5 class='text-center'>
                 Tutorial: Welcome to Torn Exchange
@@ -151,6 +145,12 @@
                     </div>
                     <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
                         <ul class="pl-3">
+                            <li class="mb-2">
+                                <span style="color: red;"><b>New!</b></span> 
+                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">
+                                    ow you can toggle between dark and light theme!
+                                </a>
+                            </li>
                             <li class="mb-2">
                                 <a href="{% url 'manage_price_list' %}" class="text-decoration-none">Hiding and Re-arranging of categories</a>
                             </li>
