@@ -7,7 +7,7 @@
     {% if owner_profile.torn_id == user_profile.torn_id %}
         {% if user_settings.tutorial == True%}
         <!-- TUTORIAL -->
-        <div class="card bg-info small mt-3">
+        <div class="card bg-secondary small mt-3">
             <div class="card-header p-0 m-0">
                 <h5 class='text-center'>
                     Tutorial: Welcome to your Custom Services price list
@@ -157,50 +157,5 @@
         vote("up")
     });
 </script>
-
-<style>
-    .voting-div {
-        height: 90px;
-        width: 60px;
-    }
-
-    #vote-up {
-        margin: 0 auto;
-        padding-left: 20px;
-        background-image:url("{% static '/main/images/upvote.png'%}");
-        background-repeat: no-repeat;
-        background-size: contain;
-        display: block;
-        height: 20%;
-        width: auto;
-        object-fit: contain;
-    }
-
-    #vote-up:hover {
-        background-image:url("{% static '/main/images/upvote-hover.png'%}");
-
-    }
-
-    #vote-down {
-        margin: 0 auto;
-        align-content: center;
-        background-repeat: no-repeat;
-        background-size: contain;
-        height: 20%;
-        width: auto;
-        display: block;
-        object-fit: contain;
-        background-image:url("{% static '/main/images/downvote.png'%}");
-    }
-
-    #vote-count {
-        height: 20px;
-
-    }
-
-    #vote-down:hover {
-        background-image:url("{% static '/main/images/downvote-hover.png'%}");
-    }
-</style>
 
 {% endblock content %}

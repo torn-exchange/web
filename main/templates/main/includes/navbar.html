@@ -1,24 +1,29 @@
 {% load static %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-  <button class="navbar-toggler navbar-toggler-right float-left" type="button" data-toggle="collapse"
-    data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false"
+  <button class="navbar-toggler navbar-toggler-right float-left" type="button" 
+    data-bs-toggle="collapse"
+    data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false"
     aria-label="Toggle navigation">
     <i class='fas fa-ellipsis-h'></i>
   </button>
 
-  <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE"
-      class="mainlogo-small ml-3"></a>
-  <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}"><img
-      src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0"
-      style="max-width: 300px;"></a>
+  <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}">
+    <img src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE" class="mainlogo-small ml-3">
+  </a>
+  <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}">
+    <img src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0" style="max-width: 300px;">
+  </a>
 
-  <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">
-    
-    <ul class="navbar-nav ml-auto">
+  <div class="collapse navbar-collapse sticky-top" id="navbarTogglerDemo03">   
+    <ul class="navbar-nav ms-auto">
+      <li class="nav-item float-right">
+        <a class="nav-link" href='#' title="Toggle light or dark theme" onclick="toggleTheme()">
+          <i class="fa-solid fa-moon" id="theme-icon"></i>
+        </a>
+      </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
           Listings
         </a>
@@ -35,7 +40,7 @@
         </div>
       </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
           {% if user.is_authenticated%}
             {{ user.profile.name }}
@@ -46,30 +51,38 @@
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href='{% url "price_list" %}'>My Price List</a>
           <a class="dropdown-item" href='{% url "edit_price_list" %}'>Edit Prices List</a>
-          <a class="dropdown-item" href='{% url "manage_price_list" %}' style="color: red;">Manage Price List</a>
+          <a class="dropdown-item" href='{% url "manage_price_list" %}'>Manage Price List</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href='{% url "services_list" %}'>My Services</a>
           <a class="dropdown-item" href='{% url "edit_services" %}'>Edit Services</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href='{% url "calculator" %}'>Calculator</a>
           <a class="dropdown-item" href='{% url "analytics" %}'>Analytics</a>
+          <a class="dropdown-item" href='#' onclick="toggleTheme()">Toggle Theme</a>
           <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>
         </div>
       </li>
       <li class='nav-item float-right'>
         <a class="nav-link" href='{% url "api_home" %}' target="_blank">API</a>
       </li>
-      <li class='{% if request.path == "/how-to-use-torn-exchange/"%} active {% endif %} nav-item float-right'>
-        <a class="nav-link" href='{% url "forum_tutorial" %}'>Tutorial</a>
+      <li class='nav-item float-right'>
+        <a class="nav-link{% if request.path == "/how-to-use-torn-exchange/" %} active {% endif %}" href='{% url "forum_tutorial" %}'>
+          Tutorial
+        </a>
       </li>
-      <li class='{% if request.path == "/about/"%} active {% endif %} nav-item float-right'>
-        <a class="nav-link" href='{% url "about" %}'>About</a>
+      <li class='nav-item float-right'>
+        <a class="nav-link{% if request.path == "/about/" %} active {% endif %}" href='{% url "about" %}'>
+          About
+        </a>
       </li>
       {% if user.is_authenticated%}
       <li class='nav-item float-right'><a class="nav-link" href='{% url "logout" %}'>Log Out</a></li>
       {% else %}
-      <li class='{% if request.path == "/login/" %} active {% endif %} nav-item float-right'><a
-        class="nav-link float-right" href='{% url "login" %}'>Log in</a></li>
+      <li class='nav-item float-right'>
+        <a class="nav-link float-right{% if request.path == "/login/" %} active {% endif %}" href='{% url "login" %}'>
+          Log in
+        </a>
+      </li>
       {% endif %}
     </ul>
   </div>

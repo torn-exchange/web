@@ -4,7 +4,7 @@
 
 <div class='container'>
     {% if user_settings.tutorial == True%}
-    <div class="card bg-info small mt-3">
+    <div class="card bg-secondary small mt-3">
         <div class="card-header p-0 m-0">
             <h5 class='text-center'>
                 Tutorial: Welcome to Torn Exchange
@@ -75,7 +75,7 @@
                 <!-- FOR TRADERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
-                        <div class="card-header text-center bg-dark text-gold">
+                        <div class="card-header text-center text-gold">
                             <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
                         </div>
                         <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
@@ -104,7 +104,7 @@
                 <!-- FOR SELLERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
-                        <div class="card-header text-center bg-dark text-gold">
+                        <div class="card-header text-center text-gold">
                             <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
                         </div>
                         <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
@@ -140,11 +140,17 @@
 
                 <!-- LATEST FEATURES -->
                 <div class="card">
-                    <div class="card-header text-center bg-dark text-gold">
+                    <div class="card-header text-center text-gold">
                         <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
                     </div>
                     <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
                         <ul class="pl-3">
+                            <li class="mb-2">
+                                <span style="color: red;"><b>New!</b></span> 
+                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">
+                                    ow you can toggle between dark and light theme!
+                                </a>
+                            </li>
                             <li class="mb-2">
                                 <a href="{% url 'manage_price_list' %}" class="text-decoration-none">Hiding and Re-arranging of categories</a>
                             </li>
@@ -160,8 +166,8 @@
 
                 <!-- WHAT IS TE -->
                 <div class="card mt-3">
-                    <div class="card-header text-center bg-dark text-white">
-                        <i class="fa-solid fa-question-circle"></i> What is Torn Exchange?
+                    <div class="card-header text-center text-gold">
+                        <i class="fa-solid fa-question-circle"></i> <b>What is Torn Exchange?</b>
                     </div>
                     <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
                         <p>
@@ -233,7 +239,6 @@
                         <div class="row small">
                             <div class="col-12 small pb-2 mb-2 text-center">
                                 Download our TE extension here
-                                <hr>
                                 <p class="small mt-0 pb-2">
                                     <a
                                         href="https://chrome.google.com/webstore/detail/torn-exchange/iggcinpeofcbplffobefiojjgfeoblll">
