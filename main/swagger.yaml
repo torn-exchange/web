@@ -228,3 +228,85 @@ paths:
                 type: array
                 items:
                   type: object
+
+  /api/modify_listing:
+    post:
+      summary: Modify a listing by updating its price or deleting it
+      description: |
+        This endpoint allows you to modify a listing by either updating its price or deleting it.
+        - To update the price, provide the `new_price` parameter.
+        - To delete the listing, provide the `delete` parameter.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                item_ids:
+                  type: array
+                  items:
+                    type: string
+                new_price:
+                  type: integer
+                  description: New price for the item (optional)
+                  example: 200000
+                delete:
+                  type: boolean
+                  description: Flag to delete the listing (optional)
+                  example: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: string
+                    example: "Price updated successfully"
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Invalid request parameters"
+        '404':
+          description: Listing not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Listing not found"
+        '405':
+          description: Invalid HTTP method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Invalid HTTP method"
