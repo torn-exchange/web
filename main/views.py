@@ -1131,7 +1131,12 @@ def create_receipt(request):
         seller_name = re.sub('<div.*', '', seller_name)
         
         try:
-            owner_profile = Profile.objects.filter(name=owner_name).get()
+            # owner_profile = Profile.objects.filter(name=owner_name).get()
+            owner_profile = (
+                Profile.objects.filter(name=owner_name)
+                .order_by('-created_at')
+                .first()
+            )
         except:
             owner_profile = Profile.objects.filter(
             user__username=owner_user_id).get()
@@ -1171,11 +1176,11 @@ def create_receipt(request):
     trade_paste_text = trade_paste_text.replace(
         '[[total]]', "${:,.0f}".format(trade_receipt.total))
     trade_paste_text = trade_paste_text.replace(
-        '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+        '[[receipt_link]]', f'tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
     trade_paste_text = trade_paste_text.replace(
         '[[trade_number]]', str(listings_count))
     trade_paste_text = trade_paste_text.replace(
-        '[[prices_link]]', f'www.tornexchange.com/prices/{owner_profile.name}')
+        '[[prices_link]]', f'tornexchange.com/prices/{owner_profile.name}')
     trade_paste_text = trade_paste_text.replace(
         '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
 
@@ -1231,11 +1236,11 @@ def new_create_receipt(request):
             trade_paste_text = trade_paste_text.replace(
                 '[[total]]', "${:,.0f}".format(trade_receipt.total))
             trade_paste_text = trade_paste_text.replace(
-                '[[receipt_link]]', f'www.tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+                '[[receipt_link]]', f'tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
             trade_paste_text = trade_paste_text.replace(
                 '[[trade_number]]', str(listings_count))
             trade_paste_text = trade_paste_text.replace(
-                '[[prices_link]]', f'www.tornexchange.com/prices/{owner_profile.name}')
+                '[[prices_link]]', f'tornexchange.com/prices/{owner_profile.name}')
             trade_paste_text = trade_paste_text.replace(
                 '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
             

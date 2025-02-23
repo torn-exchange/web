@@ -13,7 +13,7 @@
     </style>
 
     {% if user_settings.tutorial == True%}
-    <div class="card bg-info small mt-3">
+    <div class="card bg-secondary small mt-3">
         <div class="card-header p-0 m-0">
             <h5 class='text-center'>
                 Tutorial: Welcome to the Change Prices page
@@ -202,9 +202,11 @@
                                         <td style='width:13%;' class='text-center effective_price'>
                                             ${{item.effective_price|intcomma}}</td>
                                         <td style='width:1%;' class='text-center'>
-                                            <div class='input-group  mb-1'>
-                                                <input type="checkbox" class="form-control form-control-sm"
-                                                    name="{{item.name}}_checkbox" />
+                                            <div class="form-check d-flex justify-content-center align-items-center">
+                                                <input type="checkbox" 
+                                                        class="form-check-input" 
+                                                        name="{{item.name}}_checkbox"
+                                                        id="{{item.name}}_checkbox">
                                             </div>
                                         </td>
                                     </tr>
