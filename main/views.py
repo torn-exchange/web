@@ -1131,7 +1131,6 @@ def create_receipt(request):
         seller_name = re.sub('<div.*', '', seller_name)
         
         try:
-            # owner_profile = Profile.objects.filter(name=owner_name).get()
             owner_profile = (
                 Profile.objects.filter(name=owner_name)
                 .order_by('-created_at')

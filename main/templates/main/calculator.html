@@ -159,7 +159,6 @@
 
                     $(json.items).each(function (i, item) {
                         total_price += json.price[i] * json.qty[i]
-                        console.log("AAA", i, json.img_url[i])
                         profit_from_trade += (json.market_prices[i] - json.price[i]) * json.qty[i]
                         $('<tbody>').html("<tr class='text-center row-striped input-row'><td><img style='max-width:90%;'src='" + json.img_url[i] + "'></td>" +
                             "<td class='text-center name_input'>" + json.items[i] + "</td>" +
