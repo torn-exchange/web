@@ -3,6 +3,9 @@
 <html lang="en" data-bs-theme="dark">
 
 <head>
+  <script data-ad-client="ca-pub-5083091252165465" async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
   <script type="text/javascript">
     function updateThemeIcon(savedTheme) {
       const icon = document.getElementById('theme-icon');
@@ -35,7 +38,17 @@
   <!-- Iubenda -->
   <script type="text/javascript">
     var _iub = _iub || [];
-    _iub.csConfiguration = { "siteId": 3912666, "cookiePolicyId": 85025508, "lang": "en", "storage": { "useSiteId": true } };
+    _iub.csConfiguration = { 
+      "siteId": 3912666,
+      "cookiePolicyId": 85025508,
+      "lang": "en", 
+      "storage": { "useSiteId": true },
+      "banner": {
+                "acceptButtonDisplay": true,
+                "customizeButtonDisplay": true,
+                "position": "float-bottom-right"
+            }
+    };
   </script>
   <script type="text/javascript" src="https://cs.iubenda.com/autoblocking/3912666.js"></script>
   <script type="text/javascript" src="//cdn.iubenda.com/cs/gpp/stub.js"></script>
@@ -83,23 +96,8 @@
     integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous">
     </script>
 
-  {% if not no_ads%}
-  <script>
-
-    window.onload = function () {
-      $('#exampleModal').modal('hide');
-      setTimeout(function () {
-        if (typeof (window.google_jobrunner) === "undefined") {
-          $('#exampleModal').modal('show')
-        };
-      }, 10);
-    };
-  </script>
-  {% endif %}
-
-  <script data-ad-client="ca-pub-5083091252165465" async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
   {%include 'main/includes/navbar.html'%}
+
   <script type="text/javascript">
     $(document).ready(function () {
       const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -165,11 +163,21 @@
     integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
     crossorigin="anonymous"></script>
 
+  {% comment %} 
   <script src="https://js-de.sentry-cdn.com/478e987b9faf503955367c1f3fdff379.min.js" crossorigin="anonymous">
-  </script>
-  {% block javascript %}
+  </script> 
+  {% endcomment %}
 
-  {% endblock %}
+  <script rel="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize all dropdowns
+      var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+      var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl)
+      });
+    });
+  </script>
+
   <!-- privacy policy -->
   <p>
     <a href="https://www.iubenda.com/privacy-policy/92686903"

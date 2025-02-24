@@ -15,10 +15,15 @@ Including another URLconf
 """
 from django.urls import path, include
 from django.conf import settings
-from django.views.generic import TemplateView
+from django.contrib.sitemaps.views import sitemap
+from main.sitemap import StaticViewSitemap
 
 from . import views
 from . import api
+
+sitemaps = {
+    'static': StaticViewSitemap,
+}
 
 urlpatterns = [
     # REGULAR SITE
@@ -59,10 +64,12 @@ urlpatterns = [
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
+    path('sitemap', views.sitemap, name='sitemap'),
     
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
     path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
     # handle paths that doesn't exist
     path('<str:invalid_path>', views.custom_404, name='custom_404'),
