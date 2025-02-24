@@ -3,6 +3,28 @@
 {% load static %}
 
 <div class='container'>
+    <div id="warning-alert" class="alert alert-warning alert-dismissible fade show" role="alert">
+        If you have issues with navigation dropdown, use <a href='{% url "sitemap" %}'>Sitemap</a> for now.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="hideAlert()"></button>
+    </div>
+
+      <script rel="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if alert should be hidden
+            const alertHidden = localStorage.getItem('warningAlertHidden');
+            if (alertHidden === 'true') {
+                const alert = document.getElementById('warning-alert');
+                if (alert) {
+                    alert.style.display = 'none';
+                }
+            }
+        });
+        
+        function hideAlert() {
+            localStorage.setItem('warningAlertHidden', 'true');
+        }
+        </script>
+
     {% if user_settings.tutorial == True%}
     <div class="card bg-secondary small mt-3">
         <div class="card-header p-0 m-0">

@@ -1409,3 +1409,49 @@ def save_category_order(request):
     profile.order_categories = order
     profile.save()
     return JsonResponse({'success': True})
+
+
+def sitemap(request):
+    links = [
+        {
+            'category': 'Main',
+            'urls': [
+                {'name': 'Home', 'url': reverse('home')},
+                {'name': 'About', 'url': reverse('about')},
+            ]
+        },
+        {
+            'category': 'Listings',
+            'urls': [
+                {'name': 'Search for Best Deals', 'url': reverse('listings')},
+                {'name': 'Search Custom Services', 'url': reverse('search_services')},
+                {'name': 'Job Seekers', 'url': reverse('employee_listings')},
+                {'name': 'Revivers', 'url': reverse('revives_listings')},
+                {'name': 'Loss Sellers', 'url': reverse('losses_listings')},
+                {'name': 'Companies for Sale', 'url': reverse('company_listings')},
+                {'name': 'Companies Hiring', 'url': reverse('companies_hiring')},
+                {'name': 'Museum Helper', 'url': reverse('museum_helper')},
+            ]
+        },
+        {
+            'category': 'User Services',
+            'urls': [
+                {'name': 'My Price List', 'url': reverse('price_list')},
+                {'name': 'Edit Price List', 'url': reverse('edit_price_list')},
+                {'name': 'Manage Price List', 'url': reverse('manage_price_list')},
+                {'name': 'My Services', 'url': reverse('services_list')},
+                {'name': 'Edit Services', 'url': reverse('edit_services')},
+            ]
+        },
+        {
+            'category': 'Tools',
+            'urls': [
+                {'name': 'Calculator', 'url': reverse('calculator')},
+                {'name': 'Analytics', 'url': reverse('analytics')},
+                {'name': 'Settings', 'url': reverse('settings')},
+                {'name': 'API Documentation', 'url': reverse('api_home')},
+                {'name': 'Tutorial', 'url': reverse('forum_tutorial')},
+            ]
+        },
+    ]
+    return render(request, 'main/sitemap.html', {'links': links})
