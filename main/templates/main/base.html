@@ -168,6 +168,17 @@
   </script> 
   {% endcomment %}
 
+  <script rel="text/javascript">
+    document.querySelectorAll('.dropdown-toggle').forEach((toggle) => {
+      if(toggle.id !== "defaultDropdown" && toggle.id !== "navbarDropdown") return // this to specify
+      toggle.onclick = () => {
+        const dd = document.querySelector(`[aria-labelledby=${toggle.id}]`)
+        if(!dd) return alert("Dropdown for", toggle.id, "not found")
+        dd.style.display = dd.style.display === 'none' || dd.style.display === '' ? 'block' : 'none';
+      }
+    });
+  </script>
+
   <!-- privacy policy -->
   <p>
     <a href="https://www.iubenda.com/privacy-policy/92686903"
