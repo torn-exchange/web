@@ -90,6 +90,7 @@ def listings(request):
         # exclude Listings where price is None or 0
         query_set = query_set.exclude(traders_price__isnull=True)
         number_of_items = query_set.count()
+        print("====> DEBUG", number_of_items)
 
         # Attempt to get the user's profile
         if request.user.is_authenticated:
