@@ -84,7 +84,7 @@
                     <!-- Choose Fees Row -->
                     <div class="form-group row m-2">
                         <div class="col-12 col-md-2">
-                            Market Fee
+                            Item Market Fee
                         </div>
                         <div class="col-12 col-md-10">
                             <select class="form-control" id="globalFee" name="trade_global_fee">
@@ -94,8 +94,9 @@
                                     </option>
                                 {% endfor %}
                             </select>
-                            <small class="form-text">This fee will be added on top of all your listings that have a profit margin.
-                                Listings with fixed price will not be affected.
+                            <small class="form-text">If you mean to sell on Item Market, it is strongly recommended to add this fee,
+                                otherwise you risk a net loss. This fee will be added to all items that you set a profit margin on.
+                                Listings with fixed price will not be affected. The pseudo-formula: <code>TE_price - (profit_margin + market_fee)%</code>
                             </small>
                         </div>
                     </div>
