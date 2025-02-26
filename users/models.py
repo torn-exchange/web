@@ -47,11 +47,24 @@ class Profile(VoteModel, models.Model, HitCountMixin):
 
 
 class Settings(models.Model):
+    FEES_CHOICES = [
+        (0, '0'),
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+    ]
+    
     owner = models.OneToOneField(
         Profile, on_delete=models.CASCADE, related_name='settings')
     trade_list_description = models.CharField(
         max_length=500, null=True, blank=True)
     trade_enable_sets = models.BooleanField(default=True)
+    trade_global_fee = models.PositiveSmallIntegerField(
+        choices=FEES_CHOICES,
+        default=0
+    )
     service_list_description = models.CharField(
         max_length=500, null=True, blank=True)
     link_to_forum_post = models.CharField(

@@ -127,8 +127,12 @@ class Listing(models.Model):
         # special case where we want user-set price to prevail
         if (self.discount is None) and (self.price is not None):
             return round(self.price)
-            
-        discount_fraction = (100.0 - (self.discount or 0)) / 100.0
+        
+        # Get global fee from owner's settings
+        global_fee = self.owner.settings.trade_global_fee or 0
+        
+        total_discount = (self.discount or 0) + global_fee
+        discount_fraction = (100.0 - total_discount) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
         
         if self.price is None:
@@ -140,7 +144,7 @@ class Listing(models.Model):
         unique_together = (("owner", "item"),)
 
     def __str__(self):
-        return f"{self.item} - ${self.effective_price} | {self.owner.name}"
+        return f"{self.item} - ${self.effective_price} | {self.owner.name} | FEE: {self.owner.settings.trade_global_fee}%"
 
     @property
     def profit_per_item(self):

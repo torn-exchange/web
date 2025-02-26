@@ -70,7 +70,7 @@
             <div class="col-4">
                 <label for="auto-fill-all">Auto-fill profit margin</label>
                 <div class="popup" onclick="popup_text()">
-                    <div class='input-group  m-1'>
+                    <div class='input-group m-1'>
                         <div class="input-group-append">
                             <span class="input-group-text d-none d-md-flex">%</span>
                         </div>
@@ -86,10 +86,16 @@
                 </div>
             </div>
             <div class="offset-4 col-4 text-center justify-content-center">
-                Tick to remove all items from pricelist
-                <div class="mt-1">
-                    <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
-                </div>
+                <p>
+                    Tick to remove all items from pricelist
+                    <div class="mt-1">
+                        <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
+                    </div>
+                </p>
+                <hr />
+                <p>
+                    Global fee is set at: <b>{{ owner_profile.settings.trade_global_fee }}%</b>
+                </p>
             </div>
         </div>
     </div>
@@ -157,14 +163,19 @@
                                         <th scope="col" class='text-center'>TE Market Value</th>
                                         <th scope="col" class='text-center'>Your Fixed Price</th>
                                         <th scope="col" class='text-center'>Profit Margin</th>
-                                        <th scope="col" class='text-center'>Effective Price</th>
+                                        <th scope="col" class='text-center' 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top" 
+                                            title="The price that shows on the Price List (TE Market Value - Profit Margin - Global Fee)">
+                                            Effective Price
+                                        </th>
                                         <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% get_dict_entry data_dict type as items %}
                                     {% for item in items %}
-                                    <tr class="m-0 p-0">
+                                    <tr class="m-0 p-0" data-global-fee="{{ owner_profile.settings.trade_global_fee }}">
                                         <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
                                                 src="{{ item.image_url }}" style="width:50%;"></td>
                                         <td style='width:13%;' class='text-center link-blue'>
@@ -227,7 +238,9 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            console.log("ready!");
+            // Initialize all tooltips
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
         });
         $('body').on('change', '.listing_price', function () {
             var parent = $(this).closest('tr');
@@ -292,6 +305,11 @@
         }
 
         function effective_price(price, discount, market_value) {
+            // Get global fee from the closest row
+            const globalFee = parseFloat($('.listing_price, .listing_discount').closest('tr').data('global-fee')) || 0;
+            // Add global fee to discount
+            const totalDiscount = parseFloat(discount) + globalFee;
+    
             if ((isNaN(discount)) && (isNaN(price))) {
                 return '';
             }
@@ -299,12 +317,12 @@
                 return Math.round(price);
             }
             if ((!isNaN(discount)) && (isNaN(price))) {
-                var discount_fraction = (100.0 - (discount)) / 100;
+                var discount_fraction = (100.0 - totalDiscount) / 100;
                 var discount_price = Math.round(discount_fraction * market_value);
                 return Math.round(discount_price);
             }
             if ((!isNaN(discount)) && (!isNaN(price))) {
-                var discount_fraction = (100.0 - (discount)) / 100;
+                var discount_fraction = (100.0 - totalDiscount) / 100;
                 var discount_price = discount_fraction * Math.round(market_value);
                 return Math.min.apply(null, [price, Math.round(discount_price)]);
             }

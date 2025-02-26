@@ -328,7 +328,7 @@ def edit_price_list(request):
         .first()
     )
     
-    all_traders_prices = Listing.objects.filter(owner=profile).select_related('item').order_by('-item__TE_value')
+    all_traders_prices = Listing.objects.filter(owner=profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
      
     data_dict = {}
     cats = categories()
@@ -492,7 +492,7 @@ def price_list(request, identifier=None):
     else:
         # Compute the data if not available in the cache
         all_relevant_items = Listing.objects.filter(
-            owner=pricelist_profile).select_related('owner', 'item').order_by('-item__TE_value')
+            owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
         
         last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
         
@@ -510,7 +510,6 @@ def price_list(request, identifier=None):
         .order_by('item__item_type')
     )
     
-    # item_types = [x for x in categories() if (x in distinct_categories)]
     item_types = get_ordered_categories(distinct_categories, pricelist_profile.hidden_categories, pricelist_profile.order_categories)
     
     vote_score = pricelist_profile.vote_score
@@ -1356,14 +1355,21 @@ def tutorial(request):
 
 @login_required
 def manage_price_list(request):
-    cats = categories()
-    
     profile = (
         Profile.objects.select_related('settings')
         .filter(user_id=request.user.profile.user_id)
         .order_by('-created_at')
         .first()
     )
+    
+    if request.method == 'POST':
+        if 'trade_global_fee' in request.POST:
+            profile.settings.trade_global_fee = request.POST.get('trade_global_fee')
+            profile.settings.save()
+            messages.success(request, 'Settings updated!')
+            return redirect('manage_price_list')
+    
+    cats = categories()
 
     if profile.order_categories:
         cats = profile.order_categories

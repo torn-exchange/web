@@ -14,7 +14,8 @@
         </div>
       </div>
 
-    <div class="row mt-3 mb-3">
+    
+      <div class="row mt-3 mb-3">
         <div class="col-12">
             <hr>
         </div>
@@ -22,8 +23,8 @@
 
     <form id='management_form' method="post">
         {% csrf_token %}
-        <button class='btn btn-primary float-right m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;" title="Not yet functional"
-            id="submit-management" disabled> Submit </button>
+        <button class='btn btn-primary float-right m-2 ml-4 d-none d-lg-block' type="submit" style="margin-top: 20px;"
+            id="submit-management"> Submit </button>
 
         <div class="row">
             <div class='card col-12 m-2 p-0'>
@@ -77,6 +78,25 @@
                                 <input type="checkbox" class="custom-control-input" id="setsCheck" {% if owner_profile.settings.trade_enable_sets %}checked{% endif %} disabled>
                                 <label class="custom-control-label" for="setsCheck">Enable sets</label>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Choose Fees Row -->
+                    <div class="form-group row m-2">
+                        <div class="col-12 col-md-2">
+                            Market Fee
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <select class="form-control" id="globalFee" name="trade_global_fee">
+                                {% for value, label in owner_profile.settings.FEES_CHOICES %}
+                                    <option value="{{ value }}" {% if value == owner_profile.settings.trade_global_fee %}selected{% endif %}>
+                                        {{ label }}%
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text">This fee will be added on top of all your listings that have a profit margin.
+                                Listings with fixed price will not be affected.
+                            </small>
                         </div>
                     </div>
 
