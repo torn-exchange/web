@@ -278,5 +278,5 @@ def log_error(e):
     if DEBUG:
         print(e)
     else:
-        sentry_sdk.capture_exception(e)
-
+        # sentry_sdk.capture_exception(e)
+        print(e)

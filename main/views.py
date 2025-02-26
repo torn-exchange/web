@@ -81,8 +81,12 @@ def about(request):
 
 
 def listings(request):
+    print("====> DEBUG 01")
     queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
+    print("====> DEBUG 02")
     myFilter = ListingFilter(request.GET, queryset=queryset)
+    print("====> DEBUG 03")
+    
 
     try:
         query_set = myFilter.qs
@@ -105,6 +109,7 @@ def listings(request):
         results = paginator.get_page(page)
 
     except Exception as e:
+        print("====> ERROR 01", e)
         log_error(e)
         profile = None
         user_settings = None
