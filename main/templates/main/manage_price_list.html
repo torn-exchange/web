@@ -3,10 +3,11 @@
 {% load humanize %}
 {% load custom_tags %}
 {% load static %}
+
 <div class='container'>
     <h2 class="text-center mt-3 allerta-font p-2">Price List Management</h2>
-    <!-- PAGE DESCRIPTION -->
 
+    <!-- PAGE DESCRIPTION -->
     <div class="row">
         <div class="text-center col-12">
           <a class='btn btn-primary' href="{% url 'price_list' %}"><i class="fa-solid fa-user-tie"></i> My Price List</a>
@@ -124,8 +125,8 @@
                     <ul id="sortable" class="list-unstyled">
                         {% for category in categories %}
                         <li data-category="{{ category }}" class="d-flex align-items-center">
-                            <i class="fas fa-grip-lines mr-4 handle" style="cursor: move;"></i>
-                            <div class="custom-control custom-switch mr-4">
+                            <i class="fas fa-grip-lines handle me-3" style="cursor: move;"></i>
+                            <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input toggle-category"
                                     id="hide_{{ category }}" name="hide_{{ category }}" data-category="{{ category }}"
                                     {% if category not in hidden_categories %}checked{% endif %}>
@@ -152,8 +153,9 @@
 </form>
 
 <!-- SCRIPTS -->
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-<script type="text/javascript">
+<script rel="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script rel="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script rel="text/javascript" type="text/javascript">
     function toggleSpinner(show) {
         $('#spinner').toggleClass('d-none', !show);
     }
@@ -191,6 +193,11 @@
 
         $("#sortable").sortable({
             handle: ".handle",
+            cursor: "move",
+            tolerance: "pointer",
+            delay: 150,  // Delay before drag starts on mobile
+            distance: 5,  // Minimum distance to start drag
+            scrollSpeed: 20,  // Scrolling speed when near viewport edge
             update: function (event, ui) {
                 toggleSpinner(true);
                 var order = $(this).sortable('toArray', { attribute: 'data-category' });
@@ -221,7 +228,13 @@
                 });
             }
         });
+
         $("#sortable").disableSelection();
+
+        // Prevent text selection during drag on mobile
+        $("#sortable").on('touchstart', function(e) {
+            e.preventDefault();
+        });
     });
 </script>
 
