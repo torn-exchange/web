@@ -32,34 +32,46 @@ class ListingFilter(django_filters.FilterSet):
         
         # Annotate the queryset with the computed effective_price
         queryset = queryset.annotate(
-            total_discount=Coalesce(F('discount'), Value(0)) + 
+            total_discount=Cast(
+                Coalesce(F('discount'), Value(0)) + 
                 Cast(Coalesce(F('owner__settings__trade_global_fee'), Value(0)), FloatField()),
+                FloatField()
+            ),
    
-            traders_price = ExpressionWrapper(
-                Round(
-                    Case(
-                        When(discount__isnull=True, price__isnull=True, then=Value(None, output_field=IntegerField())),
-                        When(discount__isnull=True, then=F('price')),
-                        
-                        # If price is None and discount is not None, calculate the discount price, including the global fee
-                        When(price__isnull=True, then=Round(
-                            (100.0 - F('total_discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
-                            output_field=FloatField()
-                        )),
-                        
-                        # If both discount and price are not None, calculate the minimum of discount price and price
-                        default=Round(
+        traders_price=ExpressionWrapper(
+            Round(
+                Case(
+                    When(discount__isnull=True, price__isnull=True, 
+                         then=Value(None, output_field=FloatField())),
+                    When(discount__isnull=True, 
+                         then=Cast(F('price'), FloatField())),
+                    
+                    # Calculate discount price including item market (global) fee
+                    When(price__isnull=True, 
+                         then=Round(
+                             Cast(
+                                 (100.0 - F('total_discount')) / 100.0 * 
+                                 Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
+                                 FloatField()
+                             )
+                         )),
+                    
+                    # Default case
+                    default=Round(
+                        Cast(
                             Least(
-                                (100.0 - F('total_discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
-                                F('price')
+                                (100.0 - F('total_discount')) / 100.0 * 
+                                Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
+                                Cast(F('price'), FloatField())
                             ),
-                            output_field=FloatField()
-                        ),
-                        output_field=FloatField()
-                    )
-                ),
-                output_field=IntegerField()
-            )
+                            FloatField()
+                        )
+                    ),
+                    output_field=FloatField()
+                )
+            ),
+            output_field=IntegerField()  # Final conversion to Integer
+        )
         )
         
         # Exclude rows where traders_price is 0 or None
