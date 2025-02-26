@@ -8,7 +8,7 @@ from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeF
 from django_filters.widgets import RangeWidget
 
 from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
-from django.db.models.functions import Coalesce, Least, Round
+from django.db.models.functions import Cast, Coalesce, Least, Round
 
 
 class ListingFilter(django_filters.FilterSet):
@@ -28,24 +28,29 @@ class ListingFilter(django_filters.FilterSet):
     )
     
     def filter_queryset(self, queryset):
+        queryset = queryset.select_related('owner__settings', 'item')
+        
         # Annotate the queryset with the computed effective_price
         queryset = queryset.annotate(
+            total_discount=Coalesce(F('discount'), Value(0)) + 
+                Cast(Coalesce(F('owner__settings__trade_global_fee'), Value(0)), FloatField()),
+   
             traders_price = ExpressionWrapper(
                 Round(
                     Case(
                         When(discount__isnull=True, price__isnull=True, then=Value(None, output_field=IntegerField())),
                         When(discount__isnull=True, then=F('price')),
                         
-                        # If price is None and discount is not None, calculate the discount price
+                        # If price is None and discount is not None, calculate the discount price, including the global fee
                         When(price__isnull=True, then=Round(
-                            (100.0 - F('discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
+                            (100.0 - F('total_discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
                             output_field=FloatField()
                         )),
                         
                         # If both discount and price are not None, calculate the minimum of discount price and price
                         default=Round(
                             Least(
-                                (100.0 - F('discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
+                                (100.0 - F('total_discount')) / 100.0 * Coalesce(Round(F('item__TE_value')), Value(0)),
                                 F('price')
                             ),
                             output_field=FloatField()
