@@ -103,10 +103,13 @@
 
 
 <script>
-  Apex.colors = ['#ffffff']
+  Apex.colors = ['#fff']
   var options_graph_1 = {
     chart: {
       type: 'bar'
+    },
+    fill: {
+      colors: '#555'
     },
     series: [{
       name: "Number of Trades",
@@ -116,14 +119,14 @@
       type: "datetime",
       labels: {
           style: {
-              colors: '#ffffff'  // X-axis labels color
+              colors: '#888'  // X-axis labels color
           }
       }
     },
     yaxis: {
         labels: {
             style: {
-                colors: '#ffffff'  // Y-axis labels color
+                colors: '#888'  // Y-axis labels color
             }
         }
     }
@@ -133,6 +136,7 @@
   var chart_1 = new ApexCharts(document.querySelector("#number_of_trades_chart"), options_graph_1);
   chart_1.render();
 
+  Apex.colors = ['#888']
   var options_graph_2 = {
     chart: {
       type: 'line'
@@ -148,7 +152,7 @@
       type: "datetime",
       labels: {
           style: {
-              colors: '#ffffff'  // X-axis labels color
+              colors: '#888'  // X-axis labels color
           }
       }
     },
@@ -158,7 +162,7 @@
           return "$" + numberWithCommas(value);
         },
         style: {
-          colors: '#ffffff'  // Y-axis labels color
+          colors: '#888'  // Y-axis labels color
         }
       }
     }
