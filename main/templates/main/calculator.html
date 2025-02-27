@@ -2,9 +2,9 @@
 {% block content %}
 <div class='container' id='main-container'>
     {% if user_settings.tutorial == True%}
-    <div class="card bg-secondary small mt-3">
+    <div class="card small mt-3">
         <div class="card-header p-0 m-0">
-            <h5 class='text-center'>
+            <h5 class='text-center card-header'>
                 Tutorial: Welcome to your Trade Calculator
             </h5>
         </div>
@@ -31,7 +31,7 @@
             </ul>
         </div>
         <div class="card-footer p-1 m-0">
-            <small class="text-muted text-center">To turn off help messages go to your <a
+            <small>To turn off help messages go to your <a
                     href="{% url 'settings' %}">Settings</a>.</small>
         </div>
     </div>

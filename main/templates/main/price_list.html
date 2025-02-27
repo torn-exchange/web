@@ -7,13 +7,13 @@
     {% if owner_profile.torn_id == user_profile.torn_id %}
         {% if user_settings.tutorial == True %}
         <!-- TUTORIAL -->
-        <div class="card bg-secondary small mt-3">
+        <div class="card small mt-3">
             <div class="card-header p-0 m-0">
-                <h5 class='text-center'>
+                <h5 class="text-center card-header">
                     Tutorial: Welcome to your Price List
                 </h5>
             </div>
-            <div class="card-body m-0 p-1">
+            <div class="card-body m-0 p-3">
                 <ul>
                     <li>
                         Set your buying prices by clicking on the 'Change Prices' button.
@@ -32,10 +32,8 @@
                     </li>
                 </ul>
             </div>
-            <div class="card-footer p-0 pb-1">
-                <small class="text-muted text-center pl-2">To turn off help messages go to your <a
-                        href="{% url 'settings' %}">Settings</a>.</small>
-
+            <div class="card-footer p-1 m-0">
+                <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
             </div>
         </div>
         {% endif %}
@@ -48,15 +46,16 @@
 
 <!-- PRICE LIST -->
 <div class="container">
-    <div class="text-left text-muted">
+    <div class="row row-cols-2">
+    <div class=" text-left">
         Last trade made by this trader: {{time_since_last_trade|naturaltime}}
     </div>
-    <div class="text-left text-muted">
+    <div style="text-align: right;">
         Prices last updated: {{last_updated|naturaltime}}
-    </div>
+    </div></div>
     <div class="row justify-content-center mt-4 mb-4">
         <div class="col-sm-12 col-md-4 col-lg-4 search-container">
-            <input type="search" class="form-control rounded border border-primary" id="searchInput" placeholder="Search for an item...">  
+            <input type="search" style="width: 100%" class="form-control" id="searchInput" placeholder="Search for an item...">  
         </div>
     </div>
     <div class='row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3'>
@@ -74,8 +73,8 @@
         
         <div class="col category">
             <div class='card price_table'>
-                <div class="card-header mb-0 pb-0 p-1 text-center">
-                    <h5 class="allerta-font">
+                <div class="card-header mb-0 pb-0 p-0">
+                    <h5 class="allerta-font card-header">
                         {{itype|item_plurals}}
                     </h5>
                 </div>
@@ -83,8 +82,8 @@
                     <table class="table table-hover table-sm">
                         <thead>
                             <tr>
-                                <th style="width: 20%;" scope="col" class="p-0 m-0"></th>
-                                <th style="width: 50%;" scope="col" class="p-0 m-0">Item Name</th>
+                                <th style="width: 20%;" scope="col" class="px-2 m-0"></th>
+                                <th style="width: 50%;" scope="col" class="ps-2 m-0">Item Name</th>
                                 <th style="width: 30%;" scope="col" class="p-0 m-0">Buy Price</th>
                             </tr>
                         </thead>
@@ -93,9 +92,9 @@
                             {% if item.item.item_type == itype%}
                             <tr class="row-striped p-0 item">
                                 </td>
-                                <td style="width: 20%;" class="p-0 m-0 pl-1"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
-                                <td style="width: 50%;" class="p-0 m-0 item-name">{{item.item.name}}</td>
-                                <td style="width: 30%;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
+                                <td style="width: 20%;" class="px-2 m-0"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
+                                <td style="width: 45%;" class="ps-2 m-0">{{item.item.name}}</td>
+                                <td style="width: 35%;;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
                             </tr>
                             {% endif%}
                             {%endfor%}

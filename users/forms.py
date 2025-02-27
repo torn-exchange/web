@@ -90,7 +90,7 @@ Hi [[seller_name]], thank you for the trade, the total is $[[total]], here is yo
             #### Job Seeking Tab ####
             HTML("""
                 <div class="tab-pane fade " id="jobseekers" role="tabpanel" aria-labelledby="jobseekers-tab">"""),
-            HTML("<p class=' small text-muted'>NOTE: It will take a couple of minutes for your workstats to be displayed on your ad.</p>"),
+            HTML("<p class=' small'>NOTE: It will take a couple of minutes for your workstats to be displayed on your ad.</p><br />"),
             Field('job_seeking'),
             Field('job_message',
                   placeholder='Looking for 3* AN send me your offers'),
@@ -128,7 +128,7 @@ Hi [[seller_name]], thank you for the trade, the total is $[[total]], here is yo
             HTML("""
                 <div class="tab-pane fade " id="general" role="tabpanel" aria-labelledby="general-tab">"""),
             Field('tutorial'),
-            HTML("</div>"),
+            HTML("</div><br />"),
             ButtonHolder(
                     Submit('submit', 'Submit', css_class='btn btn-primary')
             )
