@@ -13,13 +13,13 @@
     </style>
 
     {% if user_settings.tutorial == True%}
-    <div class="card bg-secondary small mt-3">
+    <div class="card small mt-3">
         <div class="card-header p-0 m-0">
-            <h5 class='text-center'>
+            <h5 class='text-center card-header'>
                 Tutorial: Welcome to the Change Prices page
             </h5>
         </div>
-        <div class="card-body m-0 p-1">
+        <div class="card-body m-0 p-3">
             <ul>
                 <li>
                     Click on a category to open the dropdown of all of its items. Next to each item you buy, you can
@@ -68,22 +68,17 @@
     <div class="offset-1 col-10">
         <div class="row">
             <div class="col-4">
-                <label for="auto-fill-all">Auto-fill profit margin</label>
-                <div class="popup" onclick="popup_text()">
-                    <div class='input-group m-1'>
-                        <div class="input-group-append">
-                            <span class="input-group-text d-none d-md-flex">%</span>
-                        </div>
+                <label for="auto-fill-all">Auto-fill profit margin % </label>
+                    <div class="popup" onclick="popup_text()">
+                        <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
+                            oninput="validateNumber(this);" />
                         <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
                             auto-fill your entire price list! Make sure you only list items you can afford to buy from
                             sellers. Each category has its own separate auto-fill option which we recommend.</span>
-                        <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
-                            oninput="validateNumber(this);" />
+                    </div>
                         <button type="button" class="btn btn-primary auto_fill_button">
                             Fill
                         </button>
-                    </div>
-                </div>
             </div>
             <div class="offset-4 col-4 text-center justify-content-center">
                 <p>

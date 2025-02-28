@@ -27,8 +27,8 @@
 
     {% if user_settings.tutorial == True%}
     <div class="card small mt-3">
-        <div class="card-header p-1 m-0">
-            <h5 class='text-center text-white'>
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center card-header'>
                 Tutorial: Welcome to Torn Exchange
             </h5>
         </div>
@@ -68,15 +68,14 @@
             </ul>
         </div>
         <div class="card-footer p-1 m-0">
-            <p  class="text-center">To turn off help messages go to your <a class="text-white"
-                    href="{% url 'settings' %}">Settings</a>.</p>
+            <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
         </div>
     </div>
     {% endif %}
 
     <div class='row'>
         <div class='col-12 m-3'>
-            <h2 class="display allerta-font text-center">
+            <h2 class="display allerta-font text-center ">
                 A community for <a href="https://www.torn.com">Torn</a> traders, buyers and sellers
             </h2>
         </div>
@@ -165,7 +164,7 @@
                     <div class="card-header-inv">
                         <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
                     </div>
-                    <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
+                    <div class="card-body pl-1 mt-3 pt-0 overflow-auto" style="text-align: left;">
                         <ul class="pl-3">
                             <li class="mb-2">
                                 <span style="color: red;"><b>New!</b></span> 
