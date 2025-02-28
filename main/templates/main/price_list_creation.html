@@ -6,11 +6,6 @@
 <div class='container'>
 
     <!-- CUSTOM COLOR FOR TORNPAL LINKS -->
-    <style>
-        .link-blue a {
-            color: #007bff;
-        }
-    </style>
 
     {% if user_settings.tutorial == True%}
     <div class="card small mt-3">
@@ -57,8 +52,7 @@
             </ul>
         </div>
         <div class="card-footer p-1 m-0">
-            <small class="text-muted text-center">To turn off help messages go to your <a
-                    href="{% url 'settings' %}">Settings</a>.</small>
+            <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
         </div>
     </div>
     {% endif %}
@@ -106,10 +100,10 @@
                 <div class='card-header text-center font-weight-bold m-0'>
                     {{item_category_name}}
                 </div>
-                <div class='card-body m-0 p-0 pb-2'>
+                <div class='card-body m-0 p-0'>
                     {% for type in item_category_list %}
                     <div class="col-sm-12">
-                        <a class="btn btn-primary btn-square m-0" data-bs-toggle="collapse"
+                        <a class="btn btn-secondary btn-square m-0" data-bs-toggle="collapse"
                             href="#collapse_{{type|replace_spaces}}" role="button" aria-expanded="false"
                             aria-controls="collapseExample" style="width: 100%;">
                             {{type|item_plurals}}
