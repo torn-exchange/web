@@ -6,20 +6,15 @@
 <div class='container'>
 
     <!-- CUSTOM COLOR FOR TORNPAL LINKS -->
-    <style>
-        .link-blue a {
-            color: #007bff;
-        }
-    </style>
 
     {% if user_settings.tutorial == True%}
-    <div class="card bg-secondary small mt-3">
+    <div class="card small mt-3">
         <div class="card-header p-0 m-0">
-            <h5 class='text-center'>
+            <h5 class='text-center card-header'>
                 Tutorial: Welcome to the Change Prices page
             </h5>
         </div>
-        <div class="card-body m-0 p-1">
+        <div class="card-body m-0 p-3">
             <ul>
                 <li>
                     Click on a category to open the dropdown of all of its items. Next to each item you buy, you can
@@ -57,8 +52,7 @@
             </ul>
         </div>
         <div class="card-footer p-1 m-0">
-            <small class="text-muted text-center">To turn off help messages go to your <a
-                    href="{% url 'settings' %}">Settings</a>.</small>
+            <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
         </div>
     </div>
     {% endif %}
@@ -68,22 +62,17 @@
     <div class="offset-1 col-10">
         <div class="row">
             <div class="col-4">
-                <label for="auto-fill-all">Auto-fill profit margin</label>
-                <div class="popup" onclick="popup_text()">
-                    <div class='input-group m-1'>
-                        <div class="input-group-append">
-                            <span class="input-group-text d-none d-md-flex">%</span>
-                        </div>
+                <label for="auto-fill-all">Auto-fill profit margin % </label>
+                    <div class="popup" onclick="popup_text()">
+                        <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
+                            oninput="validateNumber(this);" />
                         <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
                             auto-fill your entire price list! Make sure you only list items you can afford to buy from
                             sellers. Each category has its own separate auto-fill option which we recommend.</span>
-                        <input type="text" class="form-control" id="auto-fill-all" name="auto_fill"
-                            oninput="validateNumber(this);" />
+                    </div>
                         <button type="button" class="btn btn-primary auto_fill_button">
                             Fill
                         </button>
-                    </div>
-                </div>
             </div>
             <div class="offset-4 col-4 text-center justify-content-center">
                 <p>
@@ -111,10 +100,10 @@
                 <div class='card-header text-center font-weight-bold m-0'>
                     {{item_category_name}}
                 </div>
-                <div class='card-body m-0 p-0 pb-2'>
+                <div class='card-body m-0 p-0'>
                     {% for type in item_category_list %}
                     <div class="col-sm-12">
-                        <a class="btn btn-primary btn-square m-0" data-bs-toggle="collapse"
+                        <a class="btn btn-secondary btn-square m-0" data-bs-toggle="collapse"
                             href="#collapse_{{type|replace_spaces}}" role="button" aria-expanded="false"
                             aria-controls="collapseExample" style="width: 100%;">
                             {{type|item_plurals}}
