@@ -108,6 +108,9 @@
     chart: {
       type: 'bar'
     },
+    fill: {
+      colors: '#888888'
+    },
     series: [{
       name: "Number of Trades",
       data: {{ data_graph_1| safe}}
@@ -116,14 +119,14 @@
       type: "datetime",
       labels: {
           style: {
-              colors: '#ffffff'  // X-axis labels color
+              colors: '#888888'  // X-axis labels color
           }
       }
     },
     yaxis: {
         labels: {
             style: {
-                colors: '#ffffff'  // Y-axis labels color
+                colors: '#888888'  // Y-axis labels color
             }
         }
     }
@@ -133,6 +136,7 @@
   var chart_1 = new ApexCharts(document.querySelector("#number_of_trades_chart"), options_graph_1);
   chart_1.render();
 
+  Apex.colors = ['#888888']
   var options_graph_2 = {
     chart: {
       type: 'line'
@@ -148,7 +152,7 @@
       type: "datetime",
       labels: {
           style: {
-              colors: '#ffffff'  // X-axis labels color
+              colors: '#888888'  // X-axis labels color
           }
       }
     },
@@ -158,7 +162,7 @@
           return "$" + numberWithCommas(value);
         },
         style: {
-          colors: '#ffffff'  // Y-axis labels color
+          colors: '#888888'  // Y-axis labels color
         }
       }
     }
