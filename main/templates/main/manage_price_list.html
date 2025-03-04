@@ -196,8 +196,12 @@
             cursor: "move",
             tolerance: "pointer",
             delay: 150,  // Delay before drag starts on mobile
-            distance: 5,  // Minimum distance to start drag
+            distance: 10,  // Minimum distance to start drag
             scrollSpeed: 20,  // Scrolling speed when near viewport edge
+            scroll: true,
+            scrollSensitivity: 30,
+            // Add touch specifics
+            touchAction: "none",
             update: function (event, ui) {
                 toggleSpinner(true);
                 var order = $(this).sortable('toArray', { attribute: 'data-category' });
@@ -231,9 +235,11 @@
 
         $("#sortable").disableSelection();
 
-        // Prevent text selection during drag on mobile
-        $("#sortable").on('touchstart', function(e) {
-            e.preventDefault();
+        // specific touch handling for drag handles
+        $('.handle').on('touchstart', function(e) {
+            if ($(e.target).hasClass('handle')) {
+                e.preventDefault();
+            }
         });
     });
 </script>
