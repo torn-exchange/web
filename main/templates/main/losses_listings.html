@@ -34,7 +34,7 @@
         {% for listing in listings%}
         <div class="col-md-3 col-sm-6 p-1">
             <div class="card mt-3 p-0 m-0">
-                <div class="card-header bg-dark text-white small p-2">
+                <div class="card-header">
                     <div class="d-flex align-items-center">
                         <div class="status-icon me-2">
                             {% if listing.activity_status == 'Online' %}
@@ -45,9 +45,8 @@
                             <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 25%;">
                             {% endif %}
                         </div>
-                        <div class="col mt-2 text-left pl-3 allerta-font text-white m-auto ">
-                            <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
-                                class="text-white">
+                        <div class="col mt-2 text-left pl-3 m-auto ">
+                            <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}" class="text-white">
                                 {{listing.name}}
                             </a>
                         </div>
@@ -56,7 +55,7 @@
                 <div class="card-body overflow-auto small p-1" style="height: 100px;">
                     {{listing.settings.losses_message}}
                 </div>
-                <div class="card-footer small text-muted p-0 m-0 pl-2 pb-1">
+                <div class="card-footer p-0 m-0 pl-2 pb-1">
                     <small>
                         Last active: {{listing.last_active|naturaltime}}
                     </small>

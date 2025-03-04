@@ -51,11 +51,11 @@
                     {%include 'main/includes/pagination.html'%}
                 </div>
 
-                <small class="text-muted ml-4"> {{number_of_items}} items found in your search.</small>
+                <small> {{number_of_items}} items found in your search.</small>
                 {% for listing in listings%}
                 <div class='col-12'>
                     <div class='card listing-card m-0 mb-1 p-0'>
-                        <div class="card-header m-0 p-0">
+                        <div class="card-header m-0 p-0 py-1">
                             <div class="row p2">
                                 <!-- Status Icon & Name -->
                                 <div class="col-12 col-md-8 mb-2 mb-md-0">
@@ -80,7 +80,7 @@
                                 </div>
 
                                 <!-- Action Buttons -->
-                                <div class="col-12 col-md-4">
+                                <div class="col-12 col-md-4 py-1">
                                     <div class="d-flex justify-content-around gap-2">
                                         <a target="_blank" href="{% url 'price_list' listing.owner.name%}"
                                             class="badge badge-light text-black pl-2 pr-2"
@@ -104,11 +104,11 @@
                                 <!-- Item details -->
                                 <div class="col-9 col-md-10">
                                     <div class='row'>
-                                        <div class="col">
+                                        <div class="col ms-2">
                                             <strong>Item Name:</strong> {{listing.item.name}}
                                             <p class="mb-0">
                                                 <strong>Buy Price:</strong>
-                                                <a class='badge text-white b'>
+                                                <a>
                                                     ${{listing.traders_price|intcomma}}
                                                 </a>
                                             </p>

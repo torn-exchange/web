@@ -10,8 +10,8 @@
     <!-- PAGE DESCRIPTION -->
     <div class="row">
         <div class="text-center col-12">
-          <a class='btn btn-primary' href="{% url 'price_list' %}"><i class="fa-solid fa-user-tie"></i> My Price List</a>
-          <a class='btn btn-primary' href="{% url 'edit_price_list' %}"><i class="fa-solid fa-receipt"></i> Edit Prices</a>
+          <a class='btn btn-warning' href="{% url 'price_list' %}"><i class="fa-solid fa-user-tie"></i> My Price List</a>
+          <a class='btn btn-warning' href="{% url 'edit_price_list' %}"><i class="fa-solid fa-receipt"></i> Edit Prices</a>
         </div>
       </div>
 
@@ -24,7 +24,7 @@
 
     <form id='management_form' method="post">
         {% csrf_token %}
-        <button class='btn btn-primary float-right m-2 ml-4 d-lg-block' type="submit" style="margin-top: 20px;"
+        <button class='btn btn-info float-right m-2 ml-4 d-lg-block' type="submit" style="margin-top: 20px;"
             id="submit-management"> Submit </button>
 
         <div class="row">
@@ -95,7 +95,7 @@
                                     </option>
                                 {% endfor %}
                             </select>
-                            <small class="form-text">If you mean to sell on Item Market, it is strongly recommended to add this fee,
+                            <small class="text-info">If you mean to sell on Item Market, it is strongly recommended to add this fee,
                                 otherwise you risk a net loss. This fee will be added to all items that you set a profit margin on.
                                 Listings with fixed price will not be affected. The pseudo-formula: <code>TE_price - (profit_margin + market_fee)%</code>
                             </small>
@@ -127,7 +127,7 @@
                         <li data-category="{{ category }}" class="d-flex align-items-center">
                             <i class="fas fa-grip-lines handle me-3" style="cursor: move;"></i>
                             <div class="custom-control custom-switch">
-                                <input type="checkbox" class="custom-control-input toggle-category"
+                                <input id="checkbox" type="checkbox" class="custom-control-input toggle-category";
                                     id="hide_{{ category }}" name="hide_{{ category }}" data-category="{{ category }}"
                                     {% if category not in hidden_categories %}checked{% endif %}>
                                 <label class="custom-control-label" for="hide_{{ category }}">

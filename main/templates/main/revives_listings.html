@@ -46,7 +46,7 @@
                             {% endif %}
                             <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
                                 class="text-white font-weight-bold text-center pr-3">
-                                &nbsp; {{listing.name}}
+                                {{listing.name}}
                             </a>
                         </div>
                     </div>
@@ -54,7 +54,7 @@
                 <div class="card-body overflow-auto small p-1" style="height: 100px;">
                     {{listing.settings.revives_message}}
                 </div>
-                <div class="card-footer small text-muted p-0 m-0 pl-2 pb-1">
+                <div class="card-footer p-0 m-0 pl-2 pb-1">
                     <small>
                         Last active: {{listing.last_active|naturaltime}}
                     </small>

@@ -1,7 +1,8 @@
 {% extends "main/base.html" %}
 {% block content %}
 {% load static %}
-
+<br />
+<br />
 <div class='container'>
     <div id="warning-alert" class="alert alert-warning alert-dismissible fade show" role="alert">
         If you have issues with navigation dropdown, use <a href='{% url "sitemap" %}'>Sitemap</a> for now.
@@ -26,13 +27,13 @@
         </script>
 
     {% if user_settings.tutorial == True%}
-    <div class="card bg-secondary small mt-3">
+    <div class="card small mt-3">
         <div class="card-header p-0 m-0">
-            <h5 class='text-center'>
+            <h5 class='text-center card-header'>
                 Tutorial: Welcome to Torn Exchange
             </h5>
         </div>
-        <div class="card-body m-0 p-1">
+        <div class="card-body m-0 p-3">
             <ul>
                 <li>
                     Hey {{profile.name}}, welcome to Torn Exchange (or TE for short)! Thank you for joining us in your
@@ -68,17 +69,16 @@
             </ul>
         </div>
         <div class="card-footer p-1 m-0">
-            <small class="text-muted text-center">To turn off help messages go to your <a
-                    href="{% url 'settings' %}">Settings</a>.</small>
+            <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
         </div>
     </div>
     {% endif %}
 
     <div class='row'>
         <div class='col-12 m-3'>
-            <h1 class="display allerta-font text-center">
+            <h2 class="display allerta-font text-center">
                 A community for <a href="https://www.torn.com">Torn</a> traders, buyers and sellers
-            </h1>
+            </h2>
         </div>
     </div>
 
@@ -97,7 +97,7 @@
                 <!-- FOR TRADERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
-                        <div class="card-header text-center text-gold">
+                        <div class="card-header card-header-inv text-center">
                             <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
                         </div>
                         <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
@@ -126,7 +126,7 @@
                 <!-- FOR SELLERS -->
                 <div class="col-md-6 col-sm-12">
                     <div class="card mt-3">
-                        <div class="card-header text-center text-gold">
+                        <div class="card-header card-header-inv">
                             <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
                         </div>
                         <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
@@ -162,10 +162,10 @@
 
                 <!-- LATEST FEATURES -->
                 <div class="card">
-                    <div class="card-header text-center text-gold">
+                    <div class="card-header card-header-inv">
                         <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
                     </div>
-                    <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
+                    <div class="card-body pl-1 mt-3 pt-0 overflow-auto text-start">
                         <ul class="pl-3">
                             <li class="mb-2">
                                 <a href="{% url 'manage_price_list' %}" class="text-decoration-none">
@@ -185,9 +185,16 @@
                     </div>
                 </div>
 
+            <!-- BREAKLINE -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <hr />
+                </div>
+            </div>
+            
                 <!-- WHAT IS TE -->
                 <div class="card mt-3">
-                    <div class="card-header text-center text-gold">
+                    <div class="card-header card-header-inv">
                         <i class="fa-solid fa-question-circle"></i> <b>What is Torn Exchange?</b>
                     </div>
                     <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
@@ -253,7 +260,7 @@
             </p>
             <div class="container">
                 <div class="card mt-3" style="height:175px">
-                    <div class="card-header text-center text-white" style="background-color: rgb(31, 39, 57);">
+                    <div class="card-header text-center text-white"">
                         <i class="fas fa-puzzle-piece"></i> Extension
                     </div>
                     <div class="card-body">

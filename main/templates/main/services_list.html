@@ -7,9 +7,9 @@
     {% if owner_profile.torn_id == user_profile.torn_id %}
         {% if user_settings.tutorial == True%}
         <!-- TUTORIAL -->
-        <div class="card bg-secondary small mt-3">
+        <div class="card small mt-3">
             <div class="card-header p-0 m-0">
-                <h5 class='text-center'>
+                <h5 class='text-center card-header'>
                     Tutorial: Welcome to your Custom Services price list
                 </h5>
             </div>
@@ -17,7 +17,7 @@
                 <ul>
                     <li>
                         On this page you advertise custom services that you provide. If there is no appropriate service for what you provide,
-                        please join us on our Discord server and let us know. More on the <a href="{% url 'settings' %}" style="color:blue">About page</a>.
+                        please join us on our Discord server and let us know. More on the <a href="{% url 'settings' %}">About page</a>.
                     </li>
                     <li>
                         Set your prices by clicking on the 'Edit Services' button.
@@ -28,12 +28,12 @@
                     </li>
                     <li>
                         You can customise the message displayed in the textbox at
-                        the top of your price list by visiting your <a href="{% url 'settings' %}" style="color:blue">Settings page</a>.
+                        the top of your price list by visiting your <a href="{% url 'settings' %}">Settings page</a>.
                     </li>
                 </ul>
             </div>
             <div class="card-footer p-0 pb-1">
-                <small class="text-muted text-center pl-2">To turn off help messages go to your <a
+                <small>To turn off help messages go to your <a
                         href="{% url 'settings' %}">Settings</a>.</small>
 
             </div>
