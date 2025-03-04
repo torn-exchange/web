@@ -42,6 +42,23 @@
     color: #ffffff !important;
 }
 
+/* CATS SORTING */
+.custom-control-input {
+  touch-action: manipulation;
+}
+
+.handle {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  padding: 12px;  /* Larger touch target */
+}
+
+#sortable li {
+  touch-action: pan-y pinch-zoom;
+}
+
 /* PRICE LIST STYLES */
 .price_table {
     height: 500px;  /* Fixed height for all cards */
