@@ -8,6 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 
+from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
 from .models import Item, Listing, Profile, TradeReceipt
 
@@ -186,26 +187,21 @@ def listings(request):
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
-            sort_by = request.GET.get('sort_by', 'price')  # Default sort by price
-            order = request.GET.get('order', 'asc')  # Default order ascending
             page = request.GET.get('page', '1')
 
             item = get_object_or_404(Item, item_id=item_id)
             listings = Listing.objects.filter(item=item)
-
-            if order == 'desc':
-                sort_by = f'-{sort_by}'
-            listings = listings.order_by(sort_by)
-
-            paginator = Paginator(listings, 10)  # Show 10 per page
-
+            
+            # Apply ListingFilter
+            filterset = ListingFilter(request.GET, queryset=listings)
+            filtered_listings = filterset.qs
+            
+            # Handle pagination
+            paginator = Paginator(filtered_listings, 20)
             try:
-                page = int(page)
                 paged_listings = paginator.page(page)
-            except PageNotAnInteger:
+            except (PageNotAnInteger, EmptyPage):
                 paged_listings = paginator.page(1)
-            except EmptyPage:
-                paged_listings = paginator.page(paginator.num_pages)
 
             return JsonResponse({
                 "status": "success",
@@ -219,7 +215,7 @@ def listings(request):
                     "listings": [
                         {
                             "trader": listing.owner.name,
-                            "price": listing.effective_price,
+                            "price": listing.traders_price,
                             "item": listing.item.name
                         } for listing in paged_listings
                     ]
