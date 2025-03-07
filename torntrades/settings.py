@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -46,9 +47,6 @@ ALLOWED_HOSTS = [
     '192.168.1.114',    # home
     '0.0.0.0:8000'
 ]
-
-# CORS_ORIGIN_WHITELIST = ['http://www.torn.com',
-#                          'https://www.torn.com', 'http://*', 'chrome-extension://*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -127,7 +125,7 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         # the name of the depends_on value from docker-compose.yml
         'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': '6432',  # PgBouncer port
+        'PORT': '5432' if DEBUG else '6432',  # PgBouncer port
         'CONN_MAX_AGE': 0  # Required for connection pooling
     }
 }
@@ -207,15 +205,39 @@ if(DEBUG == "true"):
     SENTRY_DSN=None
 else:
     SENTRY_DSN=os.getenv('SENTRY_DSN_URL')
+    
+# Capture slow DB queries in Sentry
+SLOW_QUERY_THRESHOLD = 500  # in milliseconds
+    
+def before_send(event, hint):
+    if "request" in event:
+        # Track slow DB queries
+        for value in event.get("breadcrumbs", {}).get("values", []):
+            if "db" in value.get("category", "") and value.get("data", {}).get("duration", 0) > SLOW_QUERY_THRESHOLD:
+                value["level"] = "error"
+    return event
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
     
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
+    # Capture 100% of transactions
     traces_sample_rate=1.0,
-    integrations=[DjangoIntegration()],
-    send_default_pii=True  # Capture user data if applicable
+    
+    # Enable performance profiling
+    profiles_sample_rate=1.0,
+    
+    before_send=before_send,
+    
+    # Capture user context, useful for debugging
+    send_default_pii=True,  # Capture user data if applicable
+    
+    # Enable Django middleware for automatic tracing
+    enable_tracing=True,
+    
+    integrations=[
+        DjangoIntegration(),
+        LoggingIntegration(level=None, event_level=None),
+    ],
 )
 
 
