@@ -102,7 +102,7 @@
                                                 </div>
                                             </div>
                                             <div class="d-flex listing-value">
-                                                <span class="text-secondary">Value: {{ listing.item.market_value }}</span>
+                                                <span class="text-secondary">Current market: ${{ listing.item.TE_value|intcomma }}</span>
                                             </div>
                                             <div class="d-flex mt-1 listing-category">
                                                 <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
@@ -145,8 +145,10 @@
             </div>
         </div>
 
-    <!-- Footer -->
-    {% include 'main/includes/footer.html' %}
+        <!-- Footer -->
+        {% include 'main/includes/footer.html' %}
     </div>
-
+    
+    <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
+    
 {% endblock %}
