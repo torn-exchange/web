@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from vote.models import VoteModel
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from django.contrib.contenttypes.fields import GenericRelation
 from hitcount.models import HitCountMixin, HitCount
 from django.utils import timezone
