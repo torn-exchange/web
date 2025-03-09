@@ -1,201 +1,222 @@
 {% extends "main/base.html" %}
 {% block content %}
-{%load crispy_forms_tags %}
-{% load humanize %}
-{% load custom_tags %}
-{% load static %}
-<div class='container'>
-    <div class='row'>
-        <div class='col-md-3 col-sm-12'>
-            <div class="p-2">
-                <form method="get">
-                    <div class="card mb-4">
-                        <div class="card-header">Sort by rating</div>
-                        <ul class="list-group list-group-flush">  
+    {% load crispy_forms_tags %}
+    {% load humanize %}
+    {% load custom_tags %}
+    {% load static %}
+    <div class="container">
+        <div class="row pb-3">
+            <div class="col-12 text-center">
+                <h3>Item Listings</h3>
+                {# @TODO use popovers/tooltips for this text #}
+                <p>
+                    Here's a list of all services that Torn players provide.
+                </p>
+                <p class="text-muted">
+                    There are two filters: by rating and by service name. You can check multiple services. Clicking
+                    checkbox by the category selects all the services in that category.
+                    <br/>
+                    You can click on the service name or select checkbox next to it if you want to search multiple
+                    services at once.
+                </p>
+                <p>
+                    Do you have a business of your own and want to advertise too? Join Torn Exchange and start making
+                    your own service list now.
+                </p>
+                <p class="ml-5 p-0 m-0 pb-2">
+                <div class="btn btn-primary">
+                    <a class="allerta-font h5" href="{% url 'edit_services' %}"> Add Your Service Now </a>
+                </div>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="listing-section">
+                <div class="listing-filters">
+                    <form method="GET">
+                        <div class="d-flex justify-content-center p-2">
+                            <button class="btn btn-primary"> Search</button>
+                            <a href="{% url 'search_services' %}" class="btn btn-secondary">Reset</a>
+                        </div>
+
+                        <ul class="list-group list-group-flush">
                             <li class="list-group-item py-1 my-0">
-                                <input type="radio" name="order_by" value="-owner__vote_score" {% if order_by == '-owner__vote_score' %}checked{% endif %}>
+                                <input type="radio" name="order_by" value="-owner__vote_score"
+                                       {% if order_by == '-owner__vote_score' %}checked{% endif %}>
                                 <a href="?order_by=-owner__vote_score" class="small">Highest to Lowest</a>
                             </li>
                             <li class="list-group-item py-1 my-0">
-                                <input type="radio" name="order_by" value="owner__vote_score" {% if order_by == 'owner__vote_score' %}checked{% endif %}>
+                                <input type="radio" name="order_by" value="owner__vote_score"
+                                       {% if order_by == 'owner__vote_score' %}checked{% endif %}>
                                 <a href="?order_by=owner__vote_score" class="small">Lowest to Highest</a>
                             </li>
                         </ul>
-                    </div>
-                    {% for category, services in services_by_category.items %}
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <input type="checkbox" name="category" value="{{ category }}" class="mark_category" {{ checked }}>
-                                {{ category }}
-                            </div>
-                            <ul class="list-group list-group-flush">
-                                {% for service, checked in services %}
-                                <li class="list-group-item py-1 my-0">
-                                    <input type="checkbox" name="service" value="{{ service }}" {{ checked }}>
-                                    <a href="?order_by={{ order_by }}&service={{ service|urlencode }}" class="small">{{ service }}</a>
-                                </li>
-                                {% endfor %}
-                            </ul>
+
+                        <div class="accordion p-2" id="accordionExample">
+                            {% for category, services in services_by_category.items %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#collapse{{ category|urlencode }}" aria-expanded="false"
+                                                aria-controls="collapse{{ category|urlencode }}">
+                                            {{ category }}
+                                        </button>
+                                    </h2>
+                                    <input type="checkbox" name="category" value="{{ category }}"
+                                           class="mark_category" {{ checked }} style="display:none">
+
+
+                                    <div id="collapse{{ category|urlencode }}" class="accordion-collapse collapse"
+                                         aria-labelledby="heading{{ category|urlencode }}"
+                                         data-bs-parent="#accordion{{ category|urlencode }}">
+                                        <div class="accordion-body p-2">
+                                            <ul class="list-group list-group-flush">
+                                                {% for service, checked in services %}
+                                                    <li class="list-group-item py-0 my-0 p-0">
+                                                        <input type="checkbox" name="service"
+                                                               value="{{ service }}" {{ checked }}>
+                                                        <a href="?order_by={{ order_by }}&service={{ service|urlencode }}"
+                                                           class="small">{{ service }}</a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            {% endfor %}
                         </div>
-                    {% endfor %}
-                    <button class='btn btn-primary'> Search </button>
-                    <a href="{% url 'search_services' %}" class="btn btn-secondary">Reset</a>
-                </form>
-            </div>
-        </div>
-        <div class='col-md-9 col-sm-12'>
-            <div class='row'>
-                <div class="text-center col-12">
-                    <h1 class="m-4 allerta-font text-center">
-                        Search Custom Services
-                    </h1>
+                    </form>
                 </div>
-                <div class="text-center">
-                    {% if not listings.object_list%}
-                    <p>
-                        {% if error %}
-                        {{error}}
-                        {% else %}
-                        Sorry no listings were found!
-                        {% endif %}
-                    </p>
-                    {% else %}
-                    <p class="ml-5 p-0 m-0 text-left pb-2">
-                        Here's a list of all services that Torn players provide.
-                    </p>
-                    <p class="ml-5 p-0 m-0 text-left pb-2">
-                        There are two filters: by rating and by service name. You can check multiple services. Clicking checkbox by the category
-                        selects all the services in that category. <br />
-                        You can click on the service name or select checkbox next to it if you want to search multiple services at once. <br />
-                        Search and Reset buttons are found at the bottom of the page.
-                    </p>
-                    <p class="ml-5 p-0 m-0 text-left pb-2">
-                        Do you have a business of your own and want to advertise too? Join Torn Exchange and start making
-                        your own service list now.
-                    </p>
-                    <p class="ml-5 p-0 m-0 pb-2">
-                        <div class="btn btn-primary">
-                            <a class="allerta-font h5" href="{% url 'edit_services' %}"> Add Your Service Now </a>
+                <div class="listing-wrapper">
+                    <div class="d-flex ps-2 pe-2 pt-2 pb-2 listing-header">
+                        <div class="flex-grow-0">
+                            {{ number_of_items }} items
                         </div>
-                    </p>
-                    
+                        <div class="flex-grow-1 listing-pagination">
+                            {% include 'main/includes/pagination.html' %}
+                        </div>
+                        <div class="flex-grow-0">
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="grid-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
+                                </svg>
+                            </a>
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="list-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     viewBox="0 0 158 140">
+                                    <path fill-rule="evenodd"
+                                          d="M33.9 100.5c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2H11.3C5 140 0 135 0 128.7v-17c0-6.2 5-11.2 11.3-11.2h22.6zm112.9 0c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.2 5-11.2 11.2-11.2h79zm-113-49.7c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 90.3 0 85.3 0 79V62.1c0-6.2 5-11.3 11.3-11.3h22.6zm113 0c6.2 0 11.3 5 11.3 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3V62.1c0-6.2 5-11.3 11.2-11.3h79zM33.8 0c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 39.5 0 34.5 0 28.2v-17C0 5.2 5 0 11.3 0h22.6zm113 0C153 0 158 5 158 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.1 5-11.2 11.2-11.2h79z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% if listings %}
+                        <div id="listing_container" class="listing-container list-view">
+
+                            {% for listing in listings %}
+                                <div class="flex-grow-1">
+                                    <div class="card listing-card m-0 p-0">
+                                        <div class="p-2 d-flex listing-player">
+                                            <div class="flex-inline flex-grow-1 text-start">
+                                                <i class="fas fa-circle
+                                                {% if listing.owner.activity_status == 'Online' %} text-success
+                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                {% endif %}
+                                            fs-12"></i>
+                                                <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                            </div>
+                                            <div class="flex-inline flex-grow-0 text-end
+                                            {% if listing.owner.vote_score == 0 %} text-secondary
+                                            {% elif listing.owner.vote_score > 0 %} text-success
+                                            {% elif listing.owner.vote_score < 0 %} text-danger
+                                            {% endif %}
+                                            ">
+                                                {{ listing.owner.vote_score }}
+                                                <i class="far fa-star
+                                                    {% if listing.owner.vote_score == 0 %} text-secondary
+                                                    {% elif listing.owner.vote_score > 0 %} text-success
+                                                    {% elif listing.owner.vote_score < 0 %} text-danger
+                                                    {% endif %}
+                                                "></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-text ps-2">
+                                            <div class="mb-2 justify-content-center d-flex">
+                                                <strong>{{ listing.service.category }}:</strong> {{ listing.service.name }}
+                                            </div>
+                                            <div class="d-flex">
+                                                <div class="listing-price" style="position:relative;">
+                                                    <strong>${{ listing.money_price|intcomma }}</strong>
+                                                    {#<span class="badge bg-success listing-discount">-23%</span>#}
+                                                    {# @TODO Implement value diff #}
+                                                </div>
+                                            </div>
+                                            <div class="d-flex listing-value">
+                                                <span class="text-secondary">Price in items: {{ listing.barter_price|sanitize_string }}</span>
+                                            </div>
+                                            <div class="d-flex mt-1 listing-category">
+                                                <span class="text-muted">{{ listing.offer_description|sanitize_string }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer mt-2">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <a target="_blank"
+                                                       href="{% url 'services_list' listing.owner.name %}"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);"> Service List</a>
+
+                                                    <a target="_blank"
+                                                       href="https://www.torn.com/profiles.php?XID={{ listing.owner.torn_id }}"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(235, 244,225);"> Contact Now</a>
+
+                                                    <a target="_blank"
+                                                       href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);"> TornPal</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex-grow-1">
+                            <div class="m-0 pt-4">
+                                <div class="text-center">
+                                    <h6>No listings found</h6>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
-                <hr />
-                <br>
-
-                <div class="text-center col-12">
-                    {%include 'main/includes/pagination.html'%}
-                </div>
-
-                <small class="text-muted ml-4"> {{number_of_items}} services found in your search.</small>
-                {% for listing in listings%}
-                <div class='col-12'>
-                    <div class='card listing-card m-0 mb-1 p-0'>
-                        <div class="card-header m-0 p-0 py-1">
-                            <div class="row p2">
-                                <!-- Status Icon & Name -->
-                                <div class="col-12 col-md-8 mb-2 mb-md-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-2" style="width: 30px;">
-                                            {% if listing.owner.activity_status == 'Online' %}
-                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">&nbsp;
-                                            {% elif listing.owner.activity_status == 'Idle' %}
-                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">&nbsp;
-                                            {% elif listing.owner.activity_status == 'Offline' %}
-                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">&nbsp;
-                                            {% endif %}
-                                        </div>
-                                        <div class="text-gold">
-                                                {{listing.owner.name}}[{{listing.owner.torn_id}}]
-                                        </div>
-                                        <div class="ms-3 text-gold">
-                                            <i class="fas fa-star small mr-2 mb-2 size-2x">
-                                            </i> {{listing.owner.vote_score}}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="col-12 col-md-4 py-1">
-                                    <div class="d-flex justify-content-around gap-2">
-                                         <a target="_blank" href="{% url 'services_list' listing.owner.name%}"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(223, 239,243);"> Service List</a>
-                                    
-                                        <a target="_blank"
-                                            href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(235, 244,225);"> Contact Now</a>
-                                    
-                                        <a target="_blank" href="https://tornpal.com/profile/{{listing.owner.torn_id}}?ref=2507441"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(223, 239,243);"> TornPal</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-text">
-                            <div class='row align-items-center'>
-                                <!-- Item details -->
-                                <div class="col-9 col-md-10">
-                                    <div class='row'>
-                                        <div class="col ms-2">
-                                            <p class="mb-0">
-                                                <strong>Service:</strong> {{listing.service.name}}
-                                            </p>
-                                            <p class="mb-0">
-                                                <strong>Category:</strong> {{listing.service.category}}
-                                            </p>
-                                            <p class="mb-0">
-                                                <strong>Asking Price:</strong>
-                                                <a class='badge text-white b'>
-                                                    ${{listing.money_price|intcomma}}
-                                                </a>
-                                            </p>
-                                            <p class="mb-0">
-                                                <strong>Price in items:</strong> {{listing.barter_price|sanitize_string}}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="pl-4 col-7 ms-2">
-                                    <p class="mb-0">
-                                        {{listing.offer_description|sanitize_string}}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer mt-0">
-                            <div class="row">
-                                <div class="col">
-                                    <i class="fas fa-user"></i> Player last active: {{listing.owner.last_active|time_since}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
             </div>
-            {%include 'main/includes/pagination.html'%}
         </div>
 
+        <!-- Footer -->
+        {% include 'main/includes/footer.html' %}
     </div>
 
-    <!-- Footer -->
-    {%include 'main/includes/footer.html'%}
-</div>
-
-<script type="text/javascript">
-    $('.mark_category').click(function () {
+    <script type="text/javascript">
+      $('.mark_category').click(function () {
         console.log("YAY!")
         var parent = $(this).closest('.mb-4');
         if ($(this).is(':checked')) {
-            parent.find('input[name*="service"').prop("checked", true);
+          parent.find('input[name*="service"').prop("checked", true);
         } else {
-            parent.find('input[name*="service"').prop("checked", false);
+          parent.find('input[name*="service"').prop("checked", false);
         }
-    });
-</script>
+      });
+    </script>
+    <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
 
 {% endblock %}
