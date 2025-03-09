@@ -18,6 +18,7 @@
 .navbar .dropdown-menu {
     color: 333333 !important;
     background-color: #000000;
+    z-index: 1050;
 }
 
 /* Dropdown item hover states */
