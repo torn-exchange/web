@@ -13,3 +13,5 @@ notes.md
 
 # all folders named as
 __pycache__/
+
+.idea/

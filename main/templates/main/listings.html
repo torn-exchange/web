@@ -1,147 +1,148 @@
 {% extends "main/base.html" %}
+
 {% block content %}
-{%load crispy_forms_tags %}
-{% load humanize %}
-{% load custom_tags %}
-{% load static %}
-<div class='container'>
-    <div class='row'>
-        <div class='col-md-3 col-sm-12'>
-            <div class="p-2">
-                <form method="GET">
-                    {{myFilter.form|crispy}}
-                    <button class='btn btn-primary'> Search </button>
-                </form>
+    {% load crispy_forms_tags %}
+    {% load humanize %}
+    {% load custom_tags %}
+    {% load static %}
+    <div class="container">
+        <div class="row pb-3">
+            <div class="col-12 text-center">
+                <h3>Item Listings</h3>
+                {# @TODO use popovers/tooltips for this text #}
+                <p>
+                    Here are all of the items that traders in Torn Exchange are buying. If you are a seller, filter the
+                    search by item name, price or rating, to find the best deal for you!
+                </p>
+                <p class="text-muted">
+                    Note when filtering by status: Idle traders can be just as online as Online traders, they may have
+                    switched tabs or having Torn opened but doing something away from keyboard so if you use that
+                    filter, make sure to always check Idle traders as well.
+                    <br/>
+                    When choosing a trader, make sure they traded recently - you can check their activity on their price
+                    list page.
+                </p>
             </div>
         </div>
-        <div class='col-md-9 col-sm-12'>
-            <div class='row'>
-                <div class="text-center col-12">
-                    <h1 class="m-4 allerta-font text-center">
-                        Search best deals and traders
-                    </h4>
+        <div class="row">
+            <div class="listing-section">
+                <div class="listing-filters">
+                    <form method="GET" class="p-2">
+                        {{ myFilter.form|crispy }}
+                        <button class="btn btn-primary"> Search</button>
+                    </form>
                 </div>
-                <div>
-                    {% if number_of_items == 0 %}
-                    <p>
-                        {% if error %}
-                        {{error}}
-                        {% else %}
-                        Sorry no listings were found!
-                        {% endif %}
-                    </p>
-                    {% else %}
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
-                        Here are all of the items that traders in Torn Exchange are buying.
-                        If you are a seller, filter the search by item name, price or rating, to find the best deal for you!
-                    </p>
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
-                        <b>Note when filtering by status:</b> Idle traders can be just as online as Online traders, they may have switched tabs or having 
-                        Torn opened but doing something away from keyboard so if you use that filter, make sure to always check Idle traders as well.
-                    </p>
-                    <p class="ml-5 p-0 m-0 text-center pb-2">
-                        When choosing a trader, make sure they traded recently - you can check their activity on their price list page.
-                    </p>
-                    {% endif %}
-                </div>
-                <hr />
-                <br>
-
-                <div class="text-center col-12">
-                    {%include 'main/includes/pagination.html'%}
-                </div>
-
-                <small> {{number_of_items}} items found in your search.</small>
-                {% for listing in listings%}
-                <div class='col-12'>
-                    <div class='card listing-card m-0 mb-1 p-0'>
-                        <div class="card-header m-0 p-0 py-1">
-                            <div class="row p2">
-                                <!-- Status Icon & Name -->
-                                <div class="col-12 col-md-8 mb-2 mb-md-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-2" style="width: 30px;">
-                                            {% if listing.owner.activity_status == 'Online' %}
-                                                <img src="{% static '/main/images/crown-online.png' %}" style="width:30%;" title="Online" alt="Online">
-                                            {% elif listing.owner.activity_status == 'Idle' %}
-                                                <img src="{% static '/main/images/crown-idle.png' %}" style="width: 30%;" title="Idle" alt="Idle">
-                                            {% elif listing.owner.activity_status == 'Offline' %}
-                                                <img src="{% static '/main/images/crown-offline.png' %}" style="width: 30%;" title="Offline", alt="Offline">
-                                            {% endif %}
-                                        </div>
-                                        <div class="text-gold">
-                                            {{listing.owner.name}}[{{listing.owner.torn_id}}]
-                                        </div>
-                                        <div class="ms-3 text-gold">
-                                            <i class="fas fa-star small mr-2 mb-2 size-2x">
-                                            </i> {{listing.owner.vote_score}}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Action Buttons -->
-                                <div class="col-12 col-md-4 py-1">
-                                    <div class="d-flex justify-content-around gap-2">
-                                        <a target="_blank" href="{% url 'price_list' listing.owner.name%}"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(223, 239,243);"> Price List</a>
-                                    
-                                        <a target="_blank"
-                                            href="https://www.torn.com/trade.php#step=start&userID={{listing.owner.torn_id}}"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(235, 244,225);"> Trade Now</a>
-                                    
-                                        <a target="_blank" href="https://tornpal.com/profile/{{listing.owner.torn_id}}?ref=2507441"
-                                            class="badge badge-light text-black pl-2 pr-2"
-                                            style="background-color: rgb(223, 239,243);"> TornPal</a>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="listing-wrapper">
+                    <div class="d-flex ps-2 pe-2 pt-2 pb-2 listing-header">
+                        <div class="flex-grow-0">
+                            {{ number_of_items }} items
                         </div>
-                        
-                        <div class="card-text">
-                            <div class='row align-items-center'>
-                                <!-- Item details -->
-                                <div class="col-9 col-md-10">
-                                    <div class='row'>
-                                        <div class="col ms-2">
-                                            <strong>Item Name:</strong> {{listing.item.name}}
-                                            <p class="mb-0">
-                                                <strong>Buy Price:</strong>
-                                                <a>
-                                                    ${{listing.traders_price|intcomma}}
-                                                </a>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Item image -->
-                                <div class="col-3 col-md-2 text-end">
-                                    <img src="{{listing.item.image_url}}" 
-                                         class="img-fluid" 
-                                         alt="{{listing.item.name}}"
-                                         style="max-height: 50px;">
-                                </div>
-                            </div>
+                        <div class="flex-grow-1 listing-pagination">
+                            {% include 'main/includes/pagination.html' %}
                         </div>
-                        <div class="card-footer mt-0">
-                            <div class="row">
-                                <div class="col">
-                                    <i class="fas fa-user"></i> Player last active: {{listing.owner.last_active|time_since}}
-                                </div>
-                            </div>
+                        <div class="flex-grow-0">
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="grid-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
+                                </svg>
+                            </a>
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="list-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     viewBox="0 0 158 140">
+                                    <path fill-rule="evenodd"
+                                          d="M33.9 100.5c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2H11.3C5 140 0 135 0 128.7v-17c0-6.2 5-11.2 11.3-11.2h22.6zm112.9 0c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.2 5-11.2 11.2-11.2h79zm-113-49.7c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 90.3 0 85.3 0 79V62.1c0-6.2 5-11.3 11.3-11.3h22.6zm113 0c6.2 0 11.3 5 11.3 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3V62.1c0-6.2 5-11.3 11.2-11.3h79zM33.8 0c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 39.5 0 34.5 0 28.2v-17C0 5.2 5 0 11.3 0h22.6zm113 0C153 0 158 5 158 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.1 5-11.2 11.2-11.2h79z"/>
+                                </svg>
+                            </a>
                         </div>
                     </div>
-                </div>
-                {% endfor %}
-            </div>
-            {%include 'main/includes/pagination.html'%}
-        </div>
+                    {% if listings %}
+                        <div id="listing_container" class="listing-container list-view">
+                            {% for listing in listings %}
+                                <div class="flex-grow-1">
+                                    <div class="card listing-card m-0 p-0">
+                                        <div class="p-2 d-flex listing-player">
+                                            <div class="flex-inline flex-grow-1 text-start">
+                                                <i class="fas fa-circle
+                                                {% if listing.owner.activity_status == 'Online' %} text-success
+                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                {% endif %}
+                                            fs-12"></i>
+                                                <span>{{ listing.owner.name }}[{{ listing.owner.torn_id }}]</span>
+                                            </div>
+                                            <div class="flex-inline flex-grow-0 text-end
+                                            {% if listing.owner.vote_score == 0 %} text-secondary
+                                            {% elif listing.owner.vote_score > 0 %} text-success
+                                            {% elif listing.owner.vote_score < 0 %} text-danger
+                                            {% endif %}
+                                            ">
+                                                {{ listing.owner.vote_score }}
+                                                <i class="far fa-star text-danger"></i>
+                                            </div>
+                                        </div>
 
+                                        <div class="card-text ps-2">
+                                            <div class="mb-2 justify-content-center d-flex">
+                                                <img src="{{ listing.item.image_url }}" class="img-fluid"
+                                                     alt="{{ listing.item.name }}" style="max-height: 50px;">
+                                            </div>
+                                            <div class="d-flex">
+                                                <div class="listing-price" style="postion:relative;">
+                                                    <strong>${{ listing.traders_price|intcomma }}</strong>
+                                                    {#<span class="badge bg-success listing-discount">-23%</span>#}
+                                                    {# @TODO Implement value diff #}
+                                                </div>
+                                            </div>
+                                            <div class="d-flex listing-value">
+                                                <span class="text-secondary">Value: $900,000</span>
+                                            </div>
+                                            <div class="d-flex mt-1 listing-category">
+                                                <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
+                                            </div>
+                                        </div>
+                                        <div class="card-footer mt-2">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <a target="_blank"
+                                                       href="https://tornexchange.com/prices/Weav3r/?_gl=1*1gvfnde*_up*MQ..*_ga*MTk2ODg2MzkxOS4xNzQxNDc3NTU2*_ga_EDC812F6YJ*MTc0MTQ3NzU1NS4xLjAuMTc0MTQ3NzU1NS4wLjAuMA.."
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);"> Price List</a>
+                                                    <a target="_blank"
+                                                       href="https://www.torn.com/trade.php#step=start&amp;userID=1853324"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(235, 244,225);" data-cmp-ab="2"> Trade
+                                                        Now</a>
+                                                    <a target="_blank"
+                                                       href="https://tornpal.com/profile/1853324?ref=2507441"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);" data-cmp-ab="2">
+                                                        TornPal</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex-grow-1">
+                            <div class="m-0 pt-4">
+                                <div class="text-center">
+                                    <h6>No listings found</h6>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
-    {%include 'main/includes/footer.html'%}
-</div>
+    {% include 'main/includes/footer.html' %}
+    </div>
 
 {% endblock %}
