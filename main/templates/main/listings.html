@@ -80,7 +80,12 @@
                                             {% endif %}
                                             ">
                                                 {{ listing.owner.vote_score }}
-                                                <i class="far fa-star text-danger"></i>
+                                                <i class="far fa-star 
+                                                    {% if listing.owner.vote_score == 0 %} text-secondary
+                                                    {% elif listing.owner.vote_score > 0 %} text-success
+                                                    {% elif listing.owner.vote_score < 0 %} text-danger
+                                                    {% endif %}
+                                                "></i>
                                             </div>
                                         </div>
 
