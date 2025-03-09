@@ -612,3 +612,86 @@ th {
   .footer-copyright {
     color: var(--bs-footer-copyright);
   }
+
+/* VIEW TOGGLER STYLES */
+.view-toggler {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.grid-view {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.list-view {
+    grid-template-columns: 1fr;
+}
+/* END VIEW TOGGLER STYLES */
+
+/* LISTING STYLES */
+.listing-container .card {
+    border-radius: 0px !important;
+}
+
+.listing-container {
+    column-gap: 1px;
+    display: grid;
+    padding-bottom: 100px;
+    position: relative;
+    row-gap: 1px;
+}
+
+.listing-container .listing-discount {
+    position: absolute;
+    margin-left: 5px;
+    margin-top: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.listing-container .listing-value {
+    font-size:10px;
+}
+
+.listing-container .listing-category {
+    font-size:12px;
+}
+
+.listing-container .listing-player {
+    font-size:12px;
+}
+
+.listing-container .listing-player span {
+    text-decoration:underline;
+}
+
+.listing-pagination {
+    font-size:12px;
+}
+
+.listing-header {
+    background-color:#282828; margin-left:1px; margin-right:1px; margin-bottom:2px;
+}
+
+.listing-section {
+    display: grid;grid-template-columns: repeat(5, 1fr);grid-template-rows: repeat(5, 1fr); gap: 2px;
+}
+
+.listing-filters {
+    grid-row: span 5 / span 5; background-color:#282828;
+}
+
+.listing-wrapper {
+    grid-column: span 4 / span 4; grid-row: span 5 / span 5;
+}
+
+.listing-container.list-view .card-text {
+    display: flex !important;
+    justify-content: space-between;
+    align-content: stretch;
+    align-items: center;
+    padding-right:10px;
+}
+/* END LISTING STYLES */
