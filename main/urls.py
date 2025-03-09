@@ -69,23 +69,24 @@ urlpatterns = [
     path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
+    # API
+    path('api/', api.api_home, name='api_home'),
+    path('api/swagger.yaml', api.swag_yaml, name='Swagger'),
+    path('api/status', api.test, name='api_status'),
+    path('api/price', api.price, name='api_price'),
+    path('api/profile', api.profile, name='api_profile'),
+    path('api/te_price', api.TE_price, name='api_TE_price'),
+    path('api/listings', api.listings, name='api_listings'),
+    path('api/best_listing', api.best_listing, name='api_best_listing'),
+    path('api/receipts', api.receipts, name='api_receipts'),
+    path('api/sellers', api.sellers, name='api_sellers'),
+    path('api/modify_listing', api.modify_listing, name='modify_listing'),
+    
+    # handle api/ paths that doesn't exist
+    path('api/<str:invalid_path>', api.api_404, name='api_404'),
+    
     # handle paths that don't exist
     re_path(r'^(?P<invalid_path>.+)/?$', views.custom_404, name='custom_404'),
-
-    # API
-    re_path(r'^api/?$', api.api_home, name='api_home'),
-    re_path(r'^api/swagger.yaml/?$', api.swag_yaml, name='Swagger'),
-    re_path(r'^api/status/?$', api.test, name='api_status'),
-    re_path(r'^api/price/?$', api.price, name='api_price'),
-    re_path(r'^api/profile/?$', api.profile, name='api_profile'),
-    re_path(r'^api/te_price/?$', api.TE_price, name='api_TE_price'),
-    re_path(r'^api/listings/?$', api.listings, name='api_listings'),
-    re_path(r'^api/best_listing/?$', api.best_listing, name='api_best_listing'),
-    re_path(r'^api/receipts/?$', api.receipts, name='api_receipts'),
-    re_path(r'^api/sellers/?$', api.sellers, name='api_sellers'),
-    re_path(r'^api/modify_listing/?$', api.modify_listing, name='modify_listing'),
-    # handle api/ paths that don't exist
-    re_path(r'^api/(?P<invalid_path>.+)/?$', api.api_404, name='api_404'),
 ]
 
 if settings.DEBUG:
