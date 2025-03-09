@@ -87,6 +87,8 @@ def listings(request):
     try:
         query_set = myFilter.qs
         
+        query_set = query_set.exclude(hidden=True)
+        
         # exclude Listings where price is None or 0
         query_set = query_set.exclude(traders_price__isnull=True)
         number_of_items = query_set.count()
@@ -1392,6 +1394,8 @@ def toggle_category_visibility(request):
     category = data.get('category')
     is_checked = data.get('is_checked')
     profile = request.user.profile
+    
+    hidden = False
 
     # checked means it is NOT hidden
     if is_checked:
@@ -1399,6 +1403,13 @@ def toggle_category_visibility(request):
             del profile.hidden_categories[category]
     else:
         profile.hidden_categories[category] = True
+        hidden = True
+        
+    # save all category items of the user with new hidden value
+    Listing.objects.filter(
+        owner=profile, 
+        item__item_type=category
+    ).update(hidden=hidden)
 
     profile.save()
     return JsonResponse({'success': True})
