@@ -110,7 +110,9 @@
                                             </div>
                                             <div class="d-flex listing-stats d-none d-md-flex">
                                                 <span class="listing-stat">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16" style="vertical-aign:text-top;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
                                                       <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
                                                       <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"></path>
                                                       <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"></path>
@@ -119,13 +121,17 @@
                                                      &nbsp;{{ listing.accuracy }}
                                                 </span>
                                                 <span class="listing-stat ms-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16" style="vertical-aign:text-top;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
                                                         <path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"/>
                                                     </svg>
                                                      &nbsp;{{ listing.damage }}
                                                 </span>
                                                 <span class="listing-stat ms-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16" style="vertical-aign:middle;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:middle;">
                                                         <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/>
                                                     </svg>
                                                     &nbsp;{{ listing.quality }}
@@ -138,20 +144,19 @@
                                         <div class="card-footer">
                                             <div class="row">
                                                 <div class="col">
-                                                    <a target="_blank"
-                                                       href="https://tornexchange.com/prices/Weav3r/?_gl=1*1gvfnde*_up*MQ..*_ga*MTk2ODg2MzkxOS4xNzQxNDc3NTU2*_ga_EDC812F6YJ*MTc0MTQ3NzU1NS4xLjAuMTc0MTQ3NzU1NS4wLjAuMA.."
+                                                    <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
                                                        class="badge badge-light text-black pl-2 pr-2"
                                                        style="background-color: rgb(223, 239,243);"> Price List</a>
+
                                                     <a target="_blank"
-                                                       href="https://www.torn.com/trade.php#step=start&amp;userID=1853324"
+                                                       href="https://www.torn.com/trade.php#step=start&userID={{ listing.owner.torn_id }}"
                                                        class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(235, 244,225);" data-cmp-ab="2"> Trade
-                                                        Now</a>
+                                                       style="background-color: rgb(235, 244,225);"> Trade Now</a>
+
                                                     <a target="_blank"
-                                                       href="https://tornpal.com/profile/1853324?ref=2507441"
+                                                       href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
                                                        class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(223, 239,243);" data-cmp-ab="2">
-                                                        TornPal</a>
+                                                       style="background-color: rgb(223, 239,243);"> TornPal</a>
                                                 </div>
                                             </div>
                                         </div>
