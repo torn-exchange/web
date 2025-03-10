@@ -106,90 +106,84 @@ class ListingFilter(django_filters.FilterSet):
 
 
 class ItemVariationFilter(django_filters.FilterSet):
-    pass
-    # def __init__(self, data, *args, **kwargs):
-    #     data = data.copy()
-    #     data.setdefault('order', '-rating')
-    #     super().__init__(data, *args, **kwargs)
-    #
-    # items = Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])
-    # item_choices = [(item.id, item.name) for item in items]
-    #
-    # item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
-    # accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
-    # damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
-    # quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
-    # rarity = TypedChoiceFilter(field_name='rarity', choices=ItemVariation.RARITY_CHOICES, label='Rarity')
-    # price = NumberFilter(field_name='price', lookup_expr='gte', label='Min Price')
-    #
-    # # Dynamically generate bonus choices within the filter method
-    # item_bonus_title_1 = TypedChoiceFilter(
-    #     field_name='item_bonus__title',
-    #     choices=[],  # Empty initially, we will fill it in filter_queryset
-    #     label="Bonus 1"
-    # )
-    # bonus_value_1 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 1 Value")
-    #
-    # item_bonus_title_2 = TypedChoiceFilter(
-    #     field_name='item_bonus__title',
-    #     choices=[],  # Empty initially, we will fill it in filter_queryset
-    #     label="Bonus 2"
-    # )
-    # bonus_value_2 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 2 Value")
-    #
-    # order_by = OrderingFilter(
-    #     fields=(
-    #         ('accuracy', 'accuracy'),
-    #         ('damage', 'damage'),
-    #         ('quality', 'quality'),
-    #         ('price', 'price'),
-    #         ('rarity', 'rarity'),
-    #         ('bonus_value_1', 'bonus_value_1'),
-    #         ('bonus_value_2', 'bonus_value_2'),
-    #         ('owner__vote_score'),
-    #     ),
-    #     label='Order by',
-    # )
-    #
-    # def filter_queryset(self, queryset):
-    #     # Apply filter for saleable items
-    #     queryset = queryset.filter(is_saleable=True)
-    #
-    #     # Fetch all item bonus titles only once during filtering
-    #     item_bonus_choices = [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
-    #     self.filters['item_bonus_title_1'].choices = item_bonus_choices
-    #     self.filters['item_bonus_title_2'].choices = item_bonus_choices
-    #
-    #     # Get the filter parameters
-    #     title_1 = self.data.get('item_bonus_title_1', None)
-    #     bonus_value_1 = self.data.get('bonus_value_1', None)
-    #     title_2 = self.data.get('item_bonus_title_2', None)
-    #     bonus_value_2 = self.data.get('bonus_value_2', None)
-    #
-    #     # Filter based on bonus titles and values
-    #     if title_1 and bonus_value_1:
-    #         queryset = queryset.filter(itemvariationbonuses__bonus__title=title_1,
-    #                                    itemvariationbonuses__value=bonus_value_1)
-    #     if title_2 and bonus_value_2:
-    #         queryset = queryset.filter(itemvariationbonuses__bonus__title=title_2,
-    #                                    itemvariationbonuses__value=bonus_value_2)
-    #
-    #     return queryset
-    #
-    # class Meta:
-    #     model = ItemVariation
-    #     fields = [
-    #         'item__name',
-    #         'accuracy',
-    #         'damage',
-    #         'quality',
-    #         'rarity',
-    #         'price',
-    #         'item_bonus_title_1',
-    #         'bonus_value_1',
-    #         'item_bonus_title_2',
-    #         'bonus_value_2'
-    #     ]
+    items = Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])
+    item_choices = [(item.id, item.name) for item in items]
+
+    item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
+    accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
+    damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
+    quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
+    rarity = TypedChoiceFilter(field_name='rarity', choices=ItemVariation.RARITY_CHOICES, label='Rarity')
+    price = NumberFilter(field_name='price', lookup_expr='gte', label='Min Price')
+
+    # Dynamically generate bonus choices within the filter method
+    item_bonus_title_1 = TypedChoiceFilter(
+        field_name='item_bonus__title',
+        choices=[],  # Empty initially, will fill it in filter_queryset
+        label="Bonus 1"
+    )
+    bonus_value_1 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 1 Value")
+
+    item_bonus_title_2 = TypedChoiceFilter(
+        field_name='item_bonus__title',
+        choices=[],  # Empty initially, will fill it in filter_queryset
+        label="Bonus 2"
+    )
+    bonus_value_2 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 2 Value")
+
+    order_by = OrderingFilter(
+        fields=(
+            ('accuracy', 'accuracy'),
+            ('damage', 'damage'),
+            ('quality', 'quality'),
+            ('price', 'price'),
+            ('rarity', 'rarity'),
+            ('bonus_value_1', 'bonus_value_1'),
+            ('bonus_value_2', 'bonus_value_2'),
+            ('owner__vote_score'),
+        ),
+        label='Order by',
+    )
+
+    def filter_queryset(self, queryset):
+        # Apply filter for saleable items
+        queryset = queryset.filter(is_saleable=True)
+
+        # Fetch all item bonus titles only when filtering
+        item_bonus_choices = [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
+        self.filters['item_bonus_title_1'].choices = item_bonus_choices
+        self.filters['item_bonus_title_2'].choices = item_bonus_choices
+
+        # Get the filter parameters
+        title_1 = self.data.get('item_bonus_title_1', None)
+        bonus_value_1 = self.data.get('bonus_value_1', None)
+        title_2 = self.data.get('item_bonus_title_2', None)
+        bonus_value_2 = self.data.get('bonus_value_2', None)
+
+        # Filter based on bonus titles and values
+        if title_1 and bonus_value_1:
+            queryset = queryset.filter(itemvariationbonuses__bonus__title=title_1,
+                                       itemvariationbonuses__value=bonus_value_1)
+        if title_2 and bonus_value_2:
+            queryset = queryset.filter(itemvariationbonuses__bonus__title=title_2,
+                                       itemvariationbonuses__value=bonus_value_2)
+
+        return queryset
+
+    class Meta:
+        model = ItemVariation
+        fields = [
+            'item__name',
+            'accuracy',
+            'damage',
+            'quality',
+            'rarity',
+            'price',
+            'item_bonus_title_1',
+            'bonus_value_1',
+            'item_bonus_title_2',
+            'bonus_value_2'
+        ]
 
 
 class CompanyListingFilter(django_filters.FilterSet):
