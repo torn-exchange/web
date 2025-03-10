@@ -242,37 +242,8 @@ class ItemVariation(models.Model):
         return self.itemvariationbonuses_set.all()
 
     @property
-    def owner(self):
-        return self.owner
-
-    @property
-    def item(self):
-        return self.item
-
-    @property
     def bb_value(self):
         return 0
-
-
-class ItemVariationBonuses(models.Model):
-    bonus = models.ForeignKey(ItemBonus, on_delete=models.CASCADE)
-    item = models.ForeignKey(ItemVariation, on_delete=models.CASCADE)
-    value = models.FloatField(null=True)
-    type = models.CharField(max_length=250)
-
-    @property
-    def item(self):
-        return self.item
-
-    @property
-    def bonus(self):
-        return self.bonus
-
-    @property
-    def value(self):
-        if (self.type == 'percent'):
-            return f"{self.value}%"
-        return str(int(self.value)) + self.type
 
 
 class ItemBBValue(models.Model):
@@ -282,6 +253,9 @@ class ItemBBValue(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     last_sync_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def item(self):
-        return self.item
+
+class ItemVariationBonuses(models.Model):
+    bonus = models.ForeignKey(ItemBonus, on_delete=models.CASCADE)
+    item_variation = models.ForeignKey(ItemVariation, on_delete=models.CASCADE)
+    value = models.FloatField(null=True)
+    type = models.CharField(max_length=250)
