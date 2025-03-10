@@ -237,9 +237,9 @@ class ItemVariation(models.Model):
     removed_at = models.DateTimeField(null=True)
     last_sync_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def bonuses(self):
-        return self.itemvariationbonuses_set.all()
+    # @property
+    # def bonuses(self):
+    #     return self.itemvariationbonuses_set.all()
 
     @property
     def bb_value(self):
