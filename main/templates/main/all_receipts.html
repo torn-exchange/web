@@ -26,67 +26,84 @@
     </div>
   </div>
 
-  <div class="row mt-3">
-    <div class="col-2"></div>
-    <div class="col-8 text-center">
-      <div class=" font-weight-bold text-center text-responsive">
-        <div class='row '>
-          <div class='col-2 text-center'>
-            Link
-          </div>
-          <div class='col-2 text-center'>
-            Name
-          </div>
-          <div class='col-2 text-center'>
-            Date
-          </div>
-          <div class='col-2 text-center'>
-            Price
-          </div>
-          <div class='col-2 text-center'>
-            Profit
-          </div>
-          <div class='col-2 text-center'>
-            Delete Receipt
-          </div>
-  
-        </div>
+    <!-- Desktop Table (hidden on mobile) -->
+    <div class="d-none d-md-block">
+      <div class="table-responsive">
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th>Name</th>
+                      <th>Date</th>
+                      <th class="text-end">Price</th>
+                      <th class="text-end">Profit</th>
+                      <th class="text-center">Actions</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for receipt in receipts %}
+                  <tr>
+                      <td>{{receipt.seller}}</td>
+                      <td>{{receipt.created_at}}</td>
+                      <td class="text-end">${{receipt.total|intcomma}}</td>
+                      <td class="text-end">${{receipt.profit|intcomma}}</td>
+                      <td class="text-center">
+                          <a href="{% url 'receipt_view' receipt.receipt_url_string %}" 
+                             class="btn btn-sm btn-outline-primary" target="_blank" title="View Receipt">
+                              <i class="fas fa-eye"></i>
+                          </a>
+                          <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Receipt">
+                                  <i class="fas fa-trash-alt"></i>
+                              </button>
+                          </form>
+                      </td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
       </div>
-      <hr>
-      {% for receipt in receipts%}
-      <div class=" text-center text-responsive">
-        <div class='row  '>
-          <div class='col-2 p-sm-0 m-sm-0'>
-            <a href="{% url 'receipt_view' receipt.receipt_url_string%}" target="_blank"> <u>View</u> </a>
-          </div>
-          <div class='col-2 p-sm-0 m-sm-0'>
-            {{receipt.seller}}
-          </div>
-          <div class='col-2 p-sm-0 m-sm-0'>
-            {{receipt.created_at}}
-          </div>
-          <div class='col-2 p-sm-0 m-sm-0'>
-            ${{receipt.total|intcomma}}
-          </div>
-          <div class='col-2 p-sm-0 m-sm-0'>
-            ${{receipt.profit|intcomma}}
-          </div>
-          <div class='col-2'>
-            <form action="{% url 'delete_receipt' receipt.id %}" method="POST">
-              {% csrf_token %}
-              <button type="button btn btn-primary" class="btn btn-default btn-sm">
-                delete <i class="fas fa-trash-alt"></i>
-              </button>
-            </form>
-          </div>
-  
-        </div>
-      </div>
-      <hr>
-      {% endfor %}
-    </div>
-    <div class="col-2"></div>
-  </div>  
-</div>
+  </div>
 
+  <!-- Mobile Cards (hidden on desktop) -->
+  <div class="d-md-none">
+      {% for receipt in receipts %}
+      <div class="card mb-3">
+          <div class="card-body">
+              <h5 class="card-title">{{receipt.seller}}</h5>
+              <div class="row mb-2">
+                  <div class="col-6">
+                      <small class="text-muted">Date:</small><br>
+                      {{receipt.created_at}}
+                  </div>
+                  <div class="col-6 text-end">
+                      <small class="text-muted">Price:</small><br>
+                      ${{receipt.total|intcomma}}
+                  </div>
+              </div>
+              <div class="row mb-3">
+                  <div class="col-12 text-end">
+                      <small class="text-muted">Profit:</small><br>
+                      <span class="{% if receipt.profit > 0 %}text-success{% else %}text-danger{% endif %}">
+                          ${{receipt.profit|intcomma}}
+                      </span>
+                  </div>
+              </div>
+              <div class="d-flex justify-content-end gap-2">
+                  <a href="{% url 'receipt_view' receipt.receipt_url_string %}" 
+                     class="btn btn-outline-primary" target="_blank">
+                      <i class="fas fa-eye"></i> View
+                  </a>
+                  <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-danger">
+                          <i class="fas fa-trash-alt"></i> Delete
+                      </button>
+                  </form>
+              </div>
+          </div>
+      </div>
+      {% endfor %}
+  </div>
+</div>
 {% endblock %}
