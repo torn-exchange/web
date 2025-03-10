@@ -111,20 +111,19 @@
                                         <div class="card-footer mt-2">
                                             <div class="row">
                                                 <div class="col">
-                                                    <a target="_blank"
-                                                       href="https://tornexchange.com/prices/Weav3r/?_gl=1*1gvfnde*_up*MQ..*_ga*MTk2ODg2MzkxOS4xNzQxNDc3NTU2*_ga_EDC812F6YJ*MTc0MTQ3NzU1NS4xLjAuMTc0MTQ3NzU1NS4wLjAuMA.."
+                                                    <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
                                                        class="badge badge-light text-black pl-2 pr-2"
                                                        style="background-color: rgb(223, 239,243);"> Price List</a>
+
                                                     <a target="_blank"
-                                                       href="https://www.torn.com/trade.php#step=start&amp;userID=1853324"
+                                                       href="https://www.torn.com/trade.php#step=start&userID={{ listing.owner.torn_id }}"
                                                        class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(235, 244,225);" data-cmp-ab="2"> Trade
-                                                        Now</a>
+                                                       style="background-color: rgb(235, 244,225);"> Trade Now</a>
+
                                                     <a target="_blank"
-                                                       href="https://tornpal.com/profile/1853324?ref=2507441"
+                                                       href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
                                                        class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(223, 239,243);" data-cmp-ab="2">
-                                                        TornPal</a>
+                                                       style="background-color: rgb(223, 239,243);"> TornPal</a>
                                                 </div>
                                             </div>
                                         </div>
@@ -147,7 +146,7 @@
         <!-- Footer -->
         {% include 'main/includes/footer.html' %}
     </div>
-    
+
     <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
-   
+
 {% endblock %}
