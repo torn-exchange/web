@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from typing import Any, Dict, Type
 
-from main.management.services.torn_api_error_handler import TornApiErrorHandler
+from main.management.services.api.torn.torn_api_error_handler import TornApiErrorHandler
 from users.models import Profile
 from random import choice
 import os
