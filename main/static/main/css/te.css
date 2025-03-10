@@ -652,6 +652,31 @@ th {
     padding-bottom: 2px;
 }
 
+.listing-container .card-text.red {
+    background: rgb(255, 0, 0);
+    background: radial-gradient(circle, rgb(106 0 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .card-text.yellow {
+background: rgb(239 255 0);
+    background: radial-gradient(circle, rgb(94 106 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .card-text.orange {
+    background: rgb(255 177 0);
+    background: radial-gradient(circle, rgb(106 69 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .listing-bonus {
+    margin-top: 3px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 0px;
+    font-size:12px;
+    color: #0e0e0e;
+}
+
 .listing-container .listing-value {
     font-size:10px;
 }
