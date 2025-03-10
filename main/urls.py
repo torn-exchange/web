@@ -53,7 +53,6 @@ urlpatterns = [
          views.delete_receipt_from_profile, name='delete_receipt'),
     path('about/', views.about, name='about'),
     path('settings/', views.settings, name='settings'),
-    path('settings/<str:option>', views.settings, name='settings'),
     path('revives_listings', views.revives_listings, name='revives_listings'),
     path('losses_listings', views.losses_listings, name='losses_listings'),
     path('employee_listings', views.employee_listings, name='employee_listings'),
