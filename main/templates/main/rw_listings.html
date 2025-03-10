@@ -103,7 +103,7 @@
                                             </div>
                                             <div class="d-flex listing-value">
                                                 {% for itembonus in listing.itemvariationbonuses_set.all %}
-                                                    <span class="badge bg-warning-subtle listing-bonus">
+                                                    <span class="badge bg-warning-subtle listing-bonus {% if forloop.counter > 1 %}ms-2{% endif %}">
                                                         {{ itembonus.formatted_value }}
                                                     </span>
                                                 {% endfor %}
