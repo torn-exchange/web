@@ -122,7 +122,7 @@ class ItemVariationFilter(django_filters.FilterSet):
     damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
     quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
     rarity = TypedChoiceFilter(field_name='rarity', choices=ItemVariation.RARITY_CHOICES, label='Rarity')
-    price = NumberFilter(field_name='price', lookup_expr='gte', label='Min Price')
+    price = NumberFilter(field_name='price', lookup_expr='lte', label='Max Price')
 
     item_bonus_title_1 = TypedChoiceFilter(field_name='itemvariationbonuses__bonus__title', choices=[], label="Bonus 1")
     bonus_value_1 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 1 Value")
@@ -169,7 +169,7 @@ class ItemVariationFilter(django_filters.FilterSet):
 
         price = self.data.get('price')
         if price:
-            filter_conditions['price__gte'] = price
+            filter_conditions['price__lte'] = price
 
         item_bonus_title_1 = self.data.get('item_bonus_title_1')
         if item_bonus_title_1 and item_bonus_title_1 != 'None':
