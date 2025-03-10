@@ -79,15 +79,18 @@ def about(request):
     
     return render(request, 'main/about.html', context)
 
-
 def rw_listings(request):
     queryset = ItemVariation.objects.all().select_related('owner', 'item').order_by('-updated_at')
     myFilter = ItemVariationFilter(request.GET, queryset=queryset)
 
     try:
+        # query_dict = request.args.to_dict()
+
         query_set = myFilter.qs
 
         query_set = query_set.exclude(hidden=True)
+
+
 
         number_of_items = query_set.count()
 

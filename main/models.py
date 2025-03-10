@@ -216,6 +216,12 @@ class ItemBonus(models.Model):
 
 
 class ItemVariation(models.Model):
+    RARITY_CHOICES = [
+        ('Yellow', 'Yellow'),
+        ('Orange', 'Orange'),
+        ('Red', 'Red'),
+    ]
+
     uid = models.BigIntegerField(null=True)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
@@ -225,6 +231,7 @@ class ItemVariation(models.Model):
     quality = models.FloatField()
     rarity = models.CharField(max_length=15, null=True)
     price = models.IntegerField(null=True)
+    is_saleable = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     removed_at = models.DateTimeField(null=True)
