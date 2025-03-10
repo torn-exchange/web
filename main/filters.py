@@ -3,8 +3,8 @@ import django_filters
 
 from main.te_utils import service_categories, service_names
 
-from .models import Listing, Company, Services
-from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
+from .models import Listing, Company, Services, Item, ItemVariation
+from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter
 from django_filters.widgets import RangeWidget
 
 from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
@@ -103,6 +103,35 @@ class ListingFilter(django_filters.FilterSet):
     class Meta:
         model = Listing
         fields = [('model_name_contains')]
+
+
+class ItemVariationFilter(django_filters.FilterSet):
+    items = Item.objects.filter(item_type='Weapon')
+    item_choices = [(item.id, item.name) for item in items]
+
+    item = TypedChoiceFilter(label='Item', field_name='item__name', choices=item_choices)
+    accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
+    damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
+    armor = NumberFilter(field_name='armor', lookup_expr='gte', label='Min Armor')
+    quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
+    rarity = django_filters.CharFilter(lookup_expr='iexact')
+    price = NumberFilter(field_name='price', lookup_expr='gte', label='Min Price')
+
+    order_by = django_filters.OrderingFilter(
+        fields=[
+            ('accuracy', 'accuracy'),
+            ('damage', 'damage'),
+            ('armor', 'armor'),
+            ('quality', 'quality'),
+            ('rarity', 'rarity'),
+            ('price', 'price'),
+            ('owner__vote_score', 'Trader Rating'),
+        ]
+    )
+
+    class Meta:
+        model = ItemVariation
+        fields = ['item', 'accuracy', 'damage', 'armor', 'quality', 'rarity', 'price']
 
 
 class CompanyListingFilter(django_filters.FilterSet):
