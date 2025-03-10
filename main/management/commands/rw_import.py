@@ -6,7 +6,7 @@ import json
 import os
 from time import sleep
 from datetime import datetime
-from main.models import ItemVariation, ItemBonus, ItemVariationBonuses
+from main.models import Item, ItemVariation, ItemBonus, ItemVariationBonuses
 
 class Command(BaseCommand):
     help = 'Fetches rare items from Torn API and TornPal API'
@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self.max_workers = 5  # Adjust based on API rate limits
         self.timeout = 10  # seconds
         self.bonuses = ItemBonus.objects.all()
+        self.items = Item.objects.all()
 
     def get_item_ids(self):
         """Fetch item IDs from Torn API for multiple categories"""
