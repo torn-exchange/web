@@ -672,9 +672,13 @@ background: rgb(239 255 0);
     padding-left: 5px;
     padding-right: 5px;
     padding-top: 2px;
-    padding-bottom: 0px;
+    padding-bottom: 1px;
     font-size:12px;
     color: #0e0e0e;
+}
+
+.listing-container .listing-stats {
+    font-size:12px;
 }
 
 .listing-container .listing-value {

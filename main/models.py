@@ -217,6 +217,7 @@ class ItemBonus(models.Model):
 
 class ItemVariation(models.Model):
     RARITY_CHOICES = [
+        ('None', 'None'),
         ('Yellow', 'Yellow'),
         ('Orange', 'Orange'),
         ('Red', 'Red'),
@@ -259,3 +260,9 @@ class ItemVariationBonuses(models.Model):
     item_variation = models.ForeignKey(ItemVariation, on_delete=models.CASCADE)
     value = models.FloatField(null=True)
     type = models.CharField(max_length=250)
+
+    @property
+    def formatted_value(self):
+        if self.type == 'percentage':
+            return f"{self.bonus.title} {int(self.value)}%"
+        return f"{int(self.value)}T"

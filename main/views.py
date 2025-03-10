@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F, Q
+from django.db.models import F, Q, Prefetch
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -26,7 +26,7 @@ from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
 from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_changelog,
                               get_most_trades)
-from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation
+from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
@@ -80,21 +80,26 @@ def about(request):
     return render(request, 'main/about.html', context)
 
 def rw_listings(request):
-    queryset = ItemVariation.objects.all().select_related('owner', 'item').order_by('-updated_at')
+    queryset = (
+        ItemVariation.objects.all()
+        .select_related('owner', 'item')
+        .prefetch_related(
+            Prefetch(
+                'itemvariationbonuses_set',
+                queryset=ItemVariationBonuses.objects.select_related('bonus'),
+            )
+        )
+        .order_by('-updated_at')
+    )
     myFilter = ItemVariationFilter(request.GET, queryset=queryset)
 
     try:
-        # query_dict = request.args.to_dict()
-
         query_set = myFilter.qs
-
-        query_set = query_set.exclude(hidden=True)
-
-
+        # query_set = queryset
 
         number_of_items = query_set.count()
 
-        # Attempt to get the user's profile
+        #Attempt to get the user's profile
         if request.user.is_authenticated:
             profile = Profile.objects.filter(user=request.user).get()
             user_settings = Settings.objects.filter(owner=profile).get()
@@ -105,7 +110,6 @@ def rw_listings(request):
         paginator = Paginator(query_set, 20)
         page = request.GET.get('page')
         results = paginator.get_page(page)
-
     except Exception as e:
         log_error(e)
         profile = None
