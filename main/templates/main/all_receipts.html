@@ -27,8 +27,7 @@
   </div>
 
   <div class="row mt-3">
-    <div class="col-2"></div>
-    <div class="col-8 text-center">
+    <div class="col-12 text-center">
       <div class=" font-weight-bold text-center text-responsive">
         <div class='row '>
           <div class='col-2 text-center'>
@@ -47,7 +46,7 @@
             Profit
           </div>
           <div class='col-2 text-center'>
-            Delete Receipt
+            Actions
           </div>
   
         </div>
@@ -75,7 +74,7 @@
             <form action="{% url 'delete_receipt' receipt.id %}" method="POST">
               {% csrf_token %}
               <button type="button btn btn-primary" class="btn btn-default btn-sm">
-                delete <i class="fas fa-trash-alt"></i>
+                <i class="fas fa-trash-alt"></i>
               </button>
             </form>
           </div>
@@ -85,8 +84,6 @@
       <hr>
       {% endfor %}
     </div>
-    <div class="col-2"></div>
-  </div>  
 </div>
 
 {% endblock %}
