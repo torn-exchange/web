@@ -231,7 +231,7 @@ class ItemVariation(models.Model):
     armor = models.FloatField(null=True)
     quality = models.FloatField()
     rarity = models.CharField(max_length=15, null=True)
-    price = models.IntegerField(null=True)
+    price = models.BigIntegerField(null=True)
     is_saleable = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
