@@ -39,6 +39,7 @@ urlpatterns = [
     re_path(r'^paste_parse/?$', views.parse_trade_paste, name='trade_paste'),
     re_path(r'^vote_view/?$', views.vote_view, name='vote_view'),
     re_path(r'^listings/?$', views.listings, name='listings'),
+    re_path(r'^rw_listings/?$', views.rw_listings, name='rw_listings'),
     re_path(r'^services/(?P<identifier>[\w-]+)/?$', views.services_list, name='services_list'),
     re_path(r'^services/?$', views.services_list, name='services_list'),
     re_path(r'^search_services/?$', views.search_services, name='search_services'),

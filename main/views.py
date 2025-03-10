@@ -26,7 +26,7 @@ from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter
 from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_changelog,
                               get_most_trades)
-from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt
+from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
@@ -79,6 +79,9 @@ def about(request):
     
     return render(request, 'main/about.html', context)
 
+
+def rw_listings(request):
+    pass
 
 def listings(request):
     queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
