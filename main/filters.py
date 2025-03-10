@@ -3,8 +3,8 @@ import django_filters
 
 from main.te_utils import service_categories, service_names
 
-from .models import Listing, Company, Services
-from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
+from .models import Listing, Company, Services, Item, ItemVariation, ItemVariationBonuses, ItemBonus
+from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter
 from django_filters.widgets import RangeWidget
 
 from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
@@ -103,6 +103,82 @@ class ListingFilter(django_filters.FilterSet):
     class Meta:
         model = Listing
         fields = [('model_name_contains')]
+
+
+class ItemVariationFilter(django_filters.FilterSet):
+    items = Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])
+    item_choices = [(item.id, item.name) for item in items]
+
+    item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
+    accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
+    damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
+    # armor = NumberFilter(field_name='armor', lookup_expr='gte', label='Min Armor')
+    quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
+    rarity = TypedChoiceFilter(field_name='rarity', choices=ItemVariation.RARITY_CHOICES, label='Rarity')
+    price = NumberFilter(field_name='price', lookup_expr='gte', label='Min Price')
+
+    item_bonus_title_1 = TypedChoiceFilter(
+        field_name='item_bonus__title',
+        choices=[(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()],
+        label="Bonus 1"
+    )
+    bonus_value_1 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 1 Value")
+
+    item_bonus_title_2 = TypedChoiceFilter(
+        field_name='item_bonus__title',
+        choices=[(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()],
+        label="Bonus 2"
+    )
+    bonus_value_2 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 2 Value")
+
+    order_by = OrderingFilter(
+        fields=(
+            ('accuracy', 'accuracy'),
+            ('damage', 'damage'),
+            # ('armor', 'armor'),
+            ('quality', 'quality'),
+            ('price', 'price'),
+            ('rarity', 'rarity'),
+            ('bonus_value_1', 'bonus_value_1'),
+            ('bonus_value_2', 'bonus_value_2'),
+            ('owner__vote_score'),
+        ),
+        label='Order by',
+    )
+
+    def filter_queryset(self, queryset):
+        queryset = queryset.filter(is_saleable=True)
+
+        # Apply additional filters
+        title_1 = self.data.get('item_bonus_title_1', None)
+        bonus_value_1 = self.data.get('bonus_value_1', None)
+        title_2 = self.data.get('item_bonus_title_2', None)
+        bonus_value_2 = self.data.get('bonus_value_2', None)
+
+        if title_1 and bonus_value_1:
+            queryset = queryset.filter(itemvariationbonuses__bonus__title=title_1,
+                                       itemvariationbonuses__value=bonus_value_1)
+        if title_2 and bonus_value_2:
+            queryset = queryset.filter(itemvariationbonuses__bonus__title=title_2,
+                                       itemvariationbonuses__value=bonus_value_2)
+
+        return queryset
+
+    class Meta:
+        model = ItemVariation
+        fields = [
+            'item__name',
+            'accuracy',
+            'damage',
+            # 'armor',
+            'quality',
+            'rarity',
+            'price',
+            'item_bonus_title_1',
+            'bonus_value_1',
+            'item_bonus_title_2',
+            'bonus_value_2'
+        ]
 
 
 class CompanyListingFilter(django_filters.FilterSet):

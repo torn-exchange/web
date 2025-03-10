@@ -1,0 +1,185 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+    {% load crispy_forms_tags %}
+    {% load humanize %}
+    {% load custom_tags %}
+    {% load static %}
+    <div class="container">
+        <div class="row pb-3">
+            <div class="col-12 text-center">
+                <h3>RW Item Listings</h3>
+                {# @TODO use popovers/tooltips for this text #}
+                <p>
+                    Here are all of the items that traders in Torn Exchange are buying. If you are a seller, filter the
+                    search by item name, price or rating, to find the best deal for you!
+                </p>
+                <p class="text-muted">
+                    Note when filtering by status: Idle traders can be just as online as Online traders, they may have
+                    switched tabs or having Torn opened but doing something away from keyboard so if you use that
+                    filter, make sure to always check Idle traders as well.
+                    <br/>
+                    When choosing a trader, make sure they traded recently - you can check their activity on their price
+                    list page.
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="listing-section">
+                <div class="listing-filters">
+                    <form method="GET" class="p-2">
+                        {{ myFilter.form|crispy }}
+                        <button class="btn btn-primary"> Search</button>
+                    </form>
+                </div>
+                <div class="listing-wrapper">
+                    <div class="d-flex ps-2 pe-2 pt-2 pb-2 listing-header">
+                        <div class="flex-grow-0">
+                            {{ number_of_items }} items
+                        </div>
+                        <div class="flex-grow-1 listing-pagination">
+                            {% include 'main/includes/pagination.html' %}
+                        </div>
+                        <div class="flex-grow-0">
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="grid-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
+                                    <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
+                                </svg>
+                            </a>
+                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                               data-layout="list-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     viewBox="0 0 158 140">
+                                    <path fill-rule="evenodd"
+                                          d="M33.9 100.5c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2H11.3C5 140 0 135 0 128.7v-17c0-6.2 5-11.2 11.3-11.2h22.6zm112.9 0c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.2 5-11.2 11.2-11.2h79zm-113-49.7c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 90.3 0 85.3 0 79V62.1c0-6.2 5-11.3 11.3-11.3h22.6zm113 0c6.2 0 11.3 5 11.3 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3V62.1c0-6.2 5-11.3 11.2-11.3h79zM33.8 0c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 39.5 0 34.5 0 28.2v-17C0 5.2 5 0 11.3 0h22.6zm113 0C153 0 158 5 158 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.1 5-11.2 11.2-11.2h79z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% if listings %}
+                        <div id="listing_container" class="listing-container list-view">
+                            {% for listing in listings %}
+                                <div class="flex-grow-1">
+                                    <div class="card listing-card m-0 p-0">
+                                        <div class="p-2 d-flex listing-player">
+                                            <div class="flex-inline flex-grow-1 text-start">
+                                                <i class="fas fa-circle
+                                                {% if listing.owner.activity_status == 'Online' %} text-success
+                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                {% endif %}
+                                            fs-12"></i>
+                                                <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                            </div>
+                                            <div class="flex-inline flex-grow-0 text-end
+                                            {% if listing.owner.vote_score == 0 %} text-secondary
+                                            {% elif listing.owner.vote_score > 0 %} text-success
+                                            {% elif listing.owner.vote_score < 0 %} text-danger
+                                            {% endif %}
+                                            ">
+                                                {{ listing.owner.vote_score }}
+                                                <i class="far fa-star
+                                                    {% if listing.owner.vote_score == 0 %} text-secondary
+                                                    {% elif listing.owner.vote_score > 0 %} text-success
+                                                    {% elif listing.owner.vote_score < 0 %} text-danger
+                                                    {% endif %}
+                                                "></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-text ps-2 pb-2 {{ listing.rarity|lower }}">
+                                            <div class="mb-2 justify-content-center d-flex">
+                                                <img src="{{ listing.item.image_url }}" class="img-fluid"
+                                                     alt="{{ listing.item.name }}" style="max-height: 50px;">
+                                            </div>
+                                            <div class="d-flex">
+                                                <div class="listing-price" style="postion:relative;">
+                                                    <strong>${{ listing.price|intcomma }}</strong>
+                                                    {#<span class="badge bg-success listing-discount">-23%</span>#}
+                                                    {# @TODO Implement value diff #}
+                                                </div>
+                                            </div>
+                                            <div class="d-flex listing-value">
+                                                {% for itembonus in listing.itemvariationbonuses %}
+                                                    <span class="badge bg-warning-subtle listing-bonus">
+                                                        {{ itembonus.value }}
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="d-flex listing-stats d-none d-md-flex">
+                                                <span class="listing-stat">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
+                                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                      <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"></path>
+                                                      <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"></path>
+                                                      <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"></path>
+                                                    </svg>
+                                                     &nbsp;{{ listing.accuracy }}
+                                                </span>
+                                                <span class="listing-stat ms-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
+                                                        <path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"/>
+                                                    </svg>
+                                                     &nbsp;{{ listing.damage }}
+                                                </span>
+                                                <span class="listing-stat ms-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
+                                                         style="vertical-aign:middle;">
+                                                        <path d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z"/>
+                                                    </svg>
+                                                    &nbsp;{{ listing.quality }}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex mt-1 listing-category d-none d-md-flex">
+                                                <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);"> Price List</a>
+
+                                                    <a target="_blank"
+                                                       href="https://www.torn.com/trade.php#step=start&userID={{ listing.owner.torn_id }}"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(235, 244,225);"> Trade Now</a>
+
+                                                    <a target="_blank"
+                                                       href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
+                                                       class="badge badge-light text-black pl-2 pr-2"
+                                                       style="background-color: rgb(223, 239,243);"> TornPal</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex-grow-1">
+                            <div class="m-0 pt-4">
+                                <div class="text-center">
+                                    <h6>No listings found</h6>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        {% include 'main/includes/footer.html' %}
+    </div>
+
+    <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
+
+{% endblock %}
