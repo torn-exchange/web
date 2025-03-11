@@ -209,3 +209,61 @@ class TradeReceipt(models.Model):
     @property
     def profit(self):
         return sum([a.profit for a in self.items_trades.all()])
+
+
+class ItemBonus(models.Model):
+    title = models.CharField(max_length=250)
+
+
+class ItemVariation(models.Model):
+    RARITY_CHOICES = [
+        ('Any', 'Any'),
+        ('Yellow', 'Yellow'),
+        ('Orange', 'Orange'),
+        ('Red', 'Red'),
+    ]
+
+    uid = models.BigIntegerField(null=True)
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    accuracy = models.FloatField(null=True)
+    damage = models.FloatField(null=True)
+    armor = models.FloatField(null=True)
+    quality = models.FloatField()
+    rarity = models.CharField(max_length=15, null=True)
+    price = models.BigIntegerField(null=True)
+    is_saleable = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    removed_at = models.DateTimeField(null=True)
+    last_sync_at = models.DateTimeField(auto_now=True)
+
+    # @property
+    # def bonuses(self):
+    #     return self.itemvariationbonuses_set.all()
+
+    @property
+    def bb_value(self):
+        return 0
+
+
+class ItemBBValue(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    value = models.FloatField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    last_sync_at = models.DateTimeField(auto_now=True)
+
+
+class ItemVariationBonuses(models.Model):
+    bonus = models.ForeignKey(ItemBonus, on_delete=models.CASCADE)
+    item_variation = models.ForeignKey(ItemVariation, on_delete=models.CASCADE)
+    value = models.FloatField(null=True)
+    description = models.CharField(max_length=250, null=True)
+    type = models.CharField(max_length=250)
+
+    @property
+    def formatted_value(self):
+        if self.type == 'percentage':
+            return f"{self.bonus.title} {int(self.value)}%"
+        return f"{self.bonus.title} {int(self.value)}T"

@@ -688,6 +688,35 @@ th {
     padding-bottom: 2px;
 }
 
+.listing-container .card-text.red {
+    background: rgb(255, 0, 0);
+    background: radial-gradient(circle, rgb(106 0 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .card-text.yellow {
+background: rgb(239 255 0);
+    background: radial-gradient(circle, rgb(94 106 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .card-text.orange {
+    background: rgb(255 177 0);
+    background: radial-gradient(circle, rgb(106 69 0) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.listing-container .listing-bonus {
+    margin-top: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 2px;
+    padding-bottom: 1px;
+    font-size:12px;
+    color: #0e0e0e;
+}
+
+.listing-container .listing-stats {
+    font-size:12px;
+}
+
 .listing-container .listing-value {
     font-size:10px;
 }
@@ -731,6 +760,16 @@ th {
     align-items: center;
     padding-right:10px;
 }
+
+@media (max-width: 575.98px) {
+    .listing-container.list-view .card-text {
+        display: block !important;
+        justify-content: space-between;
+        align-content: stretch;
+        align-items: center;
+        padding-right: 10px;
+    }
+}
 /* END LISTING STYLES */
 
 /* TABLE STYLES */
@@ -738,7 +777,7 @@ th {
 #alltradereceipts {
     width: 100%;
 }
-  
+
 #alltradereceipts td, #alltradereceipts th {
     border: 0x solid #ddd;
     padding: 8px;
@@ -748,11 +787,11 @@ th {
     background-color: var(--te-card-bg);
     border-radius: 10px;
 }
-  
+
 #alltradereceipts tr:hover {
     color: var(--bs-gold);
 }
-  
+
 #alltradereceipts th {
     padding-top: 12px;
     padding-bottom: 12px;
