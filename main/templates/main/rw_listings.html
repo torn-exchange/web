@@ -70,14 +70,20 @@
                                     <div class="card listing-card m-0 p-0">
                                         <div class="p-2 d-flex listing-player">
                                             <div class="flex-inline flex-grow-1 text-start">
+                                                
                                                 {% if listing.owner %}
-                                                    <i class="fas fa-circle
-                                                    {% if listing.owner.activity_status == 'Online' %} text-success
-                                                    {% elif listing.owner.activity_status == 'Idle' %} text-warning
-                                                    {% elif listing.owner.activity_status == 'Offline' %} text-secondary
-                                                    {% endif %}
+                                                <i class="fas fa-circle
+                                                {% if listing.owner.activity_status == 'Online' %} text-success
+                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                {% endif %}
                                                 fs-12"></i>
-                                                    <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                                    <span>
+                                                        <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/" target="_blank"
+                                                        title="Go to user's bazaar">
+                                                            {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                        </a>
+                                                    </span>
                                                 {% else %}
                                                 <span>Unknown</span>
                                             {% endif %}
