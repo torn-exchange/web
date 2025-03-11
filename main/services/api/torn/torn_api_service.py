@@ -38,7 +38,7 @@ class TornAPIService:
             response.raise_for_status()
             return cls.handle_response(response.json())
         except requests.ConnectionError as e:
-            return {"success": False, "message": f"Connection failed: {str(e)}"}
+            return {"success": False, "error": f"Connection failed: {str(e)}"}
         except requests.HTTPError as e:
             return cls.handle_error_response(response)
 
@@ -47,7 +47,7 @@ class TornAPIService:
         if "error" in response:
             if "code" in response["error"]:
                 TornApiErrorHandler.handle_error(response["error"]["code"])
-            return {"success": False, "message": str(response["error"])}
+            return {"success": False, "error": str(response["error"]), "data": response}
         return {"success": True, "data": response}
 
     @classmethod
@@ -59,5 +59,5 @@ class TornAPIService:
             404: "Not Found: The requested resource could not be found.",
             500: "Internal Server Error: Please try again later."
         }
-        return {"success": False, "message": error_messages.get(status_code, f"An error occurred: {response.text}")}
+        return {"success": False, "error": error_messages.get(status_code, f"An error occurred: {response.text}")}
 
