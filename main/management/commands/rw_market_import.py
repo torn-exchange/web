@@ -8,7 +8,7 @@ import requests
 import json
 import os
 from time import sleep
-import datetime
+from datetime import datetime
 
 from django.utils import timezone
 
