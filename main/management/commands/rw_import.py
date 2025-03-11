@@ -1,4 +1,5 @@
 import time
+import traceback
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
@@ -169,6 +170,9 @@ class Command(BaseCommand):
         """Save all rare items and their bonuses in bulk transactions"""
         try:
             with transaction.atomic():
+                # Get existing UIDs
+                existing_uids = set(ItemVariation.objects.values_list('uid', flat=True))
+            
                 # Prepare ItemVariation objects
                 variations = [
                     ItemVariation(
@@ -184,7 +188,12 @@ class Command(BaseCommand):
                         rarity=item['rarity'].capitalize(),
                         is_saleable=True
                     ) for item in self.rare_items
+                    if item['uid'] not in existing_uids
                 ]
+                
+                if not variations:
+                    self.stdout.write('All items already exist in database')
+                    return
                 
                 # Bulk create variations
                 created_variations = ItemVariation.objects.bulk_create(variations)

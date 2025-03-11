@@ -223,7 +223,8 @@ class ItemVariation(models.Model):
         ('Red', 'Red'),
     ]
 
-    uid = models.BigIntegerField(null=True)
+
+    uid = models.BigIntegerField(null=True, unique=True, db_index=True)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     accuracy = models.FloatField(null=True)
@@ -245,6 +246,16 @@ class ItemVariation(models.Model):
     @property
     def bb_value(self):
         return 0
+    
+    # UniqueConstraint with condition: Ensures uniqueness only when uid is not NULL
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['uid'],
+                condition=models.Q(uid__isnull=False),
+                name='unique_non_null_uid'
+            )
+        ]
 
 
 class ItemBBValue(models.Model):
