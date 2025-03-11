@@ -29,7 +29,7 @@
     <!-- Desktop Table (hidden on mobile) -->
     <div class="d-none d-md-block">
       <div class="table-responsive">
-          <table class="table">
+          <table id="alltradereceipts">
               <thead>
                   <tr>
                       <th>Name</th>
@@ -48,12 +48,12 @@
                       <td class="text-end">${{receipt.profit|intcomma}}</td>
                       <td class="text-center">
                           <a href="{% url 'receipt_view' receipt.receipt_url_string %}" 
-                             class="btn btn-sm btn-outline-primary" target="_blank" title="View Receipt">
+                             class="btn btn-info" target="_blank" title="View Receipt">
                               <i class="fas fa-eye"></i>
                           </a>
                           <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
                               {% csrf_token %}
-                              <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Receipt">
+                              <button type="submit" class="btn btn-delete" title="Delete Receipt">
                                   <i class="fas fa-trash-alt"></i>
                               </button>
                           </form>
@@ -73,17 +73,17 @@
               <h5 class="card-title">{{receipt.seller}}</h5>
               <div class="row mb-2">
                   <div class="col-6">
-                      <small class="text-muted">Date:</small><br>
+                      <small>Date:</small><br>
                       {{receipt.created_at}}
                   </div>
                   <div class="col-6 text-end">
-                      <small class="text-muted">Price:</small><br>
+                      <small>Price:</small><br>
                       ${{receipt.total|intcomma}}
                   </div>
               </div>
               <div class="row mb-3">
                   <div class="col-12 text-end">
-                      <small class="text-muted">Profit:</small><br>
+                      <small>Profit:</small><br>
                       <span class="{% if receipt.profit > 0 %}text-success{% else %}text-danger{% endif %}">
                           ${{receipt.profit|intcomma}}
                       </span>
@@ -91,12 +91,12 @@
               </div>
               <div class="d-flex justify-content-end gap-2">
                   <a href="{% url 'receipt_view' receipt.receipt_url_string %}" 
-                     class="btn btn-outline-primary" target="_blank">
+                     class="btn btn-info" target="_blank">
                       <i class="fas fa-eye"></i> View
                   </a>
                   <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-outline-danger">
+                      <button type="submit" class="btn btn-delete">
                           <i class="fas fa-trash-alt"></i> Delete
                       </button>
                   </form>
