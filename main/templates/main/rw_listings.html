@@ -89,18 +89,18 @@
                                         </div>
 
                                         <div class="card-text ps-2 pb-2 {{ listing.rarity|lower }}">
-                                            <div class="justify-content-center d-flex flex-wrap">
+                                            <div class="justify-content-center flex-grow-1  flex-wrap">
                                                 <img src="{{ listing.item.image_url }}" class="img-fluid mt-2"
                                                      alt="{{ listing.item.name }}" style="max-height: 50px;">
                                             </div>
-                                            <div class="d-flex flex-wrap">
+                                            <div class="flex-grow-1  flex-wrap">
                                                 <div class="listing-price" style="postion:relative;">
                                                     <strong>${{ listing.price|intcomma }}</strong>
                                                     {#<span class="badge bg-success listing-discount">-23%</span>#}
                                                     {# @TODO Implement value diff #}
                                                 </div>
                                             </div>
-                                            <div class="listing-value d-md-flex mt-2 d-block flex-wrap">
+                                            <div class="listing-value flex-grow-1 mt-2 d-block flex-wrap">
                                                 {% for itembonus in listing.itemvariationbonuses_set.all %}
                                                     <span class="badge bg-warning-subtle listing-bonus {% if forloop.counter > 1 %}ms-2{% endif %}">
                                                         {{ itembonus.formatted_value }}
