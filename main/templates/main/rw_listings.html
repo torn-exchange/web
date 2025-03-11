@@ -65,13 +65,17 @@
                                     <div class="card listing-card m-0 p-0">
                                         <div class="p-2 d-flex listing-player">
                                             <div class="flex-inline flex-grow-1 text-start">
-                                                <i class="fas fa-circle
-                                                {% if listing.owner.activity_status == 'Online' %} text-success
-                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
-                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
-                                                {% endif %}
-                                            fs-12"></i>
-                                                <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                                {% if listing.owner %}
+                                                    <i class="fas fa-circle
+                                                    {% if listing.owner.activity_status == 'Online' %} text-success
+                                                    {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                    {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                    {% endif %}
+                                                fs-12"></i>
+                                                    <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                                {% else %}
+                                                <span>Unknown</span>
+                                            {% endif %}
                                             </div>
                                             <div class="flex-inline flex-grow-0 text-end
                                             {% if listing.owner.vote_score == 0 %} text-secondary
@@ -144,6 +148,7 @@
                                         <div class="card-footer">
                                             <div class="row">
                                                 <div class="col">
+                                                    {% if listing.owner %}
                                                     <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
                                                        class="badge badge-light text-black pl-2 pr-2"
                                                        style="background-color: rgb(223, 239,243);"> Price List</a>
@@ -157,6 +162,9 @@
                                                        href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
                                                        class="badge badge-light text-black pl-2 pr-2"
                                                        style="background-color: rgb(223, 239,243);"> TornPal</a>
+                                                    {% else %}
+                                                        Item Market
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>

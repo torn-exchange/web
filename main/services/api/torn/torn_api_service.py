@@ -17,7 +17,7 @@ class TornAPIService:
         if cls.api_key is not None:
             return cls.api_key
 
-        profiles_with_keys = Profile.objects.exclude(api_key='')
+        profiles_with_keys = Profile.objects.exclude(api_key=None).exclude(api_key='')
         if not profiles_with_keys.exists():
             return os.getenv('SYSTEM_API_KEY')
 
@@ -31,8 +31,7 @@ class TornAPIService:
     @classmethod
     def get(cls, endpoint: str, query_params: Dict[str, Any] = None, access_level: str = None) -> Dict[str, Any]:
         query_params = query_params or {}
-        headers = {"Authorization": f"ApiKey {cls.get_key(access_level)}"}
-
+        headers = {"Authorization": f"ApiKey {str(cls.get_key(access_level))}"}
         response = None
         try:
             response = requests.get(f"{cls.base_url}{endpoint}", headers=headers, params=query_params)

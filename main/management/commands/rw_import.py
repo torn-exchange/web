@@ -185,7 +185,7 @@ class Command(BaseCommand):
                         price=item['price'],
                         created_at=item['created_at'],
                         updated_at=item['updated_at'],
-                        rarity=item['rarity'],
+                        rarity=item['rarity'].capitalize(),
                         is_saleable=True
                     ) for item in self.rare_items
                     if item['uid'] not in existing_uids

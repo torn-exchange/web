@@ -223,8 +223,9 @@ class ItemVariation(models.Model):
         ('Red', 'Red'),
     ]
 
+
     uid = models.BigIntegerField(null=True, unique=True, db_index=True)
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     accuracy = models.FloatField(null=True)
     damage = models.FloatField(null=True)
@@ -269,10 +270,11 @@ class ItemVariationBonuses(models.Model):
     bonus = models.ForeignKey(ItemBonus, on_delete=models.CASCADE)
     item_variation = models.ForeignKey(ItemVariation, on_delete=models.CASCADE)
     value = models.FloatField(null=True)
+    description = models.CharField(max_length=250, null=True)
     type = models.CharField(max_length=250)
 
     @property
     def formatted_value(self):
         if self.type == 'percentage':
             return f"{self.bonus.title} {int(self.value)}%"
-        return f"{int(self.value)}T"
+        return f"{self.bonus.title} {int(self.value)}T"
