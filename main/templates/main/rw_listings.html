@@ -89,7 +89,7 @@
                                         </div>
 
                                         <div class="card-text ps-2 pb-2 {{ listing.rarity|lower }}">
-                                            <div class="justify-content-center flex-grow-1  flex-wrap">
+                                            <div class="justify-content-center d-flex flex-grow-1 flex-wrap">
                                                 <img src="{{ listing.item.image_url }}" class="img-fluid mt-2"
                                                      alt="{{ listing.item.name }}" style="max-height: 50px;">
                                             </div>
@@ -137,7 +137,7 @@
                                                     {{ listing.quality }}
                                                 </span>
                                             </div>
-                                            <div class="d-flex mt-1 listing-category d-none d-md-flex flex-wrap">
+                                            <div class="flex-grow-0 ps-2 mt-2 listing-category d-none d-md-flex flex-wrap">
                                                 <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
                                             </div>
                                         </div>

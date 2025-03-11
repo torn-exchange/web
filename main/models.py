@@ -246,6 +246,10 @@ class ItemVariation(models.Model):
     @property
     def bb_value(self):
         return 0
+
+    @property
+    def torn_market_url(self):
+        return f"https://www.torn.com/page.php?sid=ItemMarket#/market/view=search&itemID={self.item.item_id}&itemName={self.item.name}&itemType={self.item.item_type}&sortField=price&sortOrder=ASC"
     
     # UniqueConstraint with condition: Ensures uniqueness only when uid is not NULL
     class Meta:
