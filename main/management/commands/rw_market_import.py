@@ -110,16 +110,21 @@ class Command(BaseCommand):
                 for item_data in set:
                     item_normalized = self.map_item(item_data, item)
 
+                    if item_normalized['rarity'] == '' or item_normalized['rarity'] is None:
+                        continue
+
                     item_variation, created = ItemVariation.objects.update_or_create(
                         uid=item_normalized['uid'],
                         item_id=item.id,
-                        accuracy=item_normalized['accuracy'],
-                        damage=item_normalized['damage'],
-                        quality=item_normalized['quality'],
-                        price=item_normalized['price'],
-                        rarity=item_normalized['rarity'].capitalize(),
-                        last_sync_at=self.last_sync_at,
-                        is_saleable=True,
+                        defaults={
+                            "accuracy": item_normalized['accuracy'],
+                            "damage": item_normalized['damage'],
+                            "quality": item_normalized['quality'],
+                            "price": item_normalized['price'],
+                            "rarity": item_normalized['rarity'].capitalize(),
+                            "last_sync_at": self.last_sync_at,
+                            "is_saleable": True,
+                        }
                     )
 
                     item_variation.refresh_from_db()
@@ -128,9 +133,9 @@ class Command(BaseCommand):
                         ItemVariationBonuses.objects.update_or_create(
                             bonus_id=bonus['bonus_id'],
                             item_variation_id=item_variation.id,
-                            value=bonus['value'],
-                            description=bonus['description'],
-                            type=bonus['type']
+                            defaults={
+                                "value": bonus['value'],
+                                "description": bonus['description'],
+                                "type": bonus['type']
+                            }
                         )
-
-            sleep(60)
