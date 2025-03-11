@@ -111,11 +111,11 @@ class ItemVariationFilter(django_filters.FilterSet):
         data.setdefault('order', '-price')
         super().__init__(data, *args, **kwargs)
 
-        item_bonus_choices = [('None', 'None')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
+        item_bonus_choices = [('Any', 'Any')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
         self.filters['item_bonus_title_1'].extra.update(choices=item_bonus_choices)
         self.filters['item_bonus_title_2'].extra.update(choices=item_bonus_choices)
 
-    item_choices = [('None', 'None')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])]
+    item_choices = [('Any', 'Any')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])]
 
     item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
     accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
@@ -148,7 +148,7 @@ class ItemVariationFilter(django_filters.FilterSet):
         filter_conditions = {}
 
         item_name = self.data.get('item__name')
-        if item_name and item_name != 'None':
+        if item_name and item_name != 'Any':
             filter_conditions['item__name'] = item_name
 
         accuracy = self.data.get('accuracy')
@@ -164,7 +164,7 @@ class ItemVariationFilter(django_filters.FilterSet):
             filter_conditions['quality__gte'] = quality
 
         rarity = self.data.get('rarity')
-        if rarity and rarity != 'None':
+        if rarity and rarity != 'Any':
             filter_conditions['rarity'] = rarity
 
         price = self.data.get('price')
@@ -172,7 +172,7 @@ class ItemVariationFilter(django_filters.FilterSet):
             filter_conditions['price__lte'] = price
 
         item_bonus_title_1 = self.data.get('item_bonus_title_1')
-        if item_bonus_title_1 and item_bonus_title_1 != 'None':
+        if item_bonus_title_1 and item_bonus_title_1 != 'Any':
             queryset = queryset.filter(
                 itemvariationbonuses__bonus__title=item_bonus_title_1,
             )
@@ -182,7 +182,7 @@ class ItemVariationFilter(django_filters.FilterSet):
             queryset = queryset.filter(itemvariationbonuses__value__gte=bonus_value_1)
 
         item_bonus_title_2 = self.data.get('item_bonus_title_2')
-        if item_bonus_title_2 and item_bonus_title_2 != 'None':
+        if item_bonus_title_2 and item_bonus_title_2 != 'Any':
             queryset = queryset.filter(
                 itemvariationbonuses__bonus__title=item_bonus_title_2,
             )

@@ -93,30 +93,30 @@ def rw_listings(request):
     )
     myFilter = ItemVariationFilter(request.GET, queryset=queryset)
 
-    try:
-        query_set = myFilter.qs
-        # query_set = queryset
+    # try:
+    query_set = myFilter.qs
+    # query_set = queryset
 
-        number_of_items = query_set.count()
+    number_of_items = query_set.count()
 
-        #Attempt to get the user's profile
-        if request.user.is_authenticated:
-            profile = Profile.objects.filter(user=request.user).get()
-            user_settings = Settings.objects.filter(owner=profile).get()
-        else:
-            user_settings = None
-            profile = None
-
-        paginator = Paginator(query_set, 20)
-        page = request.GET.get('page')
-        results = paginator.get_page(page)
-    except Exception as e:
-        log_error(e)
-        profile = None
+    #Attempt to get the user's profile
+    if request.user.is_authenticated:
+        profile = Profile.objects.filter(user=request.user).get()
+        user_settings = Settings.objects.filter(owner=profile).get()
+    else:
         user_settings = None
-        results = None
-        page = None
-        number_of_items = None
+        profile = None
+
+    paginator = Paginator(query_set, 20)
+    page = request.GET.get('page')
+    results = paginator.get_page(page)
+    # except Exception as e:
+    #     log_error(e)
+    #     profile = None
+    #     user_settings = None
+    #     results = None
+    #     page = None
+    #     number_of_items = None
 
     context = {
         'page_title': 'Search Traders - Torn Exchange',

@@ -47,15 +47,20 @@ def login_request(request):
             
             # login
             if player_id in [a['torn_id'] for a in Profile.objects.values('torn_id')]:
-                messages.success(request, f'Welcome back {player_name}!')
-                profile = Profile.objects.filter(torn_id=player_id).get()
+                profile = Profile.objects.filter(torn_id=player_id).first()
+
+                if not profile.api_key:
+                    messages.success(request, 'Your account has been created')
+                else:
+                    messages.success(request, f'Welcome back {player_name}!')
+
                 profile.name = player_name
                 profile.api_key = api_key
                 profile.save()
-                
-                user = User.objects.filter(profile=profile).get()
+
+                user = User.objects.filter(profile=profile).first()
                 login(request, user)
-                                
+
                 return redirect(request.GET.get('next') or 'home')
             else:  # register
 
@@ -66,7 +71,7 @@ def login_request(request):
                 user.profile.api_key = api_key
                 user.profile.name = player_name
                 user.save()
-                
+
                 messages.success(request, 'Your account has been created')
                 login(request, user)
                 return redirect(request.GET.get('next') if url_has_allowed_host_and_scheme(request.GET.get('next'), allowed_hosts={request.get_host()}) else 'home')

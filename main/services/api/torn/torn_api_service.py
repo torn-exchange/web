@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 from typing import Any, Dict, Type
 
-from main.management.services.api.torn.torn_api_error_handler import TornApiErrorHandler
+from main.services.api.torn.torn_api_error_handler import TornApiErrorHandler
 from users.models import Profile
 from random import choice
 import os
@@ -24,7 +24,7 @@ class TornAPIService:
         return choice(profiles_with_keys).api_key
 
     @classmethod
-    def set_key(cls, key: str) -> Type[TornAPIService]:
+    def set_key(cls, key: str) -> Type['TornAPIService']:
         cls.api_key = key
         return cls
 

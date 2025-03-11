@@ -1,3 +1,6 @@
+import time
+
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -7,6 +10,9 @@ import os
 from time import sleep
 from datetime import datetime
 from main.models import Item, ItemVariation, ItemBonus, ItemVariationBonuses
+from main.services.api.torn.player.torn_player_api_service import TornPlayerAPIService
+from users.models import Profile
+
 
 class Command(BaseCommand):
     help = 'Fetches rare items from Torn API and TornPal API'
@@ -20,6 +26,44 @@ class Command(BaseCommand):
         self.timeout = 10  # seconds
         self.bonuses = ItemBonus.objects.all()
         self.items = Item.objects.all()
+
+    def ensure_user(self, player_id):
+        profile = Profile.objects.filter(torn_id=player_id).first()
+        if not profile:
+            try:
+                service = TornPlayerAPIService()
+                response = service.get_profile(player_id)
+
+                if 'error' in response['data']:
+                    error = response['data']['error']
+                    print(f'Data error: {error}')
+                    return None
+
+                user = User.objects.create_user(player_id, 'johnpassword')
+                user.save()
+                user.refresh_from_db()
+                user.profile.torn_id = player_id
+                user.profile.name = response['data']['name']
+                user.save()
+                user.refresh_from_db()
+
+                profile = user.profile
+            except Exception as e:
+                print("Error occurred:", e)
+                print("Detailed traceback:")
+                traceback.print_exc()
+                return None
+
+        time.sleep(5)
+        return profile
+
+    def map_item_id(self, item):
+        database_item = self.items.filter(item_id=item['item_id']).first()
+        if not database_item:
+            return None
+
+        item['item_id'] = database_item.id
+        return item
 
     def get_item_ids(self):
         """Fetch item IDs from Torn API for multiple categories"""
@@ -73,6 +117,13 @@ class Command(BaseCommand):
             
             # Check each item in response
             for item in data:
+                profile = self.ensure_user(item['player_id'])
+                if not profile:
+                    continue
+
+                item = self.map_item_id(item)
+
+                item['owner_id'] = profile.id
                 if item.get('itemdetails', {}).get('rarity') != 'None':
                     self.rare_items.append(
                         self.map_item(item)
@@ -98,12 +149,12 @@ class Command(BaseCommand):
                 'type': 'tick' if 'Disarm' in bonus['bonus'] else 'percentage',
                 'bonus_id': db_bonus.id if db_bonus else None
             })
-        
+
         return {
             'item_id': item['item_id'],
             'uid': item['uid'],
             'price': item['price'],
-            'owner_id': item['player_id'],
+            'owner_id': item['owner_id'],
             'accuracy': item['itemdetails']['accuracy'],
             'damage': item['itemdetails']['damage'],
             'quality': item['itemdetails']['quality'],

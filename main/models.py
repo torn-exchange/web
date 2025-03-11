@@ -217,7 +217,7 @@ class ItemBonus(models.Model):
 
 class ItemVariation(models.Model):
     RARITY_CHOICES = [
-        ('None', 'None'),
+        ('Any', 'Any'),
         ('Yellow', 'Yellow'),
         ('Orange', 'Orange'),
         ('Red', 'Red'),
