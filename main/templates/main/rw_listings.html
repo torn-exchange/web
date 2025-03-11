@@ -28,14 +28,24 @@
                     </form>
                 </div>
                 <div class="listing-wrapper">
-                    <div class="d-flex ps-2 pe-2 pt-2 pb-2 listing-header">
-                        <div class="flex-grow-0">
+                    <div class="d-flex flex-wrap ps-2 pe-2 pt-2 pb-2 listing-header">
+                        <!-- Items count - Full width on mobile -->
+                        <div class="w-100 d-md-none">
                             {{ number_of_items }} items
                         </div>
+
+                        <!-- Items count - Desktop only -->
+                        <div class="flex-grow-0 d-none d-md-block">
+                            {{ number_of_items }} items
+                        </div>
+
+                        <!-- Pagination - Full width on mobile -->
                         <div class="flex-grow-1 listing-pagination">
                             {% include 'main/includes/pagination.html' %}
                         </div>
-                        <div class="flex-grow-0">
+
+                        <!-- View toggles - Desktop only -->
+                        <div class="flex-grow-0 d-none d-md-block">
                             <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
                                data-layout="grid-view">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
