@@ -27,6 +27,12 @@ class ListingFilter(django_filters.FilterSet):
         )
     )
     
+    active_traders_only = django_filters.BooleanFilter(
+        label='Active Traders Only',
+        field_name='owner__active_trader',
+        widget=forms.CheckboxInput
+    )
+    
     def filter_queryset(self, queryset):
         queryset = queryset.select_related('owner__settings', 'item')
         
