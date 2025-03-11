@@ -691,16 +691,19 @@ th {
 .listing-container .card-text.red {
     background: rgb(255, 0, 0);
     background: radial-gradient(circle, rgb(106 0 0) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 2px solid #620000;
 }
 
 .listing-container .card-text.yellow {
-background: rgb(239 255 0);
-    background: radial-gradient(circle, rgb(94 106 0) 0%, rgba(255, 255, 255, 0) 100%);
+    background: rgb(239 255 0);
+    background: radial-gradient(circle, rgb(140 121 0) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 2px solid #736700;
 }
 
 .listing-container .card-text.orange {
     background: rgb(255 177 0);
     background: radial-gradient(circle, rgb(106 69 0) 0%, rgba(255, 255, 255, 0) 100%);
+    border: 2px solid #764d01;
 }
 
 .listing-container .listing-bonus {
