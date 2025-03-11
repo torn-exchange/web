@@ -19,11 +19,6 @@
                 </p>
             </div>
         </div>
-        <div class="row text-center">
-            <div class="col-12">
-                {% include 'main/includes/pagination.html' %}
-            </div>
-        </div>
         <div class="row">
             <div class="listing-section">
                 <div class="listing-filters">
@@ -38,7 +33,7 @@
                             {{ number_of_items }} items
                         </div>
                         <div class="flex-grow-1 listing-pagination">
-                            
+                            {% include 'main/includes/pagination.html' %}
                         </div>
                         <div class="flex-grow-0">
                             <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
@@ -187,11 +182,6 @@
                         </div>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-        <div class="row text-center">
-            <div class="col-12">
-                {% include 'main/includes/pagination.html' %}
             </div>
         </div>
         <!-- Footer -->
