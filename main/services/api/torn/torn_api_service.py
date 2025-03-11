@@ -32,7 +32,6 @@ class TornAPIService:
     def get(cls, endpoint: str, query_params: Dict[str, Any] = None, access_level: str = None) -> Dict[str, Any]:
         query_params = query_params or {}
         headers = {"Authorization": f"ApiKey {str(cls.get_key(access_level))}"}
-        print(headers)
         response = None
         try:
             response = requests.get(f"{cls.base_url}{endpoint}", headers=headers, params=query_params)
