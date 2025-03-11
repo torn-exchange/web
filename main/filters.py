@@ -108,7 +108,7 @@ class ListingFilter(django_filters.FilterSet):
 class ItemVariationFilter(django_filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
-        data.setdefault('order', '-price')
+        data.setdefault('order', 'price')
         super().__init__(data, *args, **kwargs)
 
         item_bonus_choices = [('Any', 'Any')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
