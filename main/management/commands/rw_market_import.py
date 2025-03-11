@@ -8,7 +8,10 @@ import requests
 import json
 import os
 from time import sleep
-from datetime import datetime
+import datetime
+
+from django.utils import timezone
+
 from main.models import Item, ItemVariation, ItemBonus, ItemVariationBonuses
 from main.services.api.torn.items.torn_item_market_api_service import TornItemMarketAPIService
 from main.services.api.torn.player.torn_player_api_service import TornPlayerAPIService
@@ -20,7 +23,9 @@ class Command(BaseCommand):
     api_item_data = []
 
     def __init__(self):
-        self.last_sync_at = datetime.now()
+        naive_datetime = datetime.now()
+        aware_datetime = timezone.make_aware(naive_datetime)
+        self.last_sync_at = aware_datetime
         super().__init__()
 
     def get_items(self):
