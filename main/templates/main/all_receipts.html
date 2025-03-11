@@ -73,17 +73,17 @@
               <h5 class="card-title">{{receipt.seller}}</h5>
               <div class="row mb-2">
                   <div class="col-6">
-                      <small class="text-muted">Date:</small><br>
+                      <small>Date:</small><br>
                       {{receipt.created_at}}
                   </div>
                   <div class="col-6 text-end">
-                      <small class="text-muted">Price:</small><br>
+                      <small>Price:</small><br>
                       ${{receipt.total|intcomma}}
                   </div>
               </div>
               <div class="row mb-3">
                   <div class="col-12 text-end">
-                      <small class="text-muted">Profit:</small><br>
+                      <small>Profit:</small><br>
                       <span class="{% if receipt.profit > 0 %}text-success{% else %}text-danger{% endif %}">
                           ${{receipt.profit|intcomma}}
                       </span>
