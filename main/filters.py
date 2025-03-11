@@ -116,8 +116,10 @@ class ItemVariationFilter(django_filters.FilterSet):
         self.filters['item_bonus_title_2'].extra.update(choices=item_bonus_choices)
 
     item_choices = [('Any', 'Any')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])]
+    item_type_choices =  [('Any', 'Any')] + [('Melee', 'Melee'), ('Primary', 'Primary'), ('Secondary', 'Secondary')]
 
     item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
+    item__item_type = TypedChoiceFilter(field_name='item__item_type', choices=item_type_choices, label='Item Type')
     accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
     damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
     quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
@@ -150,6 +152,10 @@ class ItemVariationFilter(django_filters.FilterSet):
         item_name = self.data.get('item__name')
         if item_name and item_name != 'Any':
             filter_conditions['item__name'] = item_name
+
+        item_type = self.data.get('item__item_type')
+        if item_type and item_type != 'Any':
+            filter_conditions['item__item_type'] = item_type
 
         accuracy = self.data.get('accuracy')
         if accuracy:
@@ -207,6 +213,7 @@ class ItemVariationFilter(django_filters.FilterSet):
         model = ItemVariation
         fields = [
             'item__name',
+            'item__item_type',
             'accuracy',
             'damage',
             'quality',
