@@ -1,6 +1,6 @@
 {% load custom_tags %}
 <nav aria-label="Page navigation">
-    <ul class="pagination pagination-sm justify-content-center flex-wrap">
+    <ul class="pagination pagination-sm p-0 m-0 justify-content-center flex-wrap">
         {% if listings.has_previous %}
             <li class="page-item">
                 <a class="page-link" href="?{% param_replace page=1 %}" aria-label="First">
