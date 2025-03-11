@@ -724,4 +724,14 @@ background: rgb(239 255 0);
     align-items: center;
     padding-right:10px;
 }
+
+@media (max-width: 575.98px) {
+    .listing-container.list-view .card-text {
+        display: block !important;
+        justify-content: space-between;
+        align-content: stretch;
+        align-items: center;
+        padding-right: 10px;
+    }
+}
 /* END LISTING STYLES */

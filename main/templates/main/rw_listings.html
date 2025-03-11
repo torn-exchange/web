@@ -41,14 +41,14 @@
                             {% include 'main/includes/pagination.html' %}
                         </div>
                         <div class="flex-grow-0">
-                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                            <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
                                data-layout="grid-view">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                                      class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
                                     <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
                                 </svg>
                             </a>
-                            <a href="javascript:void(0)" class="view-toggler" data-target="listing_container"
+                            <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
                                data-layout="list-view">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
                                      viewBox="0 0 158 140">
@@ -90,25 +90,25 @@
                                         </div>
 
                                         <div class="card-text ps-2 pb-2 {{ listing.rarity|lower }}">
-                                            <div class="justify-content-center d-flex">
+                                            <div class="justify-content-center d-flex flex-wrap">
                                                 <img src="{{ listing.item.image_url }}" class="img-fluid mt-2"
                                                      alt="{{ listing.item.name }}" style="max-height: 50px;">
                                             </div>
-                                            <div class="d-flex">
+                                            <div class="d-flex flex-wrap">
                                                 <div class="listing-price" style="postion:relative;">
                                                     <strong>${{ listing.price|intcomma }}</strong>
                                                     {#<span class="badge bg-success listing-discount">-23%</span>#}
                                                     {# @TODO Implement value diff #}
                                                 </div>
                                             </div>
-                                            <div class="d-flex listing-value">
+                                            <div class="listing-value d-md-flex mt-2 d-block flex-wrap">
                                                 {% for itembonus in listing.itemvariationbonuses_set.all %}
                                                     <span class="badge bg-warning-subtle listing-bonus {% if forloop.counter > 1 %}ms-2{% endif %}">
                                                         {{ itembonus.formatted_value }}
                                                     </span>
                                                 {% endfor %}
                                             </div>
-                                            <div class="d-flex listing-stats d-none d-md-flex mt-2">
+                                            <div class="listing-stats d-md-flex mt-2 d-block flex-wrap">
                                                 <span class="listing-stat">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                          fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
@@ -137,7 +137,7 @@
                                                     {{ listing.quality }}
                                                 </span>
                                             </div>
-                                            <div class="d-flex mt-1 listing-category d-none d-md-flex">
+                                            <div class="d-flex mt-1 listing-category d-none d-md-flex flex-wrap">
                                                 <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
                                             </div>
                                         </div>
