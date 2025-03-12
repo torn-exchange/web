@@ -289,3 +289,45 @@ class ItemVariationBonuses(models.Model):
         if self.type == 'percentage':
             return f"{self.bonus.title} {int(self.value)}%"
         return f"{self.bonus.title} {int(self.value)}T"
+
+
+class Jobs(models.Model):
+    job = models.CharField(max_length=250)
+    queue = models.CharField(max_length=250)
+    payload = models.JSONField(null=True)
+    attempts = models.IntegerField(default=0)
+    reserved_at = models.DateTimeField(null=True)
+    available_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ItemCirculation(models.Model):
+    item = models.ForeignKey(Item, to_field=item_id, on_delete=models.CASCADE)
+    circulation = models.BigIntegerField()
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(auto_now=True)
+
+class ItemTEValue(models.Model):
+    item = models.ForeignKey(Item, to_field=item_id, on_delete=models.CASCADE)
+    value = models.BigIntegerField()
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(auto_now=True)
+
+class ItemMarketValue(models.Model):
+    item = models.ForeignKey(Item, to_field=item_id, on_delete=models.CASCADE)
+    value = models.BigIntegerField()
+    started_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(auto_now=True)
+
+class ItemSalePrice(models.Model):
+    item = models.ForeignKey(Item, to_field=item_id, on_delete=models.CASCADE)
+    price = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class ItemListingPrice(models.Model):
+    item = models.ForeignKey(Item, to_field=item_id, on_delete=models.CASCADE)
+    listing_type = models.CharField(max_length=250)
+    listing_id = models.BigIntegerField(null=True)
+    price = models.BigIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
