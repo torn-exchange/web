@@ -279,12 +279,3 @@ class Command(BaseCommand):
                 f'Rare items found: {len(self.rare_items)}'
             )
         )
-        
-        
-        
-        # Save rare items to database
-        
-
-        # Optionally save results
-        # with open('rare_items.json', 'w') as f:
-        #     json.dump(self.rare_items, f, indent=2)

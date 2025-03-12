@@ -118,7 +118,7 @@ def rw_listings(request):
         number_of_items = None
 
     context = {
-        'page_title': 'Search Traders - Torn Exchange',
+        'page_title': 'RW Weapons - Torn Exchange',
         'user_settings': user_settings,
         'listings': results,
         'user_profile': profile,

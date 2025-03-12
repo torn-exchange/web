@@ -1,12 +1,6 @@
 import time
 
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from django.db import transaction
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import requests
-import json
-import os
 from time import sleep
 from datetime import datetime
 
@@ -14,8 +8,6 @@ from django.utils import timezone
 
 from main.models import Item, ItemVariation, ItemBonus, ItemVariationBonuses
 from main.services.api.torn.items.torn_item_market_api_service import TornItemMarketAPIService
-from main.services.api.torn.player.torn_player_api_service import TornPlayerAPIService
-from users.models import Profile
 
 
 class Command(BaseCommand):
