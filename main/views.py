@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F, Q
+from django.db.models import F, Q, Prefetch
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -23,10 +23,10 @@ from django.views.decorators.http import require_POST
 
 from hitcount.models import HitCount
 from hitcount.views import HitCountMixin
-from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter
+from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
 from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_changelog,
                               get_most_trades)
-from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt
+from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
@@ -79,6 +79,54 @@ def about(request):
     
     return render(request, 'main/about.html', context)
 
+def rw_listings(request):
+    queryset = (
+        ItemVariation.objects.all()
+        .select_related('owner', 'item')
+        .prefetch_related(
+            Prefetch(
+                'itemvariationbonuses_set',
+                queryset=ItemVariationBonuses.objects.select_related('bonus'),
+            )
+        )
+        .order_by('-updated_at')
+    )
+    myFilter = ItemVariationFilter(request.GET, queryset=queryset)
+
+    try:
+        query_set = myFilter.qs
+
+        number_of_items = query_set.count()
+
+        #Attempt to get the user's profile
+        if request.user.is_authenticated:
+            profile = Profile.objects.filter(user=request.user).get()
+            user_settings = Settings.objects.filter(owner=profile).get()
+        else:
+            user_settings = None
+            profile = None
+
+        paginator = Paginator(query_set, 20)
+        page = request.GET.get('page')
+        results = paginator.get_page(page)
+    except Exception as e:
+        log_error(e)
+        profile = None
+        user_settings = None
+        results = None
+        page = None
+        number_of_items = None
+
+    context = {
+        'page_title': 'RW Weapons - Torn Exchange',
+        'user_settings': user_settings,
+        'listings': results,
+        'user_profile': profile,
+        'myFilter': myFilter,
+        'number_of_items': number_of_items,
+    }
+
+    return render(request, 'main/rw_listings.html', context)
 
 def listings(request):
     queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
