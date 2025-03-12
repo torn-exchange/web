@@ -182,6 +182,7 @@ class Command(BaseCommand):
                         accuracy=item['accuracy'],
                         damage=item['damage'],
                         quality=item['quality'],
+                        market_type='bazaar',
                         price=item['price'],
                         created_at=item['created_at'],
                         updated_at=item['updated_at'],
