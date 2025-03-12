@@ -138,7 +138,7 @@
                                                 </div>
                                                 <div class="item-bonus positional">
                                                     {% for itembonus in listing.itemvariationbonuses_set.all %}
-                                                        <span class="badge bg-warning-subtle item-bonus {% if forloop.counter > 1 %}ms-2{% endif %}">
+                                                        <span class="badge bg-warning-subtle item-bonus {% if forloop.counter > 1 %}ms-0{% endif %}">
                                                             {{ itembonus.formatted_value }}
                                                         </span>
                                                     {% endfor %}
