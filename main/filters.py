@@ -28,7 +28,7 @@ class ListingFilter(django_filters.FilterSet):
     )
     
     active_traders_only = django_filters.BooleanFilter(
-        label='Active Traders Only',
+        label='Recently Active Traders',
         # field_name='owner__active_trader',
         method='filter_active_traders',
         widget=forms.CheckboxInput
