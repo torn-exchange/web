@@ -139,9 +139,9 @@ class ItemVariationFilter(django_filters.FilterSet):
             ('quality', 'quality'),
             ('price', 'price'),
             ('rarity', 'rarity'),
-            ('bonus_value_1', 'bonus_value_1'),
-            ('bonus_value_2', 'bonus_value_2'),
-            ('owner__vote_score'),
+            # ('max_bonus_value_1', 'bonus_value_1'),
+            # ('max_bonus_value_2', 'bonus_value_2'),
+            ('owner__vote_score', 'owner__vote_score'),
         ),
         label='Order by',
     )
@@ -199,8 +199,16 @@ class ItemVariationFilter(django_filters.FilterSet):
 
         queryset = queryset.filter(**filter_conditions)
 
-        order_by = self.data.get('order')
-        if order_by:
+        order_by = self.data.get('order_by')
+        if order_by == '-bonus_value_1':
+            queryset = queryset.order_by('-max_bonus_value_1')
+        elif order_by == 'bonus_value_1':
+            queryset = queryset.order_by('max_bonus_value_1')
+        elif order_by == '-bonus_value_2':
+            queryset = queryset.order_by('-max_bonus_value_2')
+        elif order_by == 'bonus_value_2':
+            queryset = queryset.order_by('max_bonus_value_2')
+        elif order_by:
             queryset = queryset.order_by(order_by)
 
         return queryset
