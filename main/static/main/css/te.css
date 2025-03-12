@@ -920,7 +920,7 @@ th {
 }
 
 .catalog .catalog-items .catalog-item:hover .item-actions-expander {
-    transform: translateY(45px);
+    transform: translateY(25px);
     display: flex;
     z-index: 98;
 }
@@ -967,7 +967,7 @@ th {
 
 .item-actions-expander {
     bottom: 0;
-    height: 45px;
+    height: 25px;
     display: none;
     justify-content: space-between;
     left: 0;
