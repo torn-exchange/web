@@ -1083,6 +1083,7 @@ th {
 
 .item-owner {
     font-size: 12px;
+    flex-basis: min-content;
 }
 
 .item-owner i {
@@ -1170,5 +1171,9 @@ th {
     .list-view .item-stats {
         text-align: left;
     }
+}
+
+.list-view .item-type {
+    justify-content: center;
 }
 /* END RW LISTING STYLES */
