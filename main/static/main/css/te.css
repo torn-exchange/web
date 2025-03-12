@@ -981,6 +981,11 @@ th {
     border-bottom-right-radius: 5px;
 }
 
+.item-bonus {
+    font-size: 12px;
+    color: #0e0e0e;
+}
+
 .grid-view .item-image {
     display: block;
 }
