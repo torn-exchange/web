@@ -141,11 +141,9 @@ class Command(BaseCommand):
 
 
 def get_random_key():
-    profiles_with_keys = Profile.objects.exclude(api_key='')
-    
-    # If there are no profiles with API keys, handle it accordingly
+    profiles_with_keys = Profile.objects.exclude(api_key=None).exclude(api_key='')
     if not profiles_with_keys.exists():
-        return ''
+        return os.getenv('SYSTEM_API_KEY')
 
     # Select a random API key from the filtered set
     return choice(profiles_with_keys).api_key

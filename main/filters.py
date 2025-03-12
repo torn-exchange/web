@@ -3,8 +3,8 @@ import django_filters
 
 from main.te_utils import service_categories, service_names
 
-from .models import Listing, Company, Services
-from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter
+from .models import Listing, Company, Services, Item, ItemVariation, ItemVariationBonuses, ItemBonus
+from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter
 from django_filters.widgets import RangeWidget
 
 from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
@@ -103,6 +103,127 @@ class ListingFilter(django_filters.FilterSet):
     class Meta:
         model = Listing
         fields = [('model_name_contains')]
+
+
+class ItemVariationFilter(django_filters.FilterSet):
+    def __init__(self, data, *args, **kwargs):
+        data = data.copy()
+        data.setdefault('order', 'price')
+        super().__init__(data, *args, **kwargs)
+
+        item_bonus_choices = [('Any', 'Any')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
+        self.filters['item_bonus_title_1'].extra.update(choices=item_bonus_choices)
+        self.filters['item_bonus_title_2'].extra.update(choices=item_bonus_choices)
+
+    item_choices = [('Any', 'Any')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])]
+    item_type_choices =  [('Any', 'Any')] + [('Melee', 'Melee'), ('Primary', 'Primary'), ('Secondary', 'Secondary')]
+
+    item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
+    item__item_type = TypedChoiceFilter(field_name='item__item_type', choices=item_type_choices, label='Item Type')
+    accuracy = NumberFilter(field_name='accuracy', lookup_expr='gte', label='Min Accuracy')
+    damage = NumberFilter(field_name='damage', lookup_expr='gte', label='Min Damage')
+    quality = NumberFilter(field_name='quality', lookup_expr='gte', label='Min Quality')
+    rarity = TypedChoiceFilter(field_name='rarity', choices=ItemVariation.RARITY_CHOICES, label='Rarity')
+    price = NumberFilter(field_name='price', lookup_expr='lte', label='Max Price')
+
+    item_bonus_title_1 = TypedChoiceFilter(field_name='itemvariationbonuses__bonus__title', choices=[], label="Bonus 1")
+    bonus_value_1 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 1 Value")
+
+    item_bonus_title_2 = TypedChoiceFilter(field_name='itemvariationbonuses__bonus__title', choices=[], label="Bonus 2")
+    bonus_value_2 = NumberFilter(field_name='itemvariationbonuses__value', lookup_expr='exact', label="Bonus 2 Value")
+
+    order_by = OrderingFilter(
+        fields=(
+            ('accuracy', 'accuracy'),
+            ('damage', 'damage'),
+            ('quality', 'quality'),
+            ('price', 'price'),
+            ('rarity', 'rarity'),
+            ('bonus_value_1', 'bonus_value_1'),
+            ('bonus_value_2', 'bonus_value_2'),
+            ('owner__vote_score'),
+        ),
+        label='Order by',
+    )
+
+    def filter_queryset(self, queryset):
+        filter_conditions = {}
+
+        item_name = self.data.get('item__name')
+        if item_name and item_name != 'Any':
+            filter_conditions['item__name'] = item_name
+
+        item_type = self.data.get('item__item_type')
+        if item_type and item_type != 'Any':
+            filter_conditions['item__item_type'] = item_type
+
+        accuracy = self.data.get('accuracy')
+        if accuracy:
+            filter_conditions['accuracy__gte'] = accuracy
+
+        damage = self.data.get('damage')
+        if damage:
+            filter_conditions['damage__gte'] = damage
+
+        quality = self.data.get('quality')
+        if quality:
+            filter_conditions['quality__gte'] = quality
+
+        rarity = self.data.get('rarity')
+        if rarity and rarity != 'Any':
+            filter_conditions['rarity'] = rarity
+
+        price = self.data.get('price')
+        if price:
+            filter_conditions['price__lte'] = price
+
+        item_bonus_title_1 = self.data.get('item_bonus_title_1')
+        if item_bonus_title_1 and item_bonus_title_1 != 'Any':
+            queryset = queryset.filter(
+                itemvariationbonuses__bonus__title=item_bonus_title_1,
+            )
+
+        bonus_value_1 = self.data.get('bonus_value_1')
+        if bonus_value_1:
+            queryset = queryset.filter(itemvariationbonuses__value__gte=bonus_value_1)
+
+        item_bonus_title_2 = self.data.get('item_bonus_title_2')
+        if item_bonus_title_2 and item_bonus_title_2 != 'Any':
+            queryset = queryset.filter(
+                itemvariationbonuses__bonus__title=item_bonus_title_2,
+            )
+
+        bonus_value_2 = self.data.get('bonus_value_2')
+        if bonus_value_2:
+            queryset = queryset.filter(itemvariationbonuses__value__gte=bonus_value_2)
+
+        queryset = queryset.filter(**filter_conditions)
+
+        order_by = self.data.get('order')
+        if order_by:
+            queryset = queryset.order_by(order_by)
+
+        return queryset
+
+    @property
+    def qs(self):
+        return self.filter_queryset(super().qs)
+
+    class Meta:
+        model = ItemVariation
+        fields = [
+            'item__name',
+            'item__item_type',
+            'accuracy',
+            'damage',
+            'quality',
+            'rarity',
+            'price',
+            'item_bonus_title_1',
+            'bonus_value_1',
+            'item_bonus_title_2',
+            'bonus_value_2'
+        ]
 
 
 class CompanyListingFilter(django_filters.FilterSet):

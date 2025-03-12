@@ -14,7 +14,7 @@ class Profile(VoteModel, models.Model, HitCountMixin):
     torn_id = models.CharField(max_length=250, null=True, unique=True)
     image = models.ImageField(
         default='profile_pics/default.jpg', upload_to='profile_pics')
-    api_key = models.CharField(max_length=500)
+    api_key = models.CharField(max_length=500, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     activity_status = models.CharField(max_length=250, null=True)
