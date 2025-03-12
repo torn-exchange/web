@@ -25,7 +25,19 @@
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
-          Listings
+          Buy
+        </a>
+        <div class="dropdown-menu" aria-labelledby="defaultDropdown">
+          <a class="dropdown-item" href='{% url "rw_listings" %}'>Ranked War Weapons</a>
+            <a class="dropdown-item" href='{% url "revives_listings" %}'>Revives</a>
+            <a class="dropdown-item" href='{% url "losses_listings" %}'>Losses</a>
+          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies</a>
+        </div>
+      </li>
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          Sell
         </a>
         <div class="dropdown-menu" aria-labelledby="defaultDropdown">
           <a class="dropdown-item" href='{% url "listings" %}'>Search for best deals</a>
@@ -33,9 +45,17 @@
           {% comment %} <a class="dropdown-item" href='{% url "rw_listings" %}'>RW Item Listings</a> {% endcomment %}
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
-          <a class="dropdown-item" href='{% url "revives_listings" %}'>Revivers</a>
-          <a class="dropdown-item" href='{% url "losses_listings" %}'>Loss Sellers</a>
-          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies for Sale</a>
+          <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
+          <a class="dropdown-item" href='{% url "museum_helper" %}'>Museum Helper</a>
+        </div>
+      </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          Listings
+        </a>
+        <div class="dropdown-menu" aria-labelledby="defaultDropdown">
+          <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
           <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
           <a class="dropdown-item" href='{% url "museum_helper" %}'>Museum Helper</a>
         </div>
