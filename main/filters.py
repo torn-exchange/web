@@ -27,6 +27,18 @@ class ListingFilter(django_filters.FilterSet):
         )
     )
     
+    active_traders_only = django_filters.BooleanFilter(
+        label='Recently Active Traders',
+        # field_name='owner__active_trader',
+        method='filter_active_traders',
+        widget=forms.CheckboxInput
+    )
+    
+    def filter_active_traders(self, queryset, name, value):
+        if value:  # When checkbox is checked
+            return queryset.filter(owner__active_trader=True)
+        return queryset  # When checkbox is unchecked, return all results
+    
     def filter_queryset(self, queryset):
         queryset = queryset.select_related('owner__settings', 'item')
         
@@ -139,9 +151,9 @@ class ItemVariationFilter(django_filters.FilterSet):
             ('quality', 'quality'),
             ('price', 'price'),
             ('rarity', 'rarity'),
-            ('bonus_value_1', 'bonus_value_1'),
-            ('bonus_value_2', 'bonus_value_2'),
-            ('owner__vote_score'),
+            # ('max_bonus_value_1', 'bonus_value_1'),
+            # ('max_bonus_value_2', 'bonus_value_2'),
+            ('owner__vote_score', 'owner__vote_score'),
         ),
         label='Order by',
     )
@@ -199,8 +211,16 @@ class ItemVariationFilter(django_filters.FilterSet):
 
         queryset = queryset.filter(**filter_conditions)
 
-        order_by = self.data.get('order')
-        if order_by:
+        order_by = self.data.get('order_by')
+        if order_by == '-bonus_value_1':
+            queryset = queryset.order_by('-max_bonus_value_1')
+        elif order_by == 'bonus_value_1':
+            queryset = queryset.order_by('max_bonus_value_1')
+        elif order_by == '-bonus_value_2':
+            queryset = queryset.order_by('-max_bonus_value_2')
+        elif order_by == 'bonus_value_2':
+            queryset = queryset.order_by('max_bonus_value_2')
+        elif order_by:
             queryset = queryset.order_by(order_by)
 
         return queryset

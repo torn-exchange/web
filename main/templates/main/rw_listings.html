@@ -5,6 +5,7 @@
     {% load humanize %}
     {% load custom_tags %}
     {% load static %}
+
     <div class="container">
         <div class="row pb-3">
             <div class="col-12 text-center">
@@ -15,195 +16,225 @@
                     by weapon type, rarity, price, and trader status. You can also sort by price, accuracy, damage, etc.
                 </p>
                 <p class="text-muted">
-                    Note: this is new feature and is being actively developed. Armor will be added soon, as well as other features.
+                    Note: this is new feature and is being actively developed. Armor will be added soon, as well as
+                    other features.
                 </p>
             </div>
         </div>
-        <div class="row">
-            <div class="listing-section">
-                <div class="listing-filters">
-                    <form method="GET" class="p-2">
-                        {{ myFilter.form|crispy }}
-                        <button class="btn btn-primary"> Search</button>
-                    </form>
-                </div>
-                <div class="listing-wrapper">
-                    <div class="d-flex flex-wrap ps-2 pe-2 pt-2 pb-2 listing-header">
-                        <!-- Items count - Full width on mobile -->
-                        <div class="w-100 d-md-none">
-                            {{ number_of_items }} items
-                        </div>
-
-                        <!-- Items count - Desktop only -->
-                        <div class="flex-grow-0 d-none d-md-block">
-                            {{ number_of_items }} items
-                        </div>
-
-                        <!-- Pagination - Full width on mobile -->
-                        <div class="flex-grow-1 listing-pagination">
-                            {% include 'main/includes/pagination.html' %}
-                        </div>
-
-                        <!-- View toggles - Desktop only -->
-                        <div class="flex-grow-0 d-none d-md-block">
-                            <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
-                               data-layout="grid-view">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                     class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
-                                    <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
-                                </svg>
-                            </a>
-                            <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block" data-target="listing_container"
-                               data-layout="list-view">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                     viewBox="0 0 158 140">
-                                    <path fill-rule="evenodd"
-                                          d="M33.9 100.5c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2H11.3C5 140 0 135 0 128.7v-17c0-6.2 5-11.2 11.3-11.2h22.6zm112.9 0c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.2 5-11.2 11.2-11.2h79zm-113-49.7c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 90.3 0 85.3 0 79V62.1c0-6.2 5-11.3 11.3-11.3h22.6zm113 0c6.2 0 11.3 5 11.3 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3V62.1c0-6.2 5-11.3 11.2-11.3h79zM33.8 0c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 39.5 0 34.5 0 28.2v-17C0 5.2 5 0 11.3 0h22.6zm113 0C153 0 158 5 158 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.1 5-11.2 11.2-11.2h79z"/>
-                                </svg>
-                            </a>
+        <div id="content" class="listing-layout">
+            <div class="catalog d-inline-flex">
+                <div class="filter-container">
+                    <div class="filter-list">
+                        <div class="filter-wrapper">
+                            <form method="GET" class="p-2">
+                                {{ myFilter.form|crispy }}
+                                <button class="btn btn-primary"> Search</button>
+                            </form>
                         </div>
                     </div>
-                    {% if listings %}
-                        <div id="listing_container" class="listing-container list-view">
-                            {% for listing in listings %}
+                </div>
+                <div class="catalog-content">
+                    <div class="catalog-header">
+                        <div class="catalog-header-content">
+                            <div class="catalog-header-left">
+                                <div class="flex-grow-0 d-none d-md-flex">
+                                    {{ number_of_items }} Items
+                                </div>
                                 <div class="flex-grow-1">
-                                    <div class="card listing-card m-0 p-0">
-                                        <div class="p-2 d-flex listing-player">
-                                            <div class="flex-inline flex-grow-1 text-start">
-                                                
-                                                {% if listing.owner %}
-                                                <i class="fas fa-circle
-                                                {% if listing.owner.activity_status == 'Online' %} text-success
-                                                {% elif listing.owner.activity_status == 'Idle' %} text-warning
-                                                {% elif listing.owner.activity_status == 'Offline' %} text-secondary
-                                                {% endif %}
-                                                fs-12"></i>
-                                                    <span>
-                                                        <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/" target="_blank"
-                                                        title="Go to user's bazaar">
-                                                            {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
-                                                        </a>
-                                                    </span>
-                                                {% else %}
-                                                <span>Unknown</span>
-                                            {% endif %}
-                                            </div>
-                                            <div class="flex-inline flex-grow-0 text-end
-                                            {% if listing.owner.vote_score == 0 %} text-secondary
-                                            {% elif listing.owner.vote_score > 0 %} text-success
-                                            {% elif listing.owner.vote_score < 0 %} text-danger
-                                            {% endif %}
-                                            ">
-                                                {{ listing.owner.vote_score }}
-                                                <i class="far fa-star
-                                                    {% if listing.owner.vote_score == 0 %} text-secondary
-                                                    {% elif listing.owner.vote_score > 0 %} text-success
-                                                    {% elif listing.owner.vote_score < 0 %} text-danger
-                                                    {% endif %}
-                                                "></i>
-                                            </div>
-                                        </div>
-
-                                        <div class="card-text ps-2 pb-2 {{ listing.rarity|lower }}">
-                                            <div class="justify-content-center d-flex flex-grow-1 flex-wrap">
-                                                <img src="{{ listing.item.image_url }}" class="img-fluid mt-2"
-                                                     alt="{{ listing.item.name }}" style="max-height: 50px;">
-                                            </div>
-                                            <div class="flex-grow-1  flex-wrap">
-                                                <div class="listing-price" style="postion:relative;">
-                                                    <strong>${{ listing.price|intcomma }}</strong>
-                                                    {#<span class="badge bg-success listing-discount">-23%</span>#}
-                                                    {# @TODO Implement value diff #}
+                                    {% include 'main/includes/pagination.html' %}
+                                </div>
+                            </div>
+                            <div class="catalog-header-right">
+                                <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block"
+                                   data-target="listing_container"
+                                   data-layout="grid-view">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                         class="bi bi-grid-3x3-gap-fill me-2" viewBox="0 0 16 16">
+                                        <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zM1 12a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/>
+                                    </svg>
+                                </a>
+                                <a href="javascript:void(0)" class="view-toggler d-none d-md-inline-block"
+                                   data-target="listing_container"
+                                   data-layout="list-view">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                         viewBox="0 0 158 140">
+                                        <path fill-rule="evenodd"
+                                              d="M33.9 100.5c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2H11.3C5 140 0 135 0 128.7v-17c0-6.2 5-11.2 11.3-11.2h22.6zm112.9 0c6.2 0 11.3 5 11.3 11.3v17c0 6.1-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.2 5-11.2 11.2-11.2h79zm-113-49.7c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 90.3 0 85.3 0 79V62.1c0-6.2 5-11.3 11.3-11.3h22.6zm113 0c6.2 0 11.3 5 11.3 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3V62.1c0-6.2 5-11.3 11.2-11.3h79zM33.8 0c6.3 0 11.4 5 11.4 11.3v17c0 6.2-5 11.2-11.3 11.2H11.3C5 39.5 0 34.5 0 28.2v-17C0 5.2 5 0 11.3 0h22.6zm113 0C153 0 158 5 158 11.3v17c0 6.2-5 11.2-11.3 11.2h-79c-6.3 0-11.3-5-11.3-11.3v-17c0-6.1 5-11.2 11.2-11.2h79z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="catalog-items grid-view" id="listing_container">
+                        {% for listing in listings %}
+                            <div class="catalog-item">
+                                <div class="catalog-item-effect">
+                                    <div class="catalog-item-content">
+                                        <div class="catalog-item-wrapper {{ listing.rarity }}">
+                                            <div class="row d-lg-none">
+                                                <div class="col-6 d-none d-md-inline">
+                                                    <div class="item-owner p-2">
+                                                        {% if listing.owner %}
+                                                            <i class="fas fa-circle me-1
+                                                            {% if listing.owner.activity_status == 'Online' %} text-success
+                                                            {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                            {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                            {% endif %}
+                                                            fs-12"></i>
+                                                            <span>
+                                                                <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
+                                                                   target="_blank"
+                                                                   title="Go to user's bazaar">
+                                                                    {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                                </a>
+                                                                &nbsp;
+                                                                {{ listing.owner.vote_score }}
+                                                                <i class="far fa-star
+                                                                    {% if listing.owner.vote_score == 0 %} text-secondary
+                                                                    {% elif listing.owner.vote_score > 0 %} text-success
+                                                                    {% elif listing.owner.vote_score < 0 %} text-danger {% endif %}
+                                                                "></i>
+                                                            </span>
+                                                        {% else %}
+                                                            <span>Unknown</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 col-sm-12">
+                                                    <div class="item-name p-2 text-start text-md-end">
+                                                        <span class="item-rarity-block {{ listing.rarity }}"></span>
+                                                        <span>{{ listing.item.name }}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="listing-value flex-grow-1 mt-2 d-block flex-wrap">
-                                                {% for itembonus in listing.itemvariationbonuses_set.all %}
-                                                    <span class="badge bg-warning-subtle listing-bonus {% if forloop.counter > 1 %}ms-2{% endif %}">
-                                                        {{ itembonus.formatted_value }}
-                                                    </span>
-                                                {% endfor %}
-                                            </div>
-                                            <div class="listing-stats d-md-flex mt-2 d-block flex-wrap">
-                                                <span class="listing-stat ms-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" 
-                                                    fill="currentColor" class="bi bi-lightning-fill" viewBox="0 0 16 16"
-                                                    style="vertical-aign:text-top;">
-                                                        <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/>
+                                            <div class="catalog-item-details p-3 pt-0 pt-lg-3">
+                                                <div class="item-owner positional d-none d-lg-flex">
+                                                    {% if listing.owner %}
+                                                        <i class="fas fa-circle me-1 mt-1
+                                                        {% if listing.owner.activity_status == 'Online' %} text-success
+                                                        {% elif listing.owner.activity_status == 'Idle' %} text-warning
+                                                        {% elif listing.owner.activity_status == 'Offline' %} text-secondary
+                                                        {% endif %}
+                                                        fs-12"></i>
+                                                        <span>
+                                                            <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
+                                                               target="_blank"
+                                                               title="Go to user's bazaar">
+                                                                {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                            </a>
+                                                            &nbsp;
+                                                            {{ listing.owner.vote_score }}
+                                                            <i class="far fa-star
+                                                                {% if listing.owner.vote_score == 0 %} text-secondary
+                                                                {% elif listing.owner.vote_score > 0 %} text-success
+                                                                {% elif listing.owner.vote_score < 0 %} text-danger {% endif %}
+                                                            "></i>
+                                                        </span>
+                                                    {% else %}
+                                                        <span>Unknown</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="item-image text-md-center text-start justify-content-center item-spacer positional d-none d-lg-flex">
+                                                    <img src="{{ listing.item.image_url }}" class="img-fluid mt-2"
+                                                         alt="{{ listing.item.name }}" style="max-height: 50px;">
+                                                </div>
+                                                <div class="item-price item-spacer positional">
+                                                    <div class="d-flex justify-content-between">
+                                                        <strong>${{ listing.price|intcomma }}</strong>
+                                                    </div>
+                                                </div>
+                                                <div class="item-type item-spacer positional d-none d-xl-flex">
+                                                    <span>{{ listing.item.item_type }}</span>
+                                                </div>
+                                                <div class="item-name positional d-none d-lg-block">
+                                                    <span class="item-rarity-block {{ listing.rarity }}"></span>
+                                                    <span>{{ listing.item.name }}</span>
+                                                </div>
+                                                <div class="item-bonus positional">
+                                                    {% for itembonus in listing.itemvariationbonuses_set.all %}
+                                                        <span class="badge bg-warning-subtle item-bonus {% if forloop.counter > 1 %}ms-0{% endif %}">
+                                                            {{ itembonus.formatted_value }}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="item-stats item-spacer positional">
+                                                <span class="item-stat" data-bs-toggle="tooltip" data-bs-title="Damage">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-lightning-fill"
+                                                         viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
+                                                    <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/>
                                                     </svg>
-                                                     {{ listing.damage }}
+                                                    {{ listing.damage }}
                                                 </span>
-                                                <span class="listing-stat ms-2">
+                                                <span class="item-stat ms-2" data-bs-toggle="tooltip" data-bs-title="Accuracy">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                          fill="currentColor" class="bi bi-bullseye" viewBox="0 0 16 16"
                                                          style="vertical-aign:text-top;">
-                                                      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
-                                                      <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"></path>
-                                                      <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"></path>
-                                                      <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"></path>
+                                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"></path>
+                                                    <path d="M8 13A5 5 0 1 1 8 3a5 5 0 0 1 0 10m0 1A6 6 0 1 0 8 2a6 6 0 0 0 0 12"></path>
+                                                    <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8"></path>
+                                                    <path d="M9.5 8a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"></path>
                                                     </svg>
-                                                     {{ listing.accuracy }}
+                                                    {{ listing.accuracy }}
                                                 </span>
-                                                <span class="listing-stat ms-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" 
-                                                    fill="currentColor" class="bi bi-shield-check" viewBox="0 0 16 16"
-                                                    style="vertical-aign:text-top;">
-                                                        <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
-                                                        <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                                                      </svg>
+                                                <span class="item-stat ms-2" data-bs-toggle="tooltip" data-bs-title="Quality">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                         fill="currentColor" class="bi bi-shield-check"
+                                                         viewBox="0 0 16 16"
+                                                         style="vertical-aign:text-top;">
+                                                    <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
+                                                    <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                                    </svg>
                                                     {{ listing.quality }}
                                                 </span>
-                                            </div>
-                                            <div class="flex-grow-0 ps-2 mt-2 listing-category d-none d-md-flex flex-wrap">
-                                                <span class="text-muted">{{ listing.item.item_type }}:</span>&nbsp;{{ listing.item.name }}
-                                            </div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <div class="row">
-                                                <div class="col">
-                                                    {% if listing.owner %}
-                                                    <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
-                                                       class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(223, 239,243);"> Price List</a>
-
-                                                    <a target="_blank"
-                                                       href="https://www.torn.com/trade.php#step=start&userID={{ listing.owner.torn_id }}"
-                                                       class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(235, 244,225);"> Trade Now</a>
-
-                                                    <a target="_blank"
-                                                       href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
-                                                       class="badge badge-light text-black pl-2 pr-2"
-                                                       style="background-color: rgb(223, 239,243);"> TornPal</a>
-                                                    {% else %}
-                                                        <a target="_blank"
-                                                           href="{{ listing.torn_market_url }}" class="badge badge-light text-black pl-2 pr-2"
-                                                           style="background-color: rgb(223, 239,243);"> 
-                                                            Torn Item Market
-                                                        </a>
-                                                    {% endif %}
                                                 </div>
                                             </div>
+
+                                        </div>
+                                        <div class="item-drop-up-menu">
+                                            <p></p>
+                                        </div>
+                                        <div class="item-actions-expander justify-content-center">
+                                            {% if listing.owner %}
+                                                <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
+                                                   class="badge badge-light text-black pl-2 pr-2"
+                                                   style="background-color: rgb(223, 239,243);"> Price List</a>
+
+                                                <a target="_blank"
+                                                   href="https://www.torn.com/trade.php#step=start&userID={{ listing.owner.torn_id }}"
+                                                   class="badge badge-light text-black pl-2 pr-2"
+                                                   style="background-color: rgb(235, 244,225);"> Trade Now</a>
+
+                                                <a target="_blank"
+                                                   href="https://tornpal.com/profile/{{ listing.owner.torn_id }}?ref=2507441"
+                                                   class="badge badge-light text-black pl-2 pr-2"
+                                                   style="background-color: rgb(223, 239,243);"> TornPal</a>
+                                            {% else %}
+                                                <a target="_blank"
+                                                   href="{{ listing.torn_market_url }}"
+                                                   class="badge badge-light text-black pl-2 pr-2"
+                                                   style="background-color: rgb(223, 239,243);">
+                                                    Torn Item Market
+                                                </a>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="flex-grow-1">
-                            <div class="m-0 pt-4">
-                                <div class="text-center">
-                                    <h6>No listings found</h6>
-                                </div>
                             </div>
-                        </div>
-                    {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
+            <!-- Footer -->
+            {% include 'main/includes/footer.html' %}
         </div>
-        <!-- Footer -->
-        {% include 'main/includes/footer.html' %}
-    </div>
 
-    <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
-
+        <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+          });
+        </script>
 {% endblock %}

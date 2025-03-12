@@ -196,23 +196,31 @@ def get_company_info(api_key):
         return name, company_id, company_type, rating, days_old, weekly_income, weekly_customers, employees_hired, employees_capacity, popularity, efficiency, average_employee_efficiency, average_employee_tenure
 
 
-def set_last_traded_time(profile:Profile) -> int:
+def set_last_traded_time(profile: Profile) -> int:
     try:
-        last_receipt = TradeReceipt.objects.filter(owner=profile).last()
+        last_receipt = TradeReceipt.objects.filter(owner=profile).order_by("-created_at").first()
+
+        if last_receipt is None:
+            return 0
+
         time_since_last_trade = getattr(last_receipt, "created_at", None)
+
+        if time_since_last_trade is None:
+            return 0
+
         one_month_ago = timezone.now() - timezone.timedelta(days=30)
-        
-        if (time_since_last_trade != None and time_since_last_trade > one_month_ago):
-            # Get the relative time as a natural time string
-            relative_time = naturaltime(time_since_last_trade)
-            
-            # save to DB
-            Profile.objects.filter(name=profile.name).update(active_trader=True)
+
+        if time_since_last_trade > one_month_ago:
+            print(f"{profile.name} is an active trader")
+            profile.active_trader = True
+            profile.save()
             return 1
         else:
-            Profile.objects.filter(name=profile.name).update(active_trader=False)
+            profile.active_trader = False
+            profile.save()
             return 0
-        
+
     except Exception as e:
         print("Last Traded Time error", e)
         return 0
+

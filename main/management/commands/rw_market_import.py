@@ -109,6 +109,7 @@ class Command(BaseCommand):
                         uid=item_normalized['uid'],
                         item_id=item.id,
                         defaults={
+                            "market_type": "item market",
                             "accuracy": item_normalized['accuracy'],
                             "damage": item_normalized['damage'],
                             "quality": item_normalized['quality'],
