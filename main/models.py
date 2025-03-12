@@ -223,7 +223,6 @@ class ItemVariation(models.Model):
         ('Red', 'Red'),
     ]
 
-
     uid = models.BigIntegerField(null=True, unique=True, db_index=True)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
@@ -234,6 +233,7 @@ class ItemVariation(models.Model):
     rarity = models.CharField(max_length=15, null=True)
     price = models.BigIntegerField(null=True)
     is_saleable = models.BooleanField(default=False)
+    market_type = models.CharField(max_length=250, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     removed_at = models.DateTimeField(null=True)

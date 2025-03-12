@@ -82,12 +82,19 @@
                                                             {% endif %}
                                                             fs-12"></i>
                                                             <span>
-                                                                    <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
-                                                                       target="_blank"
-                                                                       title="Go to user's bazaar">
-                                                                        {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
-                                                                    </a>
-                                                                </span>
+                                                                <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
+                                                                   target="_blank"
+                                                                   title="Go to user's bazaar">
+                                                                    {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                                </a>
+                                                                &nbsp;
+                                                                {{ listing.owner.vote_score }}
+                                                                <i class="far fa-star
+                                                                    {% if listing.owner.vote_score == 0 %} text-secondary
+                                                                    {% elif listing.owner.vote_score > 0 %} text-success
+                                                                    {% elif listing.owner.vote_score < 0 %} text-danger {% endif %}
+                                                                "></i>
+                                                            </span>
                                                         {% else %}
                                                             <span>Unknown</span>
                                                         {% endif %}
@@ -110,12 +117,19 @@
                                                         {% endif %}
                                                         fs-12"></i>
                                                         <span>
-                                                                <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
-                                                                   target="_blank"
-                                                                   title="Go to user's bazaar">
-                                                                    {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
-                                                                </a>
-                                                            </span>
+                                                            <a href="https://www.torn.com/bazaar.php?userId={{ listing.owner.torn_id }}#/"
+                                                               target="_blank"
+                                                               title="Go to user's bazaar">
+                                                                {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                            </a>
+                                                            &nbsp;
+                                                            {{ listing.owner.vote_score }}
+                                                            <i class="far fa-star
+                                                                {% if listing.owner.vote_score == 0 %} text-secondary
+                                                                {% elif listing.owner.vote_score > 0 %} text-success
+                                                                {% elif listing.owner.vote_score < 0 %} text-danger {% endif %}
+                                                            "></i>
+                                                        </span>
                                                     {% else %}
                                                         <span>Unknown</span>
                                                     {% endif %}
@@ -181,7 +195,7 @@
                                         <div class="item-drop-up-menu">
                                             <p></p>
                                         </div>
-                                        <div class="item-actions-expander text-center">
+                                        <div class="item-actions-expander justify-content-center">
                                             {% if listing.owner %}
                                                 <a target="_blank" href="{% url 'price_list' listing.owner.name %}"
                                                    class="badge badge-light text-black pl-2 pr-2"
