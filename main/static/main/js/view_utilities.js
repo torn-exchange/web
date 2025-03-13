@@ -40,6 +40,15 @@ const setViewLayouts = function () {
   }
 }
 
+function handleFilterResize() {
+    const element = document.querySelector('.filter-container');
+    if (window.innerWidth < 768) {
+        element?.classList.remove('filter-show');
+    } else {
+        element?.classList.add('filter-show');
+    }
+}
+
 // Initialize the view layout
 const boot = function () {
   let viewTogglers = document.querySelectorAll('.view-toggler');
@@ -56,6 +65,21 @@ const boot = function () {
         // Check if the container exists, so that we don't run unnecessary logic
         if (container) {
           toggleViewLayout(container, target, layout);
+        }
+      });
+    });
+  }
+
+  handleFilterResize();
+  let filterTogglers = document.querySelectorAll('.filter-toggler');
+  if (filterTogglers.length > 0) {
+    filterTogglers.forEach(function (filterToggler) {
+      filterToggler.addEventListener('click', function (e) {
+        e.preventDefault();
+        let target = this.getAttribute('data-target');
+        let container = document.getElementById(target);
+        if (container) {
+          container.classList.toggle('filter-show');
         }
       });
     });
