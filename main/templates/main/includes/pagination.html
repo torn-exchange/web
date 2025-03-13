@@ -19,7 +19,7 @@
         {% for num in listings.paginator.page_range %}
             {% if listings.number == num %}
                 <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
+                    <a href="javascript:void(0)" class="page-link mt-md-0 pt-md-1 pt-2" style="height:100%"><span class="d-inline">{{ num }}</span></a>
                 </li>
             {% elif num > listings.number|add:'-3' and num < listings.number|add:'3' %}
                 {# Show fewer numbers on mobile #}
