@@ -479,6 +479,8 @@ def edit_price_list(request):
                     except:
                         pass
 
+        cache.delete(f'price_list_{profile.torn_id}')
+
         messages.success(request, f'Your price list has been updated!')
         return redirect('edit_price_list')
     else:
@@ -540,26 +542,25 @@ def price_list(request, identifier=None):
     # COUNTING HITS
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
     HitCountMixin.hit_count(request, hit_count)
-    
-    cached_data = cache.get(f'price_list_{pricelist_profile.torn_id}')
-    if cached_data:
-        # Unpack the cached data
+
+    key = f'price_list_{pricelist_profile.torn_id}'
+    cached_data = cache.get(key)
+    if cached_data is not None:
         all_relevant_items, last_updated, last_receipt = cached_data
     else:
-        # Compute the data if not available in the cache
         all_relevant_items = Listing.objects.filter(
             owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
-        
+
         last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
-        
+
         try:
             last_updated = all_relevant_items.order_by('-item__last_updated').first().item.last_updated
         except AttributeError:
             last_updated = None
-        
-        # Cache the computed data
-        cache.set(f'price_list_{pricelist_profile.torn_id}', (all_relevant_items, last_updated, last_receipt), 60*60*1)
-    
+
+        if all_relevant_items or last_receipt is not None:
+            cache.set(key, (all_relevant_items, last_updated, last_receipt), 60 * 60 * 1)
+
     distinct_categories: List[str] = list(
         all_relevant_items.values_list('item__item_type', flat=True)
         .distinct()
