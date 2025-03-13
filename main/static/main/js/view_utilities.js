@@ -72,12 +72,9 @@ const boot = function () {
 
   handleFilterResize();
   let filterTogglers = document.querySelectorAll('.filter-toggler');
-  console.log(filterTogglers);
   if (filterTogglers.length > 0) {
     filterTogglers.forEach(function (filterToggler) {
-      console.log(filterToggler);
       filterToggler.addEventListener('click', function (e) {
-        console.log('clicked');
         e.preventDefault();
         let target = this.getAttribute('data-target');
         let container = document.getElementById(target);
