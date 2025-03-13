@@ -32,7 +32,7 @@ class Command(BaseCommand):
                 print(response['data']['error'])
 
                 if response['data']['error']['code'] == 5 or response['data']['error']['code'] == 8:
-                    time.sleep(100)
+                    time.sleep(2)
                     self.get_rw_listings(item_id, offset)
                 return
 
@@ -94,7 +94,7 @@ class Command(BaseCommand):
             self.get_rw_listings(item.item_id)
 
             print(f"Total RWs for: {item.name} - id: {item.item_id}: {sum(len(batch) for batch in self.api_item_data)}")
-            sleep(5)
+            sleep(2)
 
             print(f"Saving RWs for: {item.name} - id: {item.item_id}")
 
