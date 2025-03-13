@@ -112,7 +112,7 @@ def rw_listings(request):
             user_settings = None
             profile = None
 
-        paginator = Paginator(query_set, 20)
+        paginator = Paginator(query_set, 40)
         page = request.GET.get('page')
         results = paginator.get_page(page)
     except Exception as e:
