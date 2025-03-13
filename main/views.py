@@ -558,7 +558,7 @@ def price_list(request, identifier=None):
         except AttributeError:
             last_updated = None
 
-        if all_relevant_items or last_receipt is not None:
+        if all_relevant_items is not None:
             cache.set(key, (all_relevant_items, last_updated, last_receipt), 60 * 60 * 1)
 
     distinct_categories: List[str] = list(
