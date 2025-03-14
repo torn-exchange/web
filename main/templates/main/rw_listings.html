@@ -11,12 +11,13 @@
             <h2>RW Weapons</h2>
             {# @TODO use popovers/tooltips for this text #}
             <p>
-                Here you can find all the Ranked War weapons that are currently listed on the market. You can filter
-                by weapon type, rarity, price, and trader status. You can also sort by price, accuracy, damage, etc.
+                Here you can find all the Ranked War weapons that are currently listed on the Item Market and individual bazaars. You can filter
+                by weapon type, rarity, price, and trader status. You can also sort by price, accuracy, damage, etc. 
+                List is refreshed several times a day.
             </p>
             <p class="text-muted">
                 Note: this is new feature and is being actively developed. Armor will be added soon, as well as
-                other features.
+                other features. For all feedback, suggestions, and bug reports, please contact us on Discord.
             </p>
         </div>
     </div>
@@ -160,7 +161,9 @@
                                             </div>
                                             <div class="item-bonus positional">
                                                 {% for itembonus in listing.itemvariationbonuses_set.all %}
-                                                    <span class="badge bg-warning-subtle item-bonus {% if forloop.counter > 1 %}ms-0{% endif %}">
+                                                    <span class="badge bg-warning-subtle item-bonus {% if forloop.counter > 1 %}ms-0{% endif %}"
+                                                        data-bs-toggle="tooltip"
+                                                        data-bs-title="{{ itembonus.description }}">
                                                             {{ itembonus.formatted_value }}
                                                         </span>
                                                 {% endfor %}
@@ -233,6 +236,12 @@
                             </div>
                         </div>
                     {% endfor %}
+                </div>
+                <div>
+                    Data provided by <a href="https://tornpal.com?referer=2507441" 
+                        title="Open TornPal in new tab" 
+                        target="_blank">TornPal</a>.
+                    
                 </div>
             </div>
         </div>
