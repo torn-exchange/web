@@ -1,34 +1,51 @@
 import json
 from datetime import datetime
+from main.models import Job, Schedule, JobLog
+from django.utils import timezone
 
-from main.models import Job, Schedule
 
-
-class Job:
+class AbstractJob:
 
     job_queue = 'default'
     available_at = datetime.now().timestamp()
 
-    @classmethod
-    def dispatch(cls, job: str, payload: dict):
+    def __init__(self):
+        self.job = None
+
+    def dispatch(self, job: str, payload: dict):
         Job.objects.create(
             job=job,
-            queue=cls.job_queue,
+            queue=self.job_queue,
             payload=json.dumps(payload),
-            available_at=cls.available_at,
+            available_at=self.available_at,
             created_at=datetime.now().timestamp()
         )
 
-    @classmethod
-    def queue(cls, queue: str):
-        cls.job_queue = queue
-        return cls
+    def queue(self, queue: str):
+        self.job_queue = queue
+        return self
 
-    @classmethod
-    def at(cls, timestamp):
-        cls.available_at = timestamp
-        return cls
+    def at(self, timestamp):
+        self.available_at = timestamp
+        return self
 
-    @classmethod
-    def handle(cls, payload: dict):
+    def log(self, status: str, message: dict = dict()):
+        current_class = self.__class__.__name__
+        JobLog.objects.create(
+            job=current_class,
+            status=status,
+            message=message,
+            created_at=datetime.now().timestamp()
+        )
+
+    def resolve(self, success: bool):
+        if success:
+            self.job.delete()
+        else:
+            self.job.attempts += 1
+            self.job.available_at = timezone.now()
+            self.reserved_at = None
+            self.job.save()
+
+    def handle(self, payload: dict):
         raise NotImplementedError('You must implement the handle method in your job class')

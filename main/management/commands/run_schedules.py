@@ -16,7 +16,7 @@ class Command(BaseCommand):
                 )
             )
             self.run()
-            time.sleep(30)
+            time.sleep(5)
 
     def run(self):
         try:
