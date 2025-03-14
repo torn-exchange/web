@@ -123,7 +123,7 @@ class ItemVariationFilter(django_filters.FilterSet):
         data.setdefault('order', 'price')
         super().__init__(data, *args, **kwargs)
 
-        item_bonus_choices = [('Any', 'Any')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all()]
+        item_bonus_choices = [('Any', 'Any')] + [(bonus.title, bonus.title) for bonus in ItemBonus.objects.all().order_by('title')]
         self.filters['item_bonus_title_1'].extra.update(choices=item_bonus_choices)
         self.filters['item_bonus_title_2'].extra.update(choices=item_bonus_choices)
 
