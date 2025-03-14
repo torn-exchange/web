@@ -127,7 +127,7 @@ class ItemVariationFilter(django_filters.FilterSet):
         self.filters['item_bonus_title_1'].extra.update(choices=item_bonus_choices)
         self.filters['item_bonus_title_2'].extra.update(choices=item_bonus_choices)
 
-    item_choices = [('Any', 'Any')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary'])]
+    item_choices = [('Any', 'Any')] + [(item.name, item.name) for item in Item.objects.filter(item_type__in=['Melee', 'Primary', 'Secondary']).order_by('name')]
     item_type_choices =  [('Any', 'Any')] + [('Melee', 'Melee'), ('Primary', 'Primary'), ('Secondary', 'Secondary')]
 
     item__name = TypedChoiceFilter(field_name='item__name', choices=item_choices, label='Item')
