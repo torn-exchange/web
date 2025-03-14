@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 from . import views
 from . import api
+from . import views_trade
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -29,14 +30,14 @@ sitemaps = {
 urlpatterns = [
     # REGULAR SITE
     path('', views.homepage, name='home'),
-    path('edit_price_list', views.edit_price_list, name='edit_price_list'),
+    path('edit_price_list', views_trade.edit_price_list, name='edit_price_list'),
     path('manage_price_list', views.manage_price_list, name='manage_price_list'),
     path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
     path('save_category_order', views.save_category_order, name='save_category_order'),
-    path('prices/<str:identifier>/', views.price_list, name='price_list'),
-    path('prices/', views.price_list, name='price_list'),
-    path('calculator', views.calculator, name='calculator'),
-    path('paste_parse', views.parse_trade_paste, name='trade_paste'),
+    path('prices/<str:identifier>/', views_trade.price_list, name='price_list'),
+    path('prices/', views_trade.price_list, name='price_list'),
+    path('calculator', views_trade.calculator, name='calculator'),
+    path('paste_parse', views_trade.parse_trade_paste, name='trade_paste'),
     path('vote_view', views.vote_view, name='vote_view'),
     path('listings', views.listings, name='listings'),
     path('rw_listings', views.rw_listings, name='rw_listings'),
@@ -45,8 +46,8 @@ urlpatterns = [
     path('search_services/', views.search_services, name='search_services'),
     path('edit_services/', views.edit_services, name='edit_services'),
     path('create_receipt', views.create_receipt, name='create_receipt'),
-    path('new_create_receipt', views.new_create_receipt, name='new_create_receipt'),
-    path('receipt/<str:receipt_id>', views.receipt_view, name='receipt_view'),
+    path('new_create_receipt', views_trade.new_create_receipt, name='new_create_receipt'),
+    path('receipt/<str:receipt_id>', views_trade.receipt_view, name='receipt_view'),
     path('analytics/', views.analytics, name='analytics'),
     path('analytics/all_sellers/', views.all_sellers, name='all_sellers'),
     path('analytics/all_trades/', views.all_trades, name='all_trades'),
@@ -59,14 +60,14 @@ urlpatterns = [
     path('employee_listings', views.employee_listings, name='employee_listings'),
     path('extension_get_prices', views.extension_get_prices,
          name='extension_get_prices'),
-    path('new_extension_get_prices', views.new_extension_get_prices,
+    path('new_extension_get_prices', views_trade.new_extension_get_prices,
          name='new_extension_get_prices'),
     path('company_listings', views.company_listings, name='company_listings'),
     path('companies_hiring', views.company_hiring_listings, name='companies_hiring'),
-    path('museum_helper', views.museum_helper, name='museum_helper'),
+    path('museum_helper', views_trade.museum_helper, name='museum_helper'),
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
-  
+
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
     path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),
@@ -84,10 +85,10 @@ urlpatterns = [
     path('api/receipts', api.receipts, name='api_receipts'),
     path('api/sellers', api.sellers, name='api_sellers'),
     path('api/modify_listing', api.modify_listing, name='modify_listing'),
-    
+
     # handle api/ paths that doesn't exist
     path('api/<str:invalid_path>', api.api_404, name='api_404'),
-    
+
     # handle paths that don't exist
     re_path(r'^(?P<invalid_path>.+)/?$', views.custom_404, name='custom_404'),
 ]
