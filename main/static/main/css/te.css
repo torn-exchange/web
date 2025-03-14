@@ -912,7 +912,7 @@ th {
 .catalog .catalog-items {
     column-gap: 2px;
     display: grid;
-    padding-bottom: 100px;
+    padding-bottom: 30px;
     position: relative;
     row-gap: 2px;
 }
