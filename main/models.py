@@ -132,6 +132,10 @@ class Listing(models.Model):
         # Get global fee from owner's settings
         global_fee = self.owner.settings.trade_global_fee or 0
         
+        # for custom items like Sets and Properties, global fee should not be applied
+        if self.item.item_id > 9000:
+            global_fee = 0
+        
         total_discount = (self.discount or 0) + global_fee
         discount_fraction = (100.0 - total_discount) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
