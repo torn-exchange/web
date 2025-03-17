@@ -1,0 +1,64 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+
+<div class='container'>
+    <div class="row mb-1">
+        <div class="col-md-6 col-12 text-center text-md-start">
+            <a href="javascript:void(0)" class="text-decoration-none">External Listings</a>
+        </div>
+        <div class="col-md-6 col-12 text-start text-md-end">
+            <a href="{% url 'external_listings_create' %}" class="btn btn-primary">Create</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-responsive">
+                        <thead>
+                            <tr>
+                                <th scope="col" class='text-start'>Name</th>
+                                <th scope="col" class='text-center'>Type</th>
+                                <th scope="col" class='text-center'>Hits</th>
+                                <th scope="col" class='text-center'>Status</th>
+                                <th scope="col" class='text-end'>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if listings %}
+                                {% for listing in listings %}
+                                    <tr style="border-bottom:1px solid #636363;">
+                                        <td class='text-start'>{{ listing.name }}</td>
+                                        <td class='text-center'>{{ listing.view_type }}</td>
+                                        <td class='text-center'>{{ listing.hits }}</td>
+                                        <td class='text-center'>{{ listing.status }}</td>
+                                        <td class='text-end'>
+                                            <a href="javascript:void(0)" class="btn btn-outline-primary">
+                                                <i class="fa fa-link"></i>
+                                            </a>
+                                            <a href="" class="btn btn-outline-info">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="" class="btn btn-outline-danger">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class='text-center'>No listings found</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

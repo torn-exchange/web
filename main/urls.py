@@ -18,9 +18,11 @@ from django.conf import settings
 from django.contrib.sitemaps.views import sitemap
 from main.sitemap import StaticViewSitemap
 from django.conf.urls.static import static
+from functools import partial
 
 from . import views
 from . import api
+from .controllers.external_listing_controller import ExternalListingController
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -66,7 +68,13 @@ urlpatterns = [
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
-  
+
+    path('external_listings', ExternalListingController().index, name='external_listings'),
+    path('external_listings/create', ExternalListingController().create, name='external_listings_create'),
+    path('external_listings/read/<str:uuid>', lambda request, uuid: ExternalListingController().read(request, uuid), name='external_listings_read'),
+    path('external_listings/read/generate/<str:uuid>', lambda request, uuid: ExternalListingController().read_generate(request, uuid),
+         name='external_listings_read_generate'),
+
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
     path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),

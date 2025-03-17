@@ -1,0 +1,197 @@
+{% extends "main/base.html" %}
+{% block content %}
+    {% load humanize %}
+    {% load custom_tags %}
+
+    <div class='container'>
+        <div class="row mb-1">
+            <div class="col-md-6 col-12 text-center text-md-start">
+                <a href="{% url 'external_listings' %}" class="text-muted">External Listings</a>
+                <i class="fas fa-chevron-right text-muted" style="font-size:12px;"></i>
+                <a href="javascript:void(0)" class="text-decoration-none">Create</a>
+            </div>
+            <div class="col-md-6 col-12 text-start text-md-end">
+                <a href="" class="btn btn-primary">Save</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-6 col-12 text-center text-md-start">
+
+                            </div>
+                            <div class="col-md-6 col-12 text-start text-md-end">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#addItemModal">
+                                    Add Item
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-responsive">
+                            <thead>
+                            <tr>
+                                <th style="width:20px;"></th>
+                                <th scope="col" class='text-start'>Name</th>
+                                <th scope="col" class='text-center'>Type</th>
+                                <th scope="col" class='text-center'>Misc</th>
+                                <th scope="col" class='text-end'>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="sortable">
+                            {% if listings %}
+                                {% for listing in listings %}
+                                    <tr style="border-bottom:1px solid #636363;">
+                                        <td style="width:20px;">
+                                            <i class="fas fa-grip-lines handle me-3" style="cursor: move;"></i>
+                                        </td>
+                                        <td class='text-start'>{{ listing.name }}</td>
+                                        <td class='text-center'>{{ listing.view_type }}</td>
+                                        <td class='text-center'>{{ listing.hits }}</td>
+                                        <td class='text-center'>{{ listing.status }}</td>
+                                        <td class='text-end'>
+                                            <a href="javascript:void(0)" class="btn btn-outline-danger remove-item">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class='text-center no-listings'>No listings found</td>
+                                </tr>
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-lg-down modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addItemModalLabel">Add Item</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-responsive">
+                                <thead>
+                                <tr>
+                                    <th class="d-none"></th>
+                                    <th scope="col" class='text-start'>Name</th>
+                                    <th scope="col" class='text-center'>Type</th>
+                                    <th scope="col" class='text-center'>Misc</th>
+                                    <th scope="col" class='text-end'>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody class="addable-items">
+                                {% if items %}
+                                    {% for item in items %}
+                                        <tr style="border-bottom:1px solid #636363;">
+                                            <td style="width:20px;" class="d-none">
+                                                <i class="fas fa-grip-lines handle me-3" style="cursor: move;"></i>
+                                            </td>
+                                            <td class="text-start">{{ item.item.name }}</td>
+                                            <td class="text-center">{{ item.item.item_type }}</td>
+                                            <td class="text-center">{{ item.misc }}</td>
+                                            <td class="text-end">
+                                                <a href="javascript:void(0)" class="btn btn-outline-primary add-item">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            </td>
+                                            <td class='text-end d-none'>
+                                                <a href="javascript:void(0)" class="btn btn-outline-danger remove-item">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class='text-center'>No items found</td>
+                                    </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .sortable tr {
+            cursor: move;
+        }
+    </style>
+    <script rel="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script rel="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+    <script rel="text/javascript" type="text/javascript">
+      $(document).ready(function () {
+        $("#sortable").sortable({
+          handle: ".handle",
+          cursor: "move",
+          tolerance: "pointer",
+          delay: 150,
+          distance: 10,
+          scrollSpeed: 20,
+          scroll: true,
+          scrollSensitivity: 30,
+          touchAction: "none",
+          update: function (event, ui) {
+
+          }
+        });
+
+        $("#sortable").disableSelection();
+
+        $('.handle').on('touchstart', function (e) {
+          if ($(e.target).hasClass('handle')) {
+            e.preventDefault();
+          }
+        });
+
+        $(".add-item").on("click", function () {
+          let noListings = $(".no-listings");
+          if (noListings.length > 0) {
+            noListings.closest('tr').remove();
+          }
+          let tr = $(this).closest('tr').clone();
+
+          $(this).closest('tr').remove();
+          tr.find('.add-item').closest('td').addClass('d-none');
+          tr.find('.remove-item').closest('td').removeClass('d-none');
+
+          tr.find('.remove-item').on('click', function () {
+            let tr = $(this).closest('tr').clone();
+            $(this).closest('tr').remove();
+
+            tr.find('.add-item').closest('td').removeClass('d-none');
+            tr.find('.remove-item').closest('td').addClass('d-none');
+            tr.find('.handle').closest('td').addClass('d-none');
+
+            $('.addable-items').append(tr);
+          });
+
+          tr.find('.handle').closest('td').removeClass('d-none');
+          $("#sortable").append(tr);
+          $("#sortable").sortable("refresh");
+        });
+      });
+
+    </script>
+
+{% endblock content %}

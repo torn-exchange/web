@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from users.models import Profile
 import numpy as np
@@ -318,3 +319,31 @@ class JobLog(models.Model):
     message = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class ExternalListing(models.Model):
+    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=250, default='External Listing')
+    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    hits = models.IntegerField(default=0)
+    view_type = models.CharField(max_length=250)
+    status = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def external_items(self):
+        return ExternalListingItem.objects.filter(external_listing=self)
+
+class ExternalListingItem(models.Model):
+    external_listing = models.ForeignKey(ExternalListing, on_delete=models.CASCADE)
+    listing_id = models.BigIntegerField()
+    listing_type = models.CharField(max_length=250)
+    hidden = models.BooleanField(default=False)
+    sort_order = models.IntegerField(default=0)
+
+    @property
+    def listing(self):
+        if self.listing_type == 'variation':
+            return ItemVariation.objects.get(id=self.listing_id)
+        return Listing.objects.get(id=self.listing_id)
