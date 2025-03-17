@@ -673,7 +673,7 @@ th {
 .listing-container {
     column-gap: 1px;
     display: grid;
-    padding-bottom: 100px;
+    padding-bottom: 20px;
     position: relative;
     row-gap: 1px;
 }
