@@ -828,7 +828,7 @@ th {
     flex: 1;
     flex-direction: column;
     /*margin: 120px auto 0;*/
-    /*padding: 0 40px;*/
+    padding: 0 20px;
     position: relative;
     width: 100%;
     z-index: 1;
@@ -843,10 +843,10 @@ th {
 }
 
 .catalog .filter-container {
-    display: block;
     transform: translateZ(0);
     height: 100%;
-    width: 270px;
+    width:0;
+    display:none;
 }
 
 .catalog .filter-container .filter-list {
@@ -912,7 +912,7 @@ th {
 .catalog .catalog-items {
     column-gap: 2px;
     display: grid;
-    padding-bottom: 100px;
+    padding-bottom: 30px;
     position: relative;
     row-gap: 2px;
 }
@@ -1171,6 +1171,17 @@ th {
     .list-view .item-stats {
         text-align: left;
     }
+}
+
+@media (max-width: 768px) {
+    .listing-layout {
+        padding: 0 0px;
+    }
+}
+
+.filter-container.filter-show {
+    width: 270px;
+    display: block;
 }
 
 .list-view .item-type {

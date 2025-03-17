@@ -132,6 +132,10 @@ class Listing(models.Model):
         # Get global fee from owner's settings
         global_fee = self.owner.settings.trade_global_fee or 0
         
+        # for custom items like Sets and Properties, global fee should not be applied
+        if self.item.item_id > 9000:
+            global_fee = 0
+        
         total_discount = (self.discount or 0) + global_fee
         discount_fraction = (100.0 - total_discount) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
@@ -289,3 +293,32 @@ class ItemVariationBonuses(models.Model):
         if self.type == 'percentage':
             return f"{self.bonus.title} {int(self.value)}%"
         return f"{self.bonus.title} {int(self.value)}T"
+
+class Job(models.Model):
+    job = models.CharField(max_length=250)
+    queue = models.CharField(max_length=250)
+    payload = models.JSONField(null=True)
+    attempts = models.IntegerField(default=0)
+    reserved_at = models.DateTimeField(null=True)
+    available_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Schedule(models.Model):
+    job = models.CharField(max_length=250)
+    payload = models.JSONField(null=True)
+    run_at = models.JSONField()
+    unique = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    runnable = models.BooleanField(default=True)
+    last_ran_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class JobLog(models.Model):
+    job = models.CharField(max_length=250)
+    status = models.CharField(max_length=30)
+    message = models.JSONField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
