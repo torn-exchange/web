@@ -544,22 +544,16 @@ def price_list(request, identifier=None):
     HitCountMixin.hit_count(request, hit_count)
 
     key = f'price_list_{pricelist_profile.torn_id}'
-    cached_data = cache.get(key)
-    if cached_data is not None:
-        all_relevant_items, last_updated, last_receipt = cached_data
-    else:
-        all_relevant_items = Listing.objects.filter(
-            owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
 
-        last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
+    all_relevant_items = Listing.objects.filter(
+        owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
 
-        try:
-            last_updated = all_relevant_items.order_by('-item__last_updated').first().item.last_updated
-        except AttributeError:
-            last_updated = None
+    last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
 
-        if all_relevant_items is not None:
-            cache.set(key, (all_relevant_items, last_updated, last_receipt), 60 * 60 * 1)
+    try:
+        last_updated = all_relevant_items.order_by('-item__last_updated').first().item.last_updated
+    except AttributeError:
+        last_updated = None
 
     distinct_categories: List[str] = list(
         all_relevant_items.values_list('item__item_type', flat=True)
