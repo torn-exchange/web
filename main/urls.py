@@ -33,6 +33,7 @@ urlpatterns = [
     path('manage_price_list', views.manage_price_list, name='manage_price_list'),
     path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
     path('save_category_order', views.save_category_order, name='save_category_order'),
+    path('prices/<str:identifier>', views.price_list, name='price_list'),
     path('prices/<str:identifier>/', views.price_list, name='price_list'),
     path('prices/', views.price_list, name='price_list'),
     path('calculator', views.calculator, name='calculator'),
