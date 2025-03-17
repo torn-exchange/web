@@ -41,6 +41,7 @@ urlpatterns = [
     path('vote_view', views.vote_view, name='vote_view'),
     path('listings', views.listings, name='listings'),
     path('rw_listings', views.rw_listings, name='rw_listings'),
+    path('services/<str:identifier>', views.services_list, name='services_list'),
     path('services/<str:identifier>/', views.services_list, name='services_list'),
     path('services/', views.services_list, name='services_list'),
     path('search_services/', views.search_services, name='search_services'),
