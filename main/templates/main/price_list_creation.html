@@ -52,6 +52,10 @@
                         <b>TE Market Value</b> - Torn Exchange's own MV. It is calculated once an hour by taking
                         into account Torn MV, 3 lowest bazaar prices and 3 lowest item market prices.
                     </li>
+                    <li>
+                      Choose which colums to show or hide, especially if you're mobile with limited horizontal space.
+                      Click on "x" next to the column name to hide it. This is purely a visual help, it has no effect on prices! 
+                    </li>
                 </ul>
             </div>
             <div class="card-footer p-1 m-0">
@@ -103,8 +107,11 @@
     </div>
     {% csrf_token %}
     <div class="row">
-        <div class="col-12">
-            <label>Columns</label>
+        <div class="col-12 p-0">
+            <label><small>
+              Show/Hide columns <i class="fa fa-circle-info" data-bs-toggle="tooltip" data-bs-placement="top"
+                                   title="Choose which columns to show or hide, especially if you're mobile with limited horizontal space. Click on 'x' next to the column name to hide it. This is purely a visual help, it has no effect on prices!"></i>
+            </small></label>
             <select class="form-control multi-select" multiple="multiple">
                 <option value="1">Item</option>
                 <option value="2">Torn Market Value</option>
