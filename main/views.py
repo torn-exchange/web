@@ -37,7 +37,7 @@ from vote.models import Vote
 
 def homepage(request):
     cached_data = cache.get('hompeage_data')
-    
+
     if cached_data:
         # Unpack the cached data
         all_time_traders, active_traders, most_receipts, created_today, changes_this_week, changes_this_month = cached_data
@@ -47,10 +47,10 @@ def homepage(request):
         active_traders = get_active_traders()
         most_receipts = get_most_trades()
         created_today, changes_this_week, changes_this_month = get_changelog()
-        
+
         # Cache the computed data
         cache.set('hompeage_data', (all_time_traders, active_traders, most_receipts, created_today, changes_this_week, changes_this_month), 60*60*1)
-     
+
     try:
         profile = Profile.objects.select_related('settings').get(user=request.user)
         user_settings = profile.settings
@@ -68,7 +68,7 @@ def homepage(request):
         'changelog': changes_this_week,
         'number_of_changes_last_month': changes_this_month.count(),
     }
-    
+
     return render(request, 'main/home.html', context)
 
 
@@ -76,7 +76,7 @@ def about(request):
     context = {
         'page_title': 'About - Torn Exchange',
     }
-    
+
     return render(request, 'main/about.html', context)
 
 def rw_listings(request):
@@ -140,9 +140,9 @@ def listings(request):
 
     try:
         query_set = myFilter.qs
-        
+
         query_set = query_set.exclude(hidden=True)
-        
+
         # exclude Listings where price is None or 0
         query_set = query_set.exclude(traders_price__isnull=True)
         number_of_items = query_set.count()
@@ -182,13 +182,13 @@ def listings(request):
 def search_services(request: HttpRequest):
     queryset = Services.objects.all()
     myFilter = ServicesFilter(request.GET, queryset=queryset)
-    
+
     # Get all selected services from the GET request
     selected_services = request.GET.getlist('service')
 
     try:
         query_set = myFilter.qs
-        
+
         # exclude Listings where price is None or 0
         number_of_items = query_set.count()
 
@@ -211,7 +211,7 @@ def search_services(request: HttpRequest):
         results = None
         page = None
         number_of_items = None
-    
+
     context = {
         'page_title': 'Search Services - Torn Exchange',
         'user_settings': user_settings,
@@ -241,7 +241,7 @@ def employee_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
-    
+
     context = {
         'page_title': 'Search Employees - Torn Exchange',
         'user_settings': user_settings,
@@ -267,7 +267,7 @@ def company_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
-    
+
     context = {
         'page_title': 'Companies for sale - Torn Exchange',
         'user_settings': user_settings,
@@ -293,7 +293,7 @@ def company_hiring_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = qs.count()
-    
+
     context = {
         'page_title': 'Company recruitment - Torn Exchange',
         'user_settings': user_settings,
@@ -319,7 +319,7 @@ def revives_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = revivers.count()
-    
+
     context = {
         'page_title': 'Revives market - Torn Exchange',
         'user_settings': user_settings,
@@ -343,7 +343,7 @@ def losses_listings(request):
     page = request.GET.get('page')
     results = paginator.get_page(page)
     number_of_items = loss_sellers.count()
-    
+
     context = {
         'page_title': 'Loss selling - Torn Exchange',
         'user_settings': user_settings,
@@ -383,22 +383,22 @@ def edit_price_list(request):
         .order_by('-created_at')
         .first()
     )
-    
+
     all_traders_prices = Listing.objects.filter(owner=profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
-     
+
     data_dict = {}
     cats = categories()
     for category in cats:
         cat_items = Item.objects.filter(
             item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10
         ).order_by('-TE_value')
-        
+
         # add trader's data to the pool of all items
         cat_items = merge_items(cat_items, all_traders_prices)
         data_dict.update({category: cat_items})
 
     user_settings = profile.settings
-    
+
     context = {
         'page_title': 'Edit Prices - Torn Exchange',
         'item_types': categories,
@@ -411,77 +411,49 @@ def edit_price_list(request):
     if request.method == 'POST':
         updated_prices = {}
         updated_discounts = {}
-        
-        # first go through all categories
+        items_to_delete = []
+
         for items in data_dict:
-            all_relevant_items = data_dict[items]
-            
-            for item in all_relevant_items:
+            for item in data_dict[items]:
                 price = request.POST.get(f'{item}_max_price')
+                discount = request.POST.get(f'{item}_discount')
+                checkbox_output = request.POST.get(f'{item}_checkbox')
+
                 if price and price.strip():
                     price = re.sub(r'[$,]', '', price)
-                    
-                discount = (request.POST.get(f'{item}_discount'))
-                
-                try:
-                    if discount == '' or discount is None or discount == 'None':
-                        discount = ''
-                    else:
-                        discount = float(discount)
-                except Exception as e:
-                    discount = ''
-                    
-                try:
-                    if price and price != '':
-                        price = int(price)
-                except Exception as e:
-                    price = ''
+                    price = int(price) if price.isdigit() else ''
 
-                if type(discount) == float:
-                    if discount > 100.0:
-                        # prevent message alert from fading away
-                        storage = messages.get_messages(request)
-                        storage.used = False
+                discount = float(discount) if discount not in ('', None, 'None') else ''
 
-                        messages.error(
-                            request, 'Make sure your discount value is less than 100')
-                        return redirect('edit_price_list')
-                
+                if isinstance(discount, float) and discount > 100.0:
+                    messages.error(request, 'Make sure your discount value is less than 100')
+                    return redirect('edit_price_list')
+
                 if price != '':
-                    updated_prices.update({item: price})
+                    updated_prices[item] = price
                 if discount != '':
-                    updated_discounts.update({item: discount})
-
-        # delete all items first
-        [a.delete() for a in Listing.objects.filter(owner=profile)]
-        
-        # then recreate them again
-        for key in updated_prices:
-            Listing.objects.update_or_create(
-                owner=profile,
-                item=key,
-                defaults={'price': updated_prices.get(key)})
-        
-        for key in updated_discounts:
-            Listing.objects.update_or_create(
-                owner=profile,
-                item=key,
-                defaults={'discount': updated_discounts.get(key)})
-
-        for items in data_dict:
-            all_relevant_items = data_dict[items]
-
-            for item in all_relevant_items:
-                checkbox_output = request.POST.get(f'{item}_checkbox')
+                    updated_discounts[item] = discount
                 if checkbox_output == 'on':
-                    try:
-                        Listing.objects.get(owner=profile, item=item).delete()
-                    except:
-                        pass
+                    items_to_delete.append(item)
 
-        cache.delete(f'price_list_{profile.torn_id}')
+        Listing.objects.filter(owner=profile).delete()
 
-        messages.success(request, f'Your price list has been updated!')
+        listings_to_create = [
+            Listing(owner=profile, item=item, price=price)
+            for item, price in updated_prices.items()
+        ]
+        Listing.objects.bulk_create(listings_to_create, ignore_conflicts=True)
+
+        for item, discount in updated_discounts.items():
+            Listing.objects.filter(owner=profile, item=item).update(discount=discount)
+
+        if items_to_delete:
+            Listing.objects.filter(owner=profile, item__in=items_to_delete).delete()
+
+        if updated_prices or updated_discounts or items_to_delete:
+            cache.delete(f'price_list_{profile.torn_id}')
+
+        messages.success(request, 'Your price list has been updated!')
         return redirect('edit_price_list')
     else:
         return render(request, 'main/price_list_creation.html', context)
