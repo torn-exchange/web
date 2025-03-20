@@ -67,6 +67,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+  <!-- OpenGraph Meta Tags -->
+  <meta property="og:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
+  <meta property="og:description" content="Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items">
+  <meta property="og:image" content="{% static '/main/images/mainlogo.png' %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  <meta property="og:type" content="website">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
+  <meta name="twitter:description" content="Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items">
+  <meta name="twitter:image" content="{% static '/main/images/mainlogo.png' %}">
+  
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EDC812F6YJ" crossorigin="anonymous"></script>
   {% if not DEBUG %}
