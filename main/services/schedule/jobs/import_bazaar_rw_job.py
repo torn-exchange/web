@@ -109,13 +109,18 @@ class ImportBazaarRW(AbstractJob):
             response.raise_for_status()
             data = json.loads(response.content)
 
-            print(data)
+            # print(data)
 
             # Check each item in response
             for item in data:
-                # profile = self.ensure_user(item['player_id'])
-                # if not profile:
-                #     continue
+                if item['source'] != 'bazaar':
+                    continue
+
+                print('working on item:', item['item_id'])
+
+                profile = self.ensure_user(item['player_id'])
+                if not profile:
+                    continue
 
                 item = self.map_item_id(item)
 
