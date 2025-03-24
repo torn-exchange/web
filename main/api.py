@@ -187,8 +187,8 @@ def listings(request):
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
-            sort_by = request.GET.get('sort_by', 'price')
-            order = request.GET.get('order', 'asc')
+            sort_by = request.GET.get('sort_by', 'price').lower()
+            order = request.GET.get('order', 'asc').lower()
             page = request.GET.get('page', '1')
 
             item = get_object_or_404(Item, item_id=item_id)
