@@ -187,15 +187,26 @@ def listings(request):
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
+            sort_by = request.GET.get('sort_by', 'price')
+            order = request.GET.get('order', 'asc')
             page = request.GET.get('page', '1')
 
             item = get_object_or_404(Item, item_id=item_id)
             listings = Listing.objects.filter(item=item)
-            
+
             # Apply ListingFilter
+            valid_sort_fields = ['price']
+            if sort_by not in valid_sort_fields:
+                return je("Invalid sort field")
+
+            if order == 'desc':
+                sort_by = f'-{sort_by}'
+
+            listings = listings.order_by(sort_by)
+
             filterset = ListingFilter(request.GET, queryset=listings)
             filtered_listings = filterset.qs
-            
+
             # Handle pagination
             paginator = Paginator(filtered_listings, 20)
             try:
