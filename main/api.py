@@ -192,7 +192,7 @@ def listings(request):
             page = request.GET.get('page', '1')
 
             item = get_object_or_404(Item, item_id=item_id)
-            listings = Listing.objects.filter(item=item)
+            listings = Listing.objects.filter(item=item, hidden=False)
 
             # Apply ListingFilter
             valid_sort_fields = ['price']
