@@ -190,7 +190,7 @@
                                             data-global-fee="{{ owner_profile.settings.trade_global_fee }}">
                                             <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
                                                     src="{{ item.image_url }}" style="width:50%;"></td>
-                                            <td style='width:13%;' class='text-center link-blue'>
+                                            <td style='width:13%;' class='text-center link-blue item_name'>
                                                 <a href="https://tornpal.com/markets/item/{{ item.item_id }}?referer=2507441"
                                                    title="Open TornPal to check latest market offer"
                                                    target="_blank">
@@ -258,17 +258,19 @@
       });
       $('body').on('change', '.listing_price', function () {
         var parent = $(this).closest('tr');
+        var item_name = parent.find('.item_name').text().trim();
         var listing_price = numberWOCommas($(this).val());
         var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
         var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
       });
       $('body').on('change', '.listing_discount', function () {
         var parent = $(this).closest('tr');
+        var item_name = parent.find('.item_name').text().trim();
         var listing_price = numberWOCommas(parent.find('.listing_price').val());
         var profit_margin = numberWOCommas($(this).val());
         var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
       });
 
       $('#submit-prices').click(function () {
@@ -319,9 +321,14 @@
         return (!str || /^\s*$/.test(str));
       }
 
-      function effective_price(price, discount, market_value) {
+      function effective_price(price, discount, market_value, item_name) {
         // Get global fee from the closest row
-        const globalFee = parseFloat($('.listing_price, .listing_discount').closest('tr').data('global-fee')) || 0;
+        let globalFee = parseFloat($('.listing_price, .listing_discount').closest('tr').data('global-fee')) || 0;
+
+        if(item_name == 'Plushie Set' || item_name == 'Flower Set') {
+          globalFee = 0;
+        }
+        
         // Add global fee to discount
         const totalDiscount = parseFloat(discount) + globalFee;
 
