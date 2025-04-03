@@ -412,7 +412,7 @@ def modify_listing(request):
 @ce
 def active_traders(request):
     try:
-        active_traders = Profile.objects.filter(active_trader=True)[:3]
+        active_traders = Profile.objects.filter(active_trader=True)
         ids_only = []
         full_data = {}
         
