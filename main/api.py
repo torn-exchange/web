@@ -407,3 +407,33 @@ def modify_listing(request):
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
+
+
+@ce
+def active_traders(request):
+    try:
+        active_traders = Profile.objects.filter(active_trader=True)[:3]
+        ids_only = []
+        full_data = {}
+        
+        for trader in active_traders:
+            ids_only.append(int(trader.torn_id))
+            
+            last_receipt = TradeReceipt.objects.filter(owner=trader).last()
+            time_since_last_trade = int(last_receipt.created_at.timestamp()) if last_receipt and last_receipt.created_at else None
+            
+            full_data[trader.torn_id] = {
+                "name": trader.name,
+                "torn_id": int(trader.torn_id),
+                "last_trade": time_since_last_trade
+            }
+            
+        data = {
+            "ids": ids_only,
+            "verbose": full_data
+        }
+        
+        return js(data)
+    except Exception as e:
+        print("Error fetching active traders:", e)
+        return je("Error fetching active traders")
