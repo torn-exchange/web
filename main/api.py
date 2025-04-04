@@ -429,7 +429,7 @@ def modify_listing(request):
                     listing.delete()
                     deleted.append(item_id)
 
-            return js({"updated_items": updated, "failed_items": failed, 'deleted_items': deleted})
+            return js({"updated_listings": updated, "failed_listings": failed, 'deleted_listings': deleted})
 
         except Exception as e:
             je(str(e))
