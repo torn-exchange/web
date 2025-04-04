@@ -297,12 +297,17 @@ paths:
                   data:
                     type: object
                     properties:
-                      updated_items:
+                      updated_listings:
                         type: array
                         items:
                           type: integer
                         example: [ 206, 200, 197 ]
-                      failed_items:
+                      failed_listings:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ ]
+                      deleted_listings:
                         type: array
                         items:
                           type: integer
