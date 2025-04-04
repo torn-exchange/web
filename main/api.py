@@ -364,50 +364,78 @@ def sellers(request):
     else:
         return je("Invalid HTTP method")
 
-@ce 
+@ce
 def modify_listing(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             key = data.get('key')
-            item_ids = data.get('item_ids', [])
-            new_price = data.get('new_price')
-            action = data.get('action')
+            global_action = data.get('action')
+            listings_data = data.get('listings', [])
 
-            if not key or not item_ids or not action:
+            if not key or not listings_data:
                 return je("Missing required parameters")
 
             try:
-                profile = Profile.objects.filter(api_key=key).get()
+                profile = Profile.objects.get(api_key=key)
             except Profile.DoesNotExist:
                 return je("Profile matching query does not exist")
 
-            modified_listings = []
-            for item_id in item_ids:
+            updated = []
+            failed = []
+            deleted = []
+
+            for entry in listings_data:
+                item_id = entry.get('item_id')
+                action = entry.get('action', global_action)
+                fixed_price = entry.get('fixed_price')
+                discount = entry.get('discount')
+
+                if not item_id or not action:
+                    continue
+
                 item = get_object_or_404(Item, item_id=item_id)
                 listing = Listing.objects.filter(owner=profile, item=item).first()
 
-                if listing:
-                    if action == 'update' and new_price:
-                        try:
-                            listing.price = int(new_price)
-                            listing.save(update_fields=['price'])
-                            modified_listings.append(item_id)
-                        except Exception as e:
-                            continue
-                    elif action == 'delete':
-                        listing.delete()
-                        modified_listings.append(item_id)
+                if action == 'update':
+                    try:
+                        if fixed_price is not None:
+                            fixed_price = int(fixed_price)
+                        if discount is not None:
+                            if discount < 1 or discount > 100:
+                                failed.append(item_id)
+                                continue
 
-            if modified_listings:
-                return js(f"Listings modified successfully for items: {', '.join(modified_listings)}")
-            else:
-                return je("No listings were modified")
-        except Exception as E:
+                        if fixed_price is None and discount is None:
+                            failed.append(item_id)
+                            continue
+
+                        if not listing:
+                            listing = Listing.objects.create(owner=profile, item=item)
+
+                        listing.price = fixed_price if fixed_price is not None else None
+                        listing.discount = float(discount) if discount is not None else None
+                        listing.save(update_fields=['price', 'discount'])
+                        updated.append(item_id)
+
+                    except Exception as e:
+                        failed.append(item_id)
+                        continue
+
+                elif action == 'delete':
+                    if not listing:
+                        continue
+
+                    listing.delete()
+                    deleted.append(item_id)
+
+            return js({"updated_listings": updated, "failed_listings": failed, 'deleted_listings': deleted})
+
+        except Exception as e:
+            je(str(e))
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
-
 
 @ce
 def active_traders(request):
