@@ -249,6 +249,13 @@ paths:
                   type: string
                   description: The torn api key to authorize the request
                   example: "192XXXXXXXX931XX"
+                action:
+                  type: string
+                  description: Action to be taken on the listing (either `update` or `delete`)
+                  enum:
+                    - update
+                    - delete
+                  example: delete
                 listings:
                   type: array
                   items:
@@ -273,14 +280,6 @@ paths:
                           - update
                           - delete
                         example: delete
-                new_price:
-                  type: integer
-                  description: New price for the item (optional, required for updates)
-                  example: 200000
-                delete:
-                  type: boolean
-                  description: Flag to delete the listing (optional)
-                  example: true
       responses:
         '200':
           description: Successful operation
