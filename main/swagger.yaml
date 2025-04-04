@@ -228,14 +228,16 @@ paths:
                 type: array
                 items:
                   type: object
-
   /api/modify_listing:
     post:
       summary: Modify a listing by updating its price or deleting it
       description: |
-        This endpoint allows you to modify a listing by either updating its price or deleting it.
-        - To update the price, provide the `new_price` parameter.
-        - To delete the listing, provide the `delete` parameter.
+        This endpoint allows you to modify a listing by either updating its price, updating its discount, or deleting it.
+        - To update the price, provide the `fixed_price` parameter with the (torn) `item_id`.
+        - To update the discount, provide the `discount` parameter with the (torn) `item_id`.
+        - To update both the price and discount, provide both parameters with the (torn) `item_id`.
+        - To delete the listing, provide the `action: delete` field for the item you wish to remove, this can be set at the parent level OR per listing item.
+        - You cannot delete a listing by posting `action: update` with discount and fixed_price not set.
       requestBody:
         required: true
         content:
@@ -245,13 +247,35 @@ paths:
               properties:
                 key:
                   type: string
-                item_ids:
+                  description: The torn api key to authorize the request
+                  example: "192XXXXXXXX931XX"
+                listings:
                   type: array
                   items:
-                    type: string
+                    type: object
+                    properties:
+                      item_id:
+                        type: integer
+                        description: The ID of the item to modify
+                        example: 206
+                      fixed_price:
+                        type: integer
+                        description: The fixed price of the item (optional for update)
+                        example: 780000
+                      discount:
+                        type: integer
+                        description: The discount percentage (optional for update)
+                        example: 50
+                      action:
+                        type: string
+                        description: Action to be taken on the listing (either `update` or `delete`)
+                        enum:
+                          - update
+                          - delete
+                        example: delete
                 new_price:
                   type: integer
-                  description: New price for the item (optional)
+                  description: New price for the item (optional, required for updates)
                   example: 200000
                 delete:
                   type: boolean
@@ -269,8 +293,18 @@ paths:
                     type: string
                     example: success
                   data:
-                    type: string
-                    example: "Price updated successfully"
+                    type: object
+                    properties:
+                      updated_items:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ 206, 200, 197 ]
+                      failed_items:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ ]
         '400':
           description: Invalid request parameters
           content:
