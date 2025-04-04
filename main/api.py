@@ -381,8 +381,9 @@ def modify_listing(request):
             except Profile.DoesNotExist:
                 return je("Profile matching query does not exist")
 
-            modified = []
+            updated = []
             failed = []
+            deleted = []
 
             for entry in listings_data:
                 item_id = entry.get('item_id')
@@ -415,7 +416,7 @@ def modify_listing(request):
                         listing.price = fixed_price if fixed_price is not None else None
                         listing.discount = float(discount) if discount is not None else None
                         listing.save(update_fields=['price', 'discount'])
-                        modified.append(item_id)
+                        updated.append(item_id)
 
                     except Exception as e:
                         failed.append(item_id)
@@ -426,9 +427,9 @@ def modify_listing(request):
                         continue
 
                     listing.delete()
-                    modified.append(item_id)
+                    deleted.append(item_id)
 
-            return js({"updated_items": modified, "failed_items": failed})
+            return js({"updated_items": updated, "failed_items": failed, 'deleted': deleted})
 
         except Exception as e:
             je(str(e))
