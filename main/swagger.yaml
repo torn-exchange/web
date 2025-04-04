@@ -270,7 +270,8 @@ paths:
                         description: The fixed price of the item (optional for update - must have either fixed_price or discount)
                         example: 780000
                       discount:
-                        type: float
+                        type: number
+                        format: float
                         description: The discount percentage. Cannot be more than 100 or less than 50 (optional for update - must have either fixed_price or discount)
                         example: 50
                       action:
