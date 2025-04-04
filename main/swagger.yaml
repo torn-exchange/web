@@ -267,11 +267,11 @@ paths:
                         example: 206
                       fixed_price:
                         type: integer
-                        description: The fixed price of the item (optional for update)
+                        description: The fixed price of the item (optional for update - must have either fixed_price or discount)
                         example: 780000
                       discount:
                         type: integer
-                        description: The discount percentage (optional for update)
+                        description: The discount percentage (optional for update - must have either fixed_price or discount)
                         example: 50
                       action:
                         type: string
