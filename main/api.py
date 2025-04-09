@@ -299,7 +299,7 @@ def receipts(request):
                     "seller": receipt.seller,
                     "total": receipt.total,
                     "profit": receipt.profit,
-                    "url": f'tornexchange.com/receipt/{receipt.receipt_url_string}',
+                    "url": f'https://tornexchange.com/receipt/{receipt.receipt_url_string}',
                 }
                 for receipt in paged_receipts
             ]
