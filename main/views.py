@@ -1225,13 +1225,13 @@ def create_receipt(request):
     trade_paste_text = trade_paste_text.replace(
         '[[total]]', "${:,.0f}".format(trade_receipt.total))
     trade_paste_text = trade_paste_text.replace(
-        '[[receipt_link]]', f'tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+        '[[receipt_link]]', f'https://tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
     trade_paste_text = trade_paste_text.replace(
         '[[trade_number]]', str(listings_count))
     trade_paste_text = trade_paste_text.replace(
-        '[[prices_link]]', f'tornexchange.com/prices/{owner_profile.name}')
+        '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
     trade_paste_text = trade_paste_text.replace(
-        '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
+        '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
 
     return JsonResponse({
         'seller': seller_name,
@@ -1285,13 +1285,13 @@ def new_create_receipt(request):
             trade_paste_text = trade_paste_text.replace(
                 '[[total]]', "${:,.0f}".format(trade_receipt.total))
             trade_paste_text = trade_paste_text.replace(
-                '[[receipt_link]]', f'tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
+                '[[receipt_link]]', f'https://tornexchange.com/receipt/{trade_receipt.receipt_url_string}')
             trade_paste_text = trade_paste_text.replace(
                 '[[trade_number]]', str(listings_count))
             trade_paste_text = trade_paste_text.replace(
-                '[[prices_link]]', f'tornexchange.com/prices/{owner_profile.name}')
+                '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
             trade_paste_text = trade_paste_text.replace(
-                '[[forum_link]]', f'www.torn.com/{owner_profile.settings.link_to_forum_post}')
+                '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
             
             data = {'receipt_id': trade_receipt.receipt_url_string,
                     'trade_message': escape(trade_paste_text),
