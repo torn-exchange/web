@@ -71,7 +71,10 @@
                                                 {% elif listing.owner.activity_status == 'Offline' %} text-secondary
                                                 {% endif %}
                                             fs-12"></i>
-                                                <span>{{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]</span>
+                                                <a target="_blank"
+                                                    href="https://www.torn.com/profiles.php?XID={{ listing.owner.torn_id }}">
+                                                    {{ listing.owner.name }}&nbsp;[{{ listing.owner.torn_id }}]
+                                                </a>
                                             </div>
                                             <div class="flex-inline flex-grow-0 text-end
                                             {% if listing.owner.vote_score == 0 %} text-secondary
