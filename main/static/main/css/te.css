@@ -838,10 +838,6 @@ th {
     background: #dddddd;
 }
 
-.catalog {
-
-}
-
 .catalog .filter-container {
     transform: translateZ(0);
     height: 100%;
@@ -1022,10 +1018,6 @@ th {
     margin-top: 10px;
 }
 
-.catalog-items .catalog-item-details {
-
-}
-
 .list-view .catalog-item-details {
     align-items: center;
     flex-direction: row;
@@ -1188,3 +1180,11 @@ th {
     justify-content: center;
 }
 /* END RW LISTING STYLES */
+
+/* APEX CHARTS */
+
+.apexcharts-tooltip-active {
+    color: black !important;
+  }
+
+/* END APEX CHARTS */
