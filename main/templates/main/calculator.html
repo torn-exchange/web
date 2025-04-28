@@ -71,6 +71,37 @@
         </div>
     </div>
 
+    <!-- Vaults -->
+    <div class="row">
+        <div class="text-center col-12 mb-3">
+
+            <a class='btn btn-info'
+                href="https://www.torn.com/properties.php#/p=options&tab=vault"
+                title="PI Vault"
+                target="_blank">
+                <img src="https://www.torn.com/images/v2/properties/estateagent/island.png"
+                    style="width: 16px; height: 16px;" />
+                PI Vault
+            </a>
+
+            <a class='btn btn-info'
+                href="https://www.torn.com/companies.php?step=your&type=1#/option=funds"
+                title="Company Vault"
+                target="_blank">
+                    <i class="fa-solid fa-suitcase"></i> Company Vault
+            </a>
+
+            <a class='btn btn-info'
+                id="faction-vault"
+                href="https://www.torn.com/factions.php?step=your#/tab=controls&option=give-to-user"
+                {% comment %} href="https://www.torn.com/factions.php?step=your&u={{owner.torn_id}}&a={{price}}#/tab=controls&option=give-to-user&giveMoneyTo={USER_ID}&money={{price}}" {% endcomment %}
+                title="Faction Vault"
+                target="_blank">
+                    <i class="fa-solid fa-people-group"></i> Faction Vault
+            </a>
+            
+        </div>
+
     <div class='row'>
         <!-- Calculator -->
         <div class='col-md-6 col-sm-12'>
@@ -171,27 +202,26 @@
 
                     $('#table-div').append("<div class='card-footer bg-dark'><button class='btn btn-primary border-white' id='confirmtrade'>Confirm Trade</button></div></div>")
 
-
                     $('tfoot').append(`<tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><strong>Grand Total: </strong></td>
-                            <td><strong>$`+ numberWithCommas(total_price) + `</strong></td>
-                            </tr>
-                            <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><strong>Total Profit: </strong></td>
-                            <td><strong>$`+ numberWithCommas(profit_from_trade) + `</strong></td>
-                            </tr>
-                            
-                            `)
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><strong>Grand Total: </strong></td>
+                        <td><strong>$`+ numberWithCommas(total_price) + `</strong></td>
+                        </tr>
+                        <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><strong>Total Profit: </strong></td>
+                        <td><strong>$`+ numberWithCommas(profit_from_trade) + `</strong></td>
+                        </tr>
+                        
+                    `)
                 },
                 error: function (json) {
                     alert('Make sure to paste the trade log message on the textbox, including the sellers name, and to include a valid price');
