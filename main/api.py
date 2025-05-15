@@ -92,9 +92,9 @@ def rate_limit_exponential(view_func):
 
 def get_client_ip(request):
     ip = (
-        request.META.get("CF-Connecting-IP")
-        or request.META.get("CF-Connecting-IPv6")
-        or request.META.get("REMOTE_ADDR")
+        request.META.get('HTTP_CF_CONNECTING_IP')  # Cloudflare IPv4
+        or request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()  # Standard proxy header
+        or request.META.get('REMOTE_ADDR')  # Direct connection
     )
     return ip
 
@@ -524,3 +524,27 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
+
+
+@ce
+def debug_headers(request):
+    headers = {}
+    for key, value in request.META.items():
+        if key.startswith('HTTP_'):  # Only grab HTTP headers
+            # Clean header name
+            name = key[5:].replace('_', '-').title()
+            headers[name] = value
+    
+    # Also check for Cloudflare-specific headers
+    cf_headers = {
+        'CF-Connecting-IP': request.META.get('HTTP_CF_CONNECTING_IP'),
+        'CF-IPCountry': request.META.get('HTTP_CF_IPCOUNTRY'),
+        'CF-RAY': request.META.get('HTTP_CF_RAY'),
+        'CF-Visitor': request.META.get('HTTP_CF_VISITOR')
+    }
+    
+    return JsonResponse({
+        'all_headers': headers,
+        'cf_headers': cf_headers,
+        'remote_addr': request.META.get('REMOTE_ADDR')
+    })
