@@ -135,6 +135,7 @@ def api_home(request):
 
 
 @ce
+@rate_limit_exponential
 def test(request):
     if request.method == 'GET':
         try:
