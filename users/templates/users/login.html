@@ -16,9 +16,11 @@
                         <label for="apikey"> API Key (Limited is enough) </label>
                         <input type="text" class="form-control" name="apikey" aria-describedby="emailHelp"
                             placeholder="Enter your API key">
-                        <small id="emailHelp" class="form-text text-muted">We'll never share your API Key with anyone
-                            else.
-                            <br>
+                        <small id="emailHelp" class="form-text text-muted">
+                            We'll never share your API Key with anyone else.
+                            <br/>
+                            By entering your key and using this site, you agree to the <a href="{% url 'tos' %}">TOS</a></small>
+                            <br/>
                             Find your <a href="https://www.torn.com/preferences.php#tab=api" target="_blank"> API
                                 Key</a></small>
                     </div>
