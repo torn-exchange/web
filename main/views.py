@@ -1477,6 +1477,9 @@ def save_category_order(request):
     return JsonResponse({'success': True})
 
 
+def tos(request):
+    return render(request, 'main/tos.html')
+
 def sitemap(request):
     links = [
         {
