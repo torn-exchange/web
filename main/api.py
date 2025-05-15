@@ -528,23 +528,5 @@ def active_traders(request):
 
 @ce
 def debug_headers(request):
-    headers = {}
-    for key, value in request.META.items():
-        if key.startswith('HTTP_'):  # Only grab HTTP headers
-            # Clean header name
-            name = key[5:].replace('_', '-').title()
-            headers[name] = value
-    
-    # Also check for Cloudflare-specific headers
-    cf_headers = {
-        'CF-Connecting-IP': request.META.get('HTTP_CF_CONNECTING_IP'),
-        'CF-IPCountry': request.META.get('HTTP_CF_IPCOUNTRY'),
-        'CF-RAY': request.META.get('HTTP_CF_RAY'),
-        'CF-Visitor': request.META.get('HTTP_CF_VISITOR')
-    }
-    
-    return JsonResponse({
-        'all_headers': headers,
-        'cf_headers': cf_headers,
-        'remote_addr': request.META.get('REMOTE_ADDR')
-    })
+    headers = {key: str(value) for key, value in request.META.items()}
+    return JsonResponse(headers, safe=True)
