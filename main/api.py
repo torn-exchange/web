@@ -48,7 +48,47 @@ def export_to_csv(data, filename):
 
     return response
 
+
+def rate_limit_exponential(view_func):
+    @wraps(view_func)
+    def _wrapped_throttle(request, *args, **kwargs):
+        ip = get_client_ip(request)
+        window_key = f"rate_limit:window:{ip}"
+        penalty_key = f"rate_limit:penalty:{ip}"
+        now = time.time()
+
+        penalty = cache.get(penalty_key, {"attempts": 0, "next_time": 0})
+        if now < penalty["next_time"]:
+            wait = int(penalty["next_time"] - now)
+            return JsonResponse({
+                "status": "error",
+                "rate_limited": True,
+                "retry_after": wait
+            }, status=429)
+
+        window = cache.get(window_key, [])
+        window = [ts for ts in window if now - ts < 60]
+
+        if len(window) >= 10:
+            penalty["attempts"] += 1
+            wait_time = min(15 * (2 ** (penalty["attempts"] - 1)), 172800)
+            penalty["next_time"] = now + wait_time
+            cache.set(penalty_key, penalty, timeout=172800)
+            return JsonResponse({
+                "status": "error",
+                "rate_limited": True,
+                "retry_after": int(wait_time)
+            }, status=429)
+
+        window.append(now)
+        cache.set(window_key, window, timeout=60)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_throttle
+
+
 @ce
+@rate_limit_exponential
 def api_404(request, invalid_path=None):
     return JsonResponse({"status": "error", "message": "Endpoint not found"}, status=404)
 
@@ -61,8 +101,6 @@ def js(data, meta=None):
 
 def je(message):
     return JsonResponse({"status": "error", "message": message})
-
-
 
 ### API functions ###
 
@@ -98,6 +136,7 @@ def test(request):
 
 
 @ce
+@rate_limit_exponential
 def price(request):
     # Example usage: /api/price?item_id=<ITEM_ID>?user_id=<USER_ID>
     if request.method == 'GET':
@@ -128,6 +167,7 @@ def price(request):
 
 
 @ce
+@rate_limit_exponential
 def profile(request):
     """
     Example URL usage:
@@ -158,6 +198,7 @@ def profile(request):
 
 
 @ce
+@rate_limit_exponential
 def TE_price(request):
     # Gets the TE MV from the database and compares it to torn MV
     # ExAmple URL usage: /api/TE_price?item_id=<ITEM_ID>
@@ -180,6 +221,7 @@ def TE_price(request):
 
 
 @ce
+@rate_limit_exponential
 def listings(request):
     """
     Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
@@ -239,6 +281,7 @@ def listings(request):
 
 
 @ce
+@rate_limit_exponential
 def best_listing(request):
     """
     Example URL usage: /api/best_listing?item_id=<ITEM_ID>
@@ -266,6 +309,7 @@ def best_listing(request):
 
 
 @ce
+@rate_limit_exponential
 def receipts(request):
     """Get all receipts for a user
 
@@ -322,6 +366,7 @@ def receipts(request):
 
 
 @ce
+@rate_limit_exponential
 def sellers(request):
     """Get all sellers (customers) for a user
 
@@ -365,6 +410,7 @@ def sellers(request):
         return je("Invalid HTTP method")
 
 @ce
+@rate_limit_exponential
 def modify_listing(request):
     if request.method == 'POST':
         try:
@@ -438,6 +484,7 @@ def modify_listing(request):
         return je("Invalid HTTP method")
 
 @ce
+@rate_limit_exponential
 def active_traders(request):
     try:
         active_traders = Profile.objects.filter(active_trader=True)
