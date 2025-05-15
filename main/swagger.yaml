@@ -2,7 +2,25 @@ openapi: 3.1.0
 info:
   title: TE API
   version: 1.0.0
-  description: API documentation for the Torn Exchange API.
+  description: |
+    API documentation for the Torn Exchange API.
+
+    **Rate Limiting:**
+
+    - Maximum **10 requests per minute** per IP.
+    - If exceeded, requests will be blocked with an exponential backoff penalty.
+    - Backoff starts at 15 seconds and doubles with each violation, capped at 48 hours.
+    - Example backoff sequence (seconds): 15, 30, 60, 120, 240, ..., up to 172800 (48 hours).
+    - Max theoretical allowed requests per day without penalty: ~14,400.
+    - If the API is continuously used at the rate limit, you may be banned permanently.
+    - Rate limit violations return HTTP 429 with JSON payload:
+      ```json
+      {
+        "status": "error",
+        "rate_limited": true,
+        "retry_after": <seconds>
+      }
+      ```
 
 paths:
   /api/status:
