@@ -1,7 +1,11 @@
 import csv
 import json
 import os
+import time
 from io import StringIO
+from functools import wraps
+
+from django.core.cache import cache
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
@@ -86,6 +90,13 @@ def rate_limit_exponential(view_func):
 
     return _wrapped_throttle
 
+def get_client_ip(request):
+    ip = (
+        request.META.get("CF-Connecting-IP")
+        or request.META.get("CF-Connecting-IPv6")
+        or request.META.get("REMOTE_ADDR")
+    )
+    return ip
 
 @ce
 @rate_limit_exponential
