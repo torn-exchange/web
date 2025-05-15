@@ -1,75 +1,69 @@
 {% extends "main/base.html" %}
 {% block content %}
 {% load static %}
-<div class='container'>
+<div class='container py-4'>
     <div class="row mt-3">
-        <div class="card col-12 col-md p-0 m-1">
-            <div class="card-header bg-dark text-white">
-                Terms of Service (TOS)
+        <div class="card col-12 col-md p-0 m-1 shadow-sm">
+            <div class="card-header bg-dark text-white py-3">
+                <h4 class="mb-0">Terms of Service (ToS)</h4>
             </div>
-            <div class="card-body">
-                <p>
+            <div class="card-body p-4">
+                <div class="alert alert-secondary mb-4">
                     <strong>Disclaimer:</strong> TornExchange.com is not affiliated with Torn City or Torn.com. We are
-                    an independent third-party tool. 
-                </p>
-                <br/>
-                <p>
-                    <strong>By using/logging into/providing your key to TornExchange.com, you agree to the Terms Of Service as outlined below.</strong>
-                </p>
-                <br/>
-                <h5>
-                    Data Storage
-                </h5>
-                <p>
+                    an independent third-party tool.
+                </div>
+
+                <div class="alert alert-primary mb-4">
+                    <strong>By using / logging into / providing your key to TornExchange.com, you agree to the Terms Of Service as outlined below.</strong>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 text-gold">Data Storage</h5>
                     Your data will be persistent - until account deletion.
-                </p>
-                <h5>
-                    Data Sharing
-                </h5>
-                <p>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 text-gold">Data Sharing</h5>
                     Your data will be viewable by users and guests of the Torn Exchange website.
-                </p>
-                <h5>
-                    Purpose of Use
-                </h5>
-                <p>
-                    Your data & API key will be used for the following purposes:
-                    <ul>
-                        <li>Ensure you are an active, real player on Torn.com</li>
-                        <li>To display your username and unique id on TornExchange.com</li>
-                        <li>To carry out item lookups on Torn.com</li>
-                        <li>To analyse the market value of items on Torn.com</li>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 text-gold">Purpose of Use</h5>
+                    <p>Your data & API key will be used for the following purposes:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Ensure you are an active, real player on Torn.com</li>
+                        <li class="list-group-item">To display your username and unique id on TornExchange.com</li>
+                        <li class="list-group-item">To carry out item lookups on Torn.com</li>
+                        <li class="list-group-item">To analyse the market value of items on Torn.com</li>
                     </ul>
-                </p>
-                <h5>
-                    Key Storage & Sharing
-                </h5>
-                <p>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 text-gold">Key Storage & Sharing</h5>
                     Your API key will be stored in a secure database. It will not be shared with any third parties
-                    without your consent.
-                </p>
-                <h5>
-                    Key Access Level
-                </h5>
-                <p>
+                        without your consent.
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 text-gold">Key Access Level</h5>
                     Limited Access
-                </p>
+                </div>
             </div>
         </div>
 
-        <div class="card col-12 col-md-3 p-0 m-1">
-            <div class="card-header bg-dark text-white">
-                Contacts
+        <div class="card col-12 col-md-3 p-0 m-1 shadow-sm">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0">Contacts</h5>
             </div>
             <div class="card-body">
-                <li>Ata [2507441]</li>
-                <li>ReConnected [1286142]</li>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">Ata [2507441]</li>
+                    <li class="mb-2">ReConnected [1286142]</li>
+                </ul>
             </div>
         </div>
     </div>
 
     {%include 'main/includes/footer.html'%}
 </div>
-
-
 {% endblock %}
