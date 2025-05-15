@@ -92,8 +92,8 @@ def rate_limit_exponential(view_func):
 
 def get_client_ip(request):
     return (
-        request.META.get("HTTP_CF_CONNECTING_IP")
-        or request.META.get("HTTP_CF_CONNECTING_IPV6")
+        request.META.get("CF_CONNECTING_IP")
+        or request.META.get("CF_CONNECTING_IPV6")
         or request.META.get("REMOTE_ADDR")
     )
 
