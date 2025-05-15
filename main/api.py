@@ -91,12 +91,11 @@ def rate_limit_exponential(view_func):
     return _wrapped_throttle
 
 def get_client_ip(request):
-    ip = (
-        request.META.get("CF-Connecting-IP")
-        or request.META.get("CF-Connecting-IPv6")
+    return (
+        request.META.get("HTTP_CF_CONNECTING_IP")
+        or request.META.get("HTTP_CF_CONNECTING_IPV6")
         or request.META.get("REMOTE_ADDR")
     )
-    return ip
 
 @ce
 @rate_limit_exponential
