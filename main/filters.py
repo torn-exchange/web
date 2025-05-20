@@ -15,6 +15,7 @@ class ListingFilter(django_filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
         data.setdefault('order', '-traders_price')
+        data.setdefault('active_traders_only', True)
         super().__init__(data, *args, **kwargs)
 
     order_by = OrderingFilter(
@@ -28,10 +29,11 @@ class ListingFilter(django_filters.FilterSet):
     )
     
     active_traders_only = django_filters.BooleanFilter(
-        label='Recently Active Traders',
-        # field_name='owner__active_trader',
+        label='Show Only Recently Active Traders',
         method='filter_active_traders',
-        widget=forms.CheckboxInput
+        widget=forms.CheckboxInput(attrs={
+            'title': 'Traders that made at least 1 trade on TE in last 30 days'
+        })
     )
     
     def filter_active_traders(self, queryset, name, value):
