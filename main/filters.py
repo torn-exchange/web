@@ -15,7 +15,6 @@ class ListingFilter(django_filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
         data.setdefault('order', '-traders_price')
-        data.setdefault('active_traders_only', True)
         super().__init__(data, *args, **kwargs)
 
     order_by = OrderingFilter(
@@ -28,12 +27,9 @@ class ListingFilter(django_filters.FilterSet):
         )
     )
     
-    def filter_active_traders(self, queryset, name, value):
-        if value:  # When checkbox is checked
-            return queryset.filter(owner__active_trader=True)
-        return queryset  # When checkbox is unchecked, return all results
-    
     def filter_queryset(self, queryset):
+        queryset = queryset.filter(owner__active_trader=True)
+        
         queryset = queryset.select_related('owner__settings', 'item')
         
         # Annotate the queryset with the computed effective_price
