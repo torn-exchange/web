@@ -28,14 +28,6 @@ class ListingFilter(django_filters.FilterSet):
         )
     )
     
-    active_traders_only = django_filters.BooleanFilter(
-        label='Show Only Recently Active Traders',
-        method='filter_active_traders',
-        widget=forms.CheckboxInput(attrs={
-            'title': 'Traders that made at least 1 trade on TE in last 30 days'
-        })
-    )
-    
     def filter_active_traders(self, queryset, name, value):
         if value:  # When checkbox is checked
             return queryset.filter(owner__active_trader=True)
