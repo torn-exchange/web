@@ -13,7 +13,7 @@ This project is only compatible with Python 3.8.10.
    ```sh
    pip install -r requirements.txt
    ```
-   **Note**: If you are running into issues with numpy & panda due to issues with working with Python 3.8.10, update the `requirements.txt` :
+   **Note**: If you are running into issues with numpy & panda due to incompatibilities with working with Python 3.8.10, update the `requirements.txt` :
 
    from
 
