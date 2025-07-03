@@ -96,7 +96,7 @@ def rw_listings(request):
 
     if not request.GET.get('order_by'):
         queryset = queryset.order_by('price')
-
+    
     myFilter = ItemVariationFilter(request.GET, queryset=queryset)
 
     try:
