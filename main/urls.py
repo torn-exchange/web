@@ -88,6 +88,7 @@ urlpatterns = [
     path('api/sellers', api.sellers, name='api_sellers'),
     path('api/modify_listing', api.modify_listing, name='modify_listing'),
     path('api/active_traders', api.active_traders, name='active_traders'),
+    path('api/price_list', api.price_list, name='price_list'),
     
     # handle api/ paths that doesn't exist
     path('api/<str:invalid_path>', api.api_404, name='api_404'),

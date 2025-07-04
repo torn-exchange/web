@@ -2,18 +2,20 @@ import csv
 import json
 import os
 import time
-from io import StringIO
+from typing import List
 from functools import wraps
 
 from django.core.cache import cache
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
+from main.te_utils import get_ordered_categories
 from .models import Item, Listing, Profile, TradeReceipt
 
 # This variable should make typing faster
@@ -90,6 +92,7 @@ def rate_limit_exponential(view_func):
 
     return _wrapped_throttle
 
+
 def get_client_ip(request):
     return (
         request.META.get("HTTP_X_FORWARDED_FOR")
@@ -97,6 +100,7 @@ def get_client_ip(request):
         or request.META.get("CF_CONNECTING_IPV6")
         or request.META.get("REMOTE_ADDR")
     )
+
 
 @ce
 @rate_limit_exponential
@@ -113,7 +117,6 @@ def js(data, meta=None):
 def je(message):
     return JsonResponse({"status": "error", "message": message})
 
-### API functions ###
 
 @ce
 def swag_yaml(request):
@@ -132,6 +135,9 @@ def swag_yaml(request):
 
 def api_home(request):
     return render(request, 'swagger.html')
+
+
+### API functions ###
 
 
 @ce
@@ -421,6 +427,7 @@ def sellers(request):
     else:
         return je("Invalid HTTP method")
 
+
 @ce
 @rate_limit_exponential
 def modify_listing(request):
@@ -495,6 +502,7 @@ def modify_listing(request):
     else:
         return je("Invalid HTTP method")
 
+
 @ce
 @rate_limit_exponential
 def active_traders(request):
@@ -524,3 +532,78 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
+
+
+@ce
+@rate_limit_exponential
+def price_list(request):
+    """
+    Get trader's full price list
+    Example URL usage: /api/price_list?user_id=<TORN_ID>
+    """
+    if request.method == 'GET':
+        try:
+            user_id = request.GET.get('user_id')
+            if not user_id:
+                return je("Missing required parameter: user_id")
+            
+            pricelist_profile = (
+            Profile.objects.select_related('settings')
+                .filter(Q(torn_id=user_id) | Q(name__iexact=user_id))
+                .order_by('-created_at')
+                .first()
+            )
+            if not pricelist_profile:
+                return je("Profile not found")
+            
+            all_relevant_items = Listing.objects.filter(
+                owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
+
+            distinct_categories: List[str] = list(
+                all_relevant_items.values_list('item__item_type', flat=True)
+                .distinct()
+                .order_by('item__item_type')
+            )
+            
+            item_types = get_ordered_categories(distinct_categories, pricelist_profile.hidden_categories, pricelist_profile.order_categories)
+            
+            print("Item types:", item_types)
+            return je("error")
+            price_list = {
+                "categories": [],
+            }
+            
+            for itype in item_types:
+                print(itype)
+                category = {
+                    "name": itype['name'],
+                    "order": itype['order'],
+                    "items": [],
+                }
+                
+                price_list["categories"].append(category)
+                
+                # traders_items['items'] = [
+                #     {
+                #         "name": item.item.name,
+                #         "item_id": item.item.item_id,
+                #         "price": item.effective_price,
+                #     }
+                #     for item in all_relevant_items if item.item.item_type == itype['name']
+                # ]
+            
+            data = {
+                "items": list(price_list)
+            }
+            
+            meta = {
+                "trader": pricelist_profile.name,
+                "torn_id": pricelist_profile.torn_id,
+            }
+
+            return js(data, meta)
+        except Exception as E:
+            print("Error in price_list:", E)
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")

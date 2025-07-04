@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F, Q, Prefetch, Max, OuterRef, Subquery
+from django.db.models import F, Q, Prefetch
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -79,6 +79,7 @@ def about(request):
     
     return render(request, 'main/about.html', context)
 
+
 def rw_listings(request):
     item_bonus_title_1 = request.GET.get('item_bonus_title_1', None)
     item_bonus_title_2 = request.GET.get('item_bonus_title_2', None)
@@ -133,6 +134,7 @@ def rw_listings(request):
     }
 
     return render(request, 'main/rw_listings.html', context)
+
 
 def listings(request):
     queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
@@ -1479,6 +1481,7 @@ def save_category_order(request):
 
 def tos(request):
     return render(request, 'main/tos.html')
+
 
 def sitemap(request):
     links = [
