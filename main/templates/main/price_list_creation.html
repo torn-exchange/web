@@ -82,6 +82,17 @@
                     <button type="button" class="btn btn-success auto_fill_button">Fill</button>
 
                 </div>
+                <br>
+                <label for="auto-fill-all-enabled">Auto-fill Enabled profit margins % </label>
+                <div class='input-group M-1'>
+                    <div class="popup">
+                        <input type="text" class="form-control price-edit" id="auto-fill-all-enabled" placeholder="0%"
+                               name="auto_fill"
+                               oninput="validateNumber(this);"/>
+                    </div>
+                    <button type="button" class="btn btn-success auto_fill__enabled_button">Fill</button>
+
+                </div>
             </div>
             <div class="offset-2 col-4 text-center justify-content-center">
                 <p>
@@ -280,6 +291,15 @@
         $("input[name*='discount']").val(val);
         $("input[name*='discount']").val(val).change();
       });
+
+    
+    $(".auto_fill__enabled_button").click(function(event) {
+        event.preventDefault();
+        var val = $('#auto-fill-all-enabled').val();
+        $('.page-wrap > .container > .row:last-of-type input').not('[value=""]').each(function() {
+            $(this).val(val).change(); // Update the value and trigger the change event
+        });
+    });
 
       $('#mark_all_delete').click(function () {
         if ($(this).is(':checked')) {

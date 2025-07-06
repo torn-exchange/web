@@ -127,7 +127,7 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         # the name of the depends_on value from docker-compose.yml
         'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': '5432' if DEBUG else '6432',  # PgBouncer port
+        'PORT': os.getenv('POSTGRES_PORT'),  # PgBouncer port
         'CONN_MAX_AGE': 0  # Required for connection pooling
     }
 }
