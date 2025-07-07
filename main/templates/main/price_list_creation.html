@@ -161,6 +161,16 @@
                                                 Fill
                                             </button>
                                         </div>
+
+                                        <label for="auto-fill-enabled-category">Auto-fill profit margin for category (%)</label>
+                                        <div class='input-group m-1'>
+                                            <input type="text" class="form-control price-edit auto-fill-enabled-category"
+                                                   placeholder="0%"
+                                                   name="auto_fill_category" oninput="validateNumber(this);"/>
+                                            <button type="button" class="btn btn-success auto_fill_enabled_category_button">
+                                                Fill
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="col-3 text-center">
                                         {% if type == 'Plushie' or type == 'Flower' %}
@@ -322,6 +332,13 @@
         var val = parent.find('.auto-fill-category').val();
         parent.find("input[name*='discount']").val(val);
         parent.find("input[name*='discount']").change();
+      });
+
+      $(".auto_fill_enabled_category_button").click(function () {
+        var parent = $(this).closest('.collapse');
+        var val = parent.find('.auto-fill-enabled-category').val();
+        parent.find("input[name*='discount']").not('[value=""]').val(val);
+        parent.find("input[name*='discount']").not('[value=""]').change();
       });
 
       function isNumber(evt) {
