@@ -336,8 +336,8 @@
       $(".auto_fill_enabled_category_button").click(function () {
         var parent = $(this).closest('.collapse');
         var val = parent.find('.auto-fill-enabled-category').val();
-        parent.find("input[name*='discount']").not('[value=""]').not('[class*="auto"]').val(val);
-        parent.find("input[name*='discount']").not('[value=""]').not('[class*="auto"]').change();
+        parent.find("input[name*='discount']").not('[value=""]').val(val);
+        parent.find("input[name*='discount']").not('[value=""]').change();
       });
 
       function isNumber(evt) {
