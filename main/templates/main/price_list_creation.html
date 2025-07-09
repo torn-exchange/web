@@ -83,7 +83,7 @@
 
                 </div>
                 <br>
-                <label for="auto-fill-all-enabled">Auto-fill Enabled profit margins % </label>
+                <label for="auto-fill-all-enabled">Auto-fill enabled profit margins % </label>
                 <div class='input-group M-1'>
                     <div class="popup">
                         <input type="text" class="form-control price-edit" id="auto-fill-all-enabled" placeholder="0%"
@@ -162,7 +162,7 @@
                                             </button>
                                         </div>
 
-                                        <label for="auto-fill-enabled-category">Auto-fill profit margin for category (%)</label>
+                                        <label for="auto-fill-enabled-category">Auto-fill enabled profit margins for category (%)</label>
                                         <div class='input-group m-1'>
                                             <input type="text" class="form-control price-edit auto-fill-enabled-category"
                                                    placeholder="0%"
@@ -306,9 +306,8 @@
     $(".auto_fill__enabled_button").click(function(event) {
         event.preventDefault();
         var val = $('#auto-fill-all-enabled').val();
-        $('.page-wrap > .container > .row:last-of-type input').not('[value=""]').each(function() {
-            $(this).val(val).change(); // Update the value and trigger the change event
-        });
+        $("input[name*='discount']").not('[value=""]').val(val);
+        $("input[name*='discount']").not('[value=""]').change();
     });
 
       $('#mark_all_delete').click(function () {
