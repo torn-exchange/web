@@ -296,28 +296,69 @@ def listings(request):
 @rate_limit_exponential
 def best_listing(request):
     """
-    Example URL usage: /api/best_listing?item_id=<ITEM_ID>
+    Returns the best (lowest price) listing for a given item or a list of items.
+    Example: /api/best_listing?item_id=<IT
+  /api/best_listing:EM_ID>
+    Or multiple items: /api/best_listing?item_id=<ITEM_ID_1>,<ITEM_ID_2>,<ITEM_ID_3>
+
+    Maximum allowed items is 10 per request.
+    If more than 10 items are requested, it will return an error.
     """
-    if request.method == 'GET':
-        try:
-            item_id = request.GET.get('item_id')
-            item = get_object_or_404(Item, item_id=item_id)
-
-            listing = Listing.objects.filter(item=item).order_by('price').first()
-
-            if listing:
-                return js({
-                        "item": item.name,
-                        "trader": listing.owner.name,
-                        "price": listing.effective_price,
-                    })
-            else:
-                return je("No listings found for the specified item")
-            
-        except Exception as E:
-            return je("Invalid request parameters")
-    else:
+    
+    if request.method != 'GET':
         return je("Invalid HTTP method")
+    
+    item_ids = request.GET.get('item_id')
+    if not item_ids:
+        return je("Missing item_id parameter")
+    
+    item_ids = item_ids.split(',')
+    
+    # Validate the number of items requested (max 10)
+    if len(item_ids) > 10:
+        return je("Cannot request more than 10 items at once.")
+    
+    # Store best listings in an array
+    best_listings = [] # well in python its technically a list.
+    
+    def fetch_listing_for_item(item_id):
+        """
+        Helper function to fetch the best listing for a specific item.
+        """
+        try:
+            item = get_object_or_404(Item, item_id=item_id)
+            listing = (
+                Listing.objects
+                .filter(item=item, hidden=False)
+                .order_by('price')
+                .select_related('owner')
+                .first()
+            )
+            
+            if not listing:
+                return {
+                    "item": item.name,
+                    "message": "No listings found"
+                }
+            else:
+                return {
+                    "item": item.name,
+                    "trader": listing.owner.name,
+                    "price": listing.effective_price,
+                }
+        except Exception as e:
+            print(e)
+            return {
+                "item": item_id,
+                "message": "Invalid request parameters"
+            }
+    
+    # Loop through the item_ids and fetch the best listing for each item
+    for item_id in item_ids:
+        best_listing = fetch_listing_for_item(item_id)
+        best_listings.append(best_listing)
+    
+    return js({"best_listings": best_listings})
 
 
 @ce
