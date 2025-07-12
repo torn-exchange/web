@@ -163,6 +163,10 @@ paths:
   /api/best_listing:
     get:
       summary: Best item listing
+      description: |
+        This endpoint retrieves the best listing for a specific item based on the provided item ID.
+        The best listing is determined by the lowest price available.
+        (for multiple items, separate with commas)
       parameters:
         - name: item_id
           in: query
