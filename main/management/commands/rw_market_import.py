@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
     def map_item(self, item_data, item):
         bonuses = []
-        for bonus in item_data['itemDetails']['bonuses']:
+        for bonus in item_data['item_details']['bonuses']:
             print(bonus)
             db_bonus = ItemBonus.objects.filter(title=bonus['title']).first()
 
@@ -75,12 +75,12 @@ class Command(BaseCommand):
 
         return {
             'item_id': item.item_id,
-            'uid': item_data['itemDetails']['uid'],
+            'uid': item_data['item_details']['uid'],
             'price': item_data['price'],
-            'accuracy': item_data['itemDetails']['stats']['accuracy'],
-            'damage': item_data['itemDetails']['stats']['damage'],
-            'quality': item_data['itemDetails']['stats']['quality'],
-            'rarity': item_data['itemDetails']['rarity'],
+            'accuracy': item_data['item_details']['stats']['accuracy'],
+            'damage': item_data['item_details']['stats']['damage'],
+            'quality': item_data['item_details']['stats']['quality'],
+            'rarity': item_data['item_details']['rarity'],
             'bonuses': bonuses
         }
 
