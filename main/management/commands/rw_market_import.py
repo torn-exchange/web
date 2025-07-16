@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         self.api_item_data.append(response['itemmarket']['listings'])
 
-        nextPage = response['_metadata']['next']
+        nextPage = response['_metadata']['links']['next']
         if nextPage is None:
             print("No more pages")
         else:
