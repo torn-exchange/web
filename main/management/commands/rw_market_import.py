@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         self.api_item_data.append(response['itemmarket']['listings'])
 
-        nextPage = response['_metadata']['next']
+        nextPage = response['_metadata']['links']['next']
         if nextPage is None:
             print("No more pages")
         else:
@@ -68,9 +68,9 @@ class Command(BaseCommand):
 
             bonuses.append({
                 'value': bonus['value'],
-                'type': 'tick' if 'Disarm' in db_bonus.title else 'percentage',
+                'type': 'tick' if db_bonus and 'Disarm' in db_bonus.title else 'percentage',
                 'description': bonus['description'],
-                'bonus_id': db_bonus.id
+                'bonus_id': db_bonus.id if db_bonus else None
             })
 
         return {
