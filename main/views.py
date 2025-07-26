@@ -850,6 +850,11 @@ def all_sellers(request: HttpRequest):
 
 @login_required
 def all_trades(request):
+    context = {
+            'error_message': f'This page is temporarily disabled.'
+        }
+    return render(request, 'main/error.html', context)
+
     profile = Profile.objects.filter(user=request.user).get()
     context = return_profile_stats(profile)
     try:
