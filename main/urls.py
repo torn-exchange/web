@@ -52,6 +52,7 @@ urlpatterns = [
     path('analytics/', views.analytics, name='analytics'),
     path('analytics/all_sellers/', views.all_sellers, name='all_sellers'),
     path('analytics/all_trades/', views.all_trades, name='all_trades'),
+    path('analytics/mobile_all_trades/', views.mobile_all_trades, name='mobile_receipts'),
     path('delete_receipt/<str:receipt_id>/',
          views.delete_receipt_from_profile, name='delete_receipt'),
     path('about/', views.about, name='about'),

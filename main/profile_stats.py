@@ -21,7 +21,7 @@ def data_graph_1(df_data_receipts):
 
 def data_graph_2(df_data_trades):
     try:
-        summary = df_data_trades.groupby("created_at").sum()
+        summary = df_data_trades.groupby("created_at").sum(numeric_only=True)
         data = [{
             'x': item.name,
             'y': item.profit} for i, item in summary.iterrows()]
