@@ -850,20 +850,24 @@ def all_sellers(request: HttpRequest):
 
 @login_required
 def all_trades(request):
-    context = {
-            'error_message': f'This page is temporarily disabled.'
-        }
-    return render(request, 'main/error.html', context)
-
     profile = Profile.objects.filter(user=request.user).get()
-    context = return_profile_stats(profile)
+    cache_key = f"profile_stats_{profile.id}"
+    context = cache.get(cache_key)
+    
+    if not context:
+        print("NEW DATA")
+        context = return_profile_stats(profile)
+        cache.set(cache_key, context, 60 * 5)  # cache for 5 minutes
+    else:
+        print("CACHED DATA")
+    
     try:
         user_settings = Settings.objects.filter(owner=profile).get()
     except:
         user_settings = None
         
     # set pagination for trades
-    paginator = Paginator(context["receipts"], 50)
+    paginator = Paginator(context["receipts"], 20)
     page = request.GET.get('page')
     results = paginator.get_page(page)
         
@@ -874,6 +878,29 @@ def all_trades(request):
     })
     
     return render(request, 'main/all_receipts.html', context)
+
+
+@login_required
+def mobile_all_trades(request):
+    profile = Profile.objects.filter(user=request.user).get()
+    context = return_profile_stats(profile)
+    try:
+        user_settings = Settings.objects.filter(owner=profile).get()
+    except:
+        user_settings = None
+        
+    # set pagination for trades
+    paginator = Paginator(context["receipts"], 20)
+    page = request.GET.get('page')
+    results = paginator.get_page(page)
+        
+    context.update({
+        'user_settings': user_settings,
+        'receipts': results,
+        'listings': results # for pagination
+    })
+    
+    return render(request, 'main/mobile/mobile_all_receipts.html', context)
 
 
 @csrf_protect
