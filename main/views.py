@@ -24,8 +24,8 @@ from django.views.decorators.http import require_POST
 from hitcount.models import HitCount
 from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
-from main.model_utils import (get_all_time_leaderboard, get_active_traders, get_changelog,
-                              get_most_trades)
+from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, get_changelog,
+                              get_most_trades, get_active_traders_count)
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
@@ -44,7 +44,7 @@ def homepage(request):
     else:
         # Compute the data if not available in the cache
         all_time_traders = get_all_time_leaderboard()
-        active_traders = get_active_traders()
+        active_traders = get_top_active_traders()
         most_receipts = get_most_trades()
         created_today, changes_this_week, changes_this_month = get_changelog()
         
@@ -78,6 +78,7 @@ def about(request):
     }
     
     return render(request, 'main/about.html', context)
+
 
 def rw_listings(request):
     item_bonus_title_1 = request.GET.get('item_bonus_title_1', None)
@@ -134,49 +135,68 @@ def rw_listings(request):
 
     return render(request, 'main/rw_listings.html', context)
 
+
 def listings(request):
-    queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
-    myFilter = ListingFilter(request.GET, queryset=queryset)
+    # Convert to a dictionary for easier inspection
+    param_keys = list(request.GET.keys())
+    
+    # preventing scripters to run through thousands of pages
+    if param_keys == ['page']:
+        context = {
+            'error_message': f'Browsing only by page parameter is not allowed anymore.'
+        }
+        return render(request, 'main/error.html', context)
+    
+    # logic for Listings "homepage"
+    if not request.GET:
+        context = {
+            'page_title': 'Search Traders - Torn Exchange',
+            'active_traders': get_active_traders_count(),
+            'myFilter': ListingFilter(request.GET, queryset=Listing.objects.none()),
+        }
 
-    try:
-        query_set = myFilter.qs
-        
-        query_set = query_set.exclude(hidden=True)
-        
-        # exclude Listings where price is None or 0
-        query_set = query_set.exclude(traders_price__isnull=True)
-        number_of_items = query_set.count()
+        return render(request, 'main/listings_home.html', context)
+    else:
+        queryset = Listing.objects.all().select_related('owner', 'item').order_by('-last_updated')
+        myFilter = ListingFilter(request.GET, queryset=queryset)
 
-        # Attempt to get the user's profile
-        if request.user.is_authenticated:
-            profile = Profile.objects.filter(user=request.user).get()
-            user_settings = Settings.objects.filter(owner=profile).get()
-        else:
-            user_settings = None
+        try:
+            query_set = myFilter.qs
+            query_set = query_set.exclude(hidden=True)
+            
+            # exclude Listings where price is None or 0
+            query_set = query_set.exclude(traders_price__isnull=True)
+            number_of_items = query_set.count()
+
+            # Attempt to get the user's profile
+            if request.user.is_authenticated:
+                profile = Profile.objects.filter(user=request.user).get()
+                user_settings = Settings.objects.filter(owner=profile).get()
+            else:
+                user_settings = None
+                profile = None
+
+            paginator = Paginator(query_set, 20)
+            page = request.GET.get('page')
+            results = paginator.get_page(page)
+        except Exception as e:
+            log_error(e)
             profile = None
+            user_settings = None
+            results = None
+            page = None
+            number_of_items = 0
 
-        paginator = Paginator(query_set, 20)
-        page = request.GET.get('page')
-        results = paginator.get_page(page)
+        context = {
+            'page_title': 'Search Traders - Torn Exchange',
+            'user_settings': user_settings,
+            'listings': results,
+            'user_profile': profile,
+            'myFilter': myFilter,
+            'number_of_items': number_of_items,
+        }
 
-    except Exception as e:
-        log_error(e)
-        profile = None
-        user_settings = None
-        results = None
-        page = None
-        number_of_items = None
-
-    context = {
-        'page_title': 'Search Traders - Torn Exchange',
-        'user_settings': user_settings,
-        'listings': results,
-        'user_profile': profile,
-        'myFilter': myFilter,
-        'number_of_items': number_of_items,
-    }
-
-    return render(request, 'main/listings.html', context)
+        return render(request, 'main/listings.html', context)
 
 
 def search_services(request: HttpRequest):
@@ -858,8 +878,6 @@ def all_trades(request):
         print("NEW DATA")
         context = return_profile_stats(profile)
         cache.set(cache_key, context, 60 * 5)  # cache for 5 minutes
-    else:
-        print("CACHED DATA")
     
     try:
         user_settings = Settings.objects.filter(owner=profile).get()

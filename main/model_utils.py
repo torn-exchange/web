@@ -9,8 +9,11 @@ from typing import Tuple
 def get_all_time_leaderboard() -> QuerySet:
     return Profile.objects.order_by('-vote_score')[:50]
 
-def get_active_traders() -> QuerySet:
+def get_top_active_traders() -> QuerySet:
     return Profile.objects.filter(active_trader=True).order_by('-vote_score')[:30]
+
+def get_active_traders_count() -> int:
+    return Profile.objects.filter(active_trader=True).count()
 
 def get_most_trades() -> QuerySet:
     one_month_ago = timezone.now() - timedelta(days=30)

@@ -1,11 +1,12 @@
 from django import forms
 import django_filters
 
-from main.te_utils import service_categories, service_names
+from main.te_utils import service_names
 
-from .models import Listing, Company, Services, Item, ItemVariation, ItemVariationBonuses, ItemBonus
+from .models import Listing, Company, Item, ItemVariation, ItemBonus
 from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter
 from django_filters.widgets import RangeWidget
+from django.utils.safestring import mark_safe
 
 from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
 from django.db.models.functions import Cast, Coalesce, Least, Round
@@ -18,7 +19,7 @@ class ListingFilter(django_filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
     order_by = OrderingFilter(
-        label='Sort By', 
+        label=mark_safe('<i class="fa fa-search"></i> Sorty By'), 
         choices=(
             ('-traders_price', 'Price (Highest to Lowest)'),
             ('traders_price', 'Price (Lowest to Highest)'),
@@ -98,9 +99,9 @@ class ListingFilter(django_filters.FilterSet):
         ('Offline', 'Offline'),
     )
     model_name_contains = CharFilter(
-        label='Item Name', field_name='item__name', lookup_expr='icontains')
+        label=mark_safe('<i class="fa fa-search"></i> Item Name'), field_name='item__name', lookup_expr='icontains')
     status = TypedChoiceFilter(
-        label='Status', field_name='owner__activity_status', choices=status_choices)
+        label=mark_safe('<i class="fa fa-info-circle"></i> Status'), field_name='owner__activity_status', choices=status_choices)
 
     class Meta:
         model = Listing
