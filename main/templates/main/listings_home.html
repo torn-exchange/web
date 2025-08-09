@@ -1,0 +1,62 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+    {% load crispy_forms_tags %}
+    {% load humanize %}
+    {% load custom_tags %}
+    {% load static %}
+    <div class="container">
+        <div class="row pb-3">
+            <div class="col-12 text-center">
+                <h3>Item Listings</h3>
+                {# @TODO use popovers/tooltips for this text #}
+                <p>
+                    Here are all of the items that traders in Torn Exchange are buying. If you are a seller, filter the
+                    search by item name, price or rating, to find the best deal for you!
+                </p>
+                <p>
+                    All listings are only from active traders. 
+                    An active trader is a player who made at least one trade receipt in the last 30 days on Torn Exchange.
+                </p>
+            </div>
+        </div>
+
+        <div class="row pb-3">
+            <div class="col-12 text-center">
+                <p>Number of traders to choose from: <strong>{{ active_traders }}</strong></p>
+            </div>
+        </div>
+
+        <div class="row">
+           <div class="col-12 col-md-8 offset-md-2">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Find Item Listings</h5>
+                    <form method="GET">
+                        <div class="mb-3">
+                            {{ myFilter.form.model_name_contains|as_crispy_field }}
+                        </div>
+                        <div class="mb-3">
+                            {{ myFilter.form.order_by|as_crispy_field }}
+                        </div>
+                        <div class="mb-3">
+                            {{ myFilter.form.status|as_crispy_field }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg" type="submit">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Footer -->
+        {% include 'main/includes/footer.html' %}
+    </div>
+
+    <script type="text/javascript" src="{% static 'main/js/view_utilities.js' %}"></script>
+
+{% endblock %}
