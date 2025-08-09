@@ -1,0 +1,56 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+<div class='container'>
+    <div class="row mt-3">
+        <div class="card col-12 col-md p-0 m-1">
+            <div class="card-header bg-dark text-white">
+                Contact Us
+            </div>
+            <div class="card-body">
+                <p class='mt-3'>
+                <p>
+                    Torn Exchange was originally developed by HypoChris [2500210] so as to combine trading tools with a
+                    sense of the greater trading community.
+                </p>
+                <p>
+                    In December 2023 it was aquired by Ata [2507441] to continue Chris' great legacy.
+                </p>
+                <p>
+                    TE is being actively developed and maintained by Ata [2507441] and the Torn Exchange team and has 
+                    become the predominant trading tool for most traders in Torn City.
+                </p>
+                <p>
+                    Contact us if you have any questions or comments:
+                </p>
+                <p>
+                <div class="row">
+                    <div class="col">
+                        Developer: <a href='https://www.torn.com/profiles.php?XID=2507441'> <strong>Ata
+                                [2507441]</strong></a>
+                    </div>
+                </div>
+                </p>
+                </p>
+            </div>
+        </div>
+
+        <div class="card col-12 col-md-3 p-0 m-1">
+            <div class="card-header bg-dark text-white">
+                Acknowledgements
+            </div>
+            <div class="card-body">
+                <li>HypoChris [2500210]</li>
+                <li>MCSH [2855875]</li>
+                <li>seintz [2460991]</li>
+                <li>ReConnected [1286142]</li>
+                <li>Glasnost [1844049]</li>
+            </div>
+        </div>
+    </div>
+
+    {%include 'main/includes/footer.html'%}
+</div>
+
+
+{% endblock %}

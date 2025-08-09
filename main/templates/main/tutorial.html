@@ -1,0 +1,14 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+{% load humanize %}
+{% load custom_tags %}
+
+<div class='container'>
+    <div class="col-12">
+        {{ html_content | safe }}
+    </div>
+
+</div>
+
+{%endblock%}

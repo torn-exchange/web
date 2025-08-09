@@ -1,0 +1,31 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+
+<div class="container mt-4">
+    <h1 class="mb-4">Site Map</h1>
+    
+    <div class="row">
+        {% for section in links %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    {{ section.category }}
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for link in section.urls %}
+                        <li class="mb-2">
+                            <a href="{{ link.url }}" class="text-decoration-none">
+                                {{ link.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

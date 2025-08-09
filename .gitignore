@@ -1,0 +1,19 @@
+# dot files and folders
+.venv/
+.vscode/
+.env
+
+# specific files
+update.txt
+notes.md
+505.log
+
+# specific folders
+/static/
+/crons
+cache/
+
+# all folders named as
+__pycache__/
+
+.idea/

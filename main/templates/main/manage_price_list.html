@@ -1,0 +1,247 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+
+<div class='container'>
+    <h2 class="text-center mt-3 allerta-font p-2">Price List Management</h2>
+
+    <!-- PAGE DESCRIPTION -->
+    <div class="row">
+        <div class="text-center col-12">
+          <a class='btn btn-warning' href="{% url 'price_list' %}"><i class="fa-solid fa-user-tie"></i> My Price List</a>
+          <a class='btn btn-warning' href="{% url 'edit_price_list' %}"><i class="fa-solid fa-receipt"></i> Edit Prices</a>
+        </div>
+      </div>
+
+    
+      <div class="row mt-3 mb-3">
+        <div class="col-12">
+            <hr>
+        </div>
+    </div>
+
+    <form id='management_form' method="post">
+        {% csrf_token %}
+        <button class='btn btn-info float-right m-2 ml-4 d-lg-block' type="submit" style="margin-top: 20px;"
+            id="submit-management"> Submit </button>
+
+        <div class="row">
+            <div class='card col-12 m-2 p-0'>
+                <div class='card-header text-center font-weight-bold m-0'>
+                    General - <span style="color:red"><b>Coming Soon</b></span>
+                </div>
+
+                <div class='card-body m-0 p-0'>
+
+                    <div class="form-group row m-2">
+                        <div class="col-12 col-md-2">
+                            Title
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <input type="text" class="form-control" value="{{ owner_profile.name }}'s Price List" disabled> 
+                        </div>
+                    </div>
+
+                    <div class="form-group row m-2">
+                        <div class="col-12 col-md-2">
+                            Description
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <textarea class="form-control" rows="3" disabled>{{ owner_profile.settings.trade_list_description }}</textarea>
+                        </div>
+                    </div>
+
+                   <div class="form-group row m-2">
+                    <div class="col-12 col-md-2">
+                        Trade message
+                    </div>
+                    <div class="col-12 col-md-10">
+                        <textarea class="form-control" rows="3" disabled>{{ owner_profile.settings.receipt_paste_text }}</textarea>
+                    </div>
+                </div>
+
+                    <!-- Rounding Row -->
+                    <div class="form-group row m-2">
+                        <div class="col-12">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="roundingCheck" disabled>
+                                <label class="custom-control-label" for="roundingCheck">Enable price rounding</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enable Sets Row -->
+                    <div class="form-group row m-2">
+                        <div class="col-12">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="setsCheck" {% if owner_profile.settings.trade_enable_sets %}checked{% endif %} disabled>
+                                <label class="custom-control-label" for="setsCheck">Enable sets</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Choose Fees Row -->
+                    <div class="form-group row m-2">
+                        <div class="col-12 col-md-2">
+                            Item Market Fee
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <select class="form-control" id="globalFee" name="trade_global_fee">
+                                {% for value, label in owner_profile.settings.FEES_CHOICES %}
+                                    <option value="{{ value }}" {% if value == owner_profile.settings.trade_global_fee %}selected{% endif %}>
+                                        {{ label }}%
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-info">If you mean to sell on Item Market, it is strongly recommended to add this fee,
+                                otherwise you risk a net loss. This fee will be added to all items that you set a profit margin on.
+                                Listings with fixed price will not be affected. The pseudo-formula: <code>TE_price - (profit_margin + market_fee)%</code>
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class='card col-12 m-2 p-0'>
+                <div class='card-header text-center font-weight-bold m-0'>
+                    Categories: Sorting and visibility
+                </div>
+
+                <div class='card-body m-3 p-0 pb-2'>
+                    <div class="alert alert-primary" role="alert">
+                        <i class="fas fa-grip-lines"></i> Drag to reorder categories
+                        <span class="mx-3">|</span>
+                        <i class="fas fa-toggle-on"></i> Toggle switch to show/hide categories
+                    </div>
+
+                    <div class="alert alert-warning" role="alert">
+                        <span><i class="fas fa-circle-info"></i> Every action is saved immediately!</span>
+                    </div>
+                    <hr>
+                    <ul id="sortable" class="list-unstyled">
+                        {% for category in categories %}
+                        <li data-category="{{ category }}" class="d-flex align-items-center">
+                            <i class="fas fa-grip-lines handle me-3" style="cursor: move;"></i>
+                            <div class="custom-control custom-switch">
+                                <input id="checkbox" type="checkbox" class="custom-control-input toggle-category";
+                                    id="hide_{{ category }}" name="hide_{{ category }}" data-category="{{ category }}"
+                                    {% if category not in hidden_categories %}checked{% endif %}>
+                                <label class="custom-control-label" for="hide_{{ category }}">
+                                    {{ category }}
+                                </label>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div id="spinner" class="d-none">
+                <div class="position-fixed w-100 h-100 d-flex justify-content-center align-items-center" style="top: 0; left: 0; background: rgba(0,0,0,0.3); z-index: 9999;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div>
+</form>
+
+<!-- SCRIPTS -->
+<script rel="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script rel="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script rel="text/javascript" type="text/javascript">
+    function toggleSpinner(show) {
+        $('#spinner').toggleClass('d-none', !show);
+    }
+
+    $(document).ready(function () {
+        $('.toggle-category').change(function () {
+            toggleSpinner(true);
+            const category = $(this).data('category');
+            const isChecked = $(this).is(':checked');
+            const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+            $.ajax({
+                url: "{% url 'toggle_category_visibility' %}",
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                contentType: 'application/json',
+                data: JSON.stringify({ category: category, is_checked: isChecked }),
+                complete: function() {
+                    toggleSpinner(false);
+                },
+                success: function (data) {
+                    if (data.success) {
+                        console.log(`Category ${category} visibility toggled.`);
+                    } else {
+                        console.error(`Failed to toggle visibility for category ${category}.`);
+                    }
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        $("#sortable").sortable({
+            handle: ".handle",
+            cursor: "move",
+            tolerance: "pointer",
+            delay: 150,  // Delay before drag starts on mobile
+            distance: 10,  // Minimum distance to start drag
+            scrollSpeed: 20,  // Scrolling speed when near viewport edge
+            scroll: true,
+            scrollSensitivity: 30,
+            // Add touch specifics
+            touchAction: "none",
+            update: function (event, ui) {
+                toggleSpinner(true);
+                var order = $(this).sortable('toArray', { attribute: 'data-category' });
+                console.log(order);
+                var csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+                $.ajax({
+                    url: "{% url 'save_category_order' %}",
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    contentType: 'application/json',
+                    data: JSON.stringify({ order: order }),
+                    complete: function() {
+                        toggleSpinner(false);
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            console.log('Category order saved.');
+                        } else {
+                            console.error('Failed to save category order.');
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+        $("#sortable").disableSelection();
+
+        // specific touch handling for drag handles
+        $('.handle').on('touchstart', function(e) {
+            if ($(e.target).hasClass('handle')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+
+{% endblock %}

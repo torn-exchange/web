@@ -1,0 +1,161 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+{% load static %}
+<div class='container' id='main-container'>
+    {% if owner_profile.torn_id == user_profile.torn_id %}
+        {% if user_settings.tutorial == True%}
+        <!-- TUTORIAL -->
+        <div class="card small mt-3">
+            <div class="card-header p-0 m-0">
+                <h5 class='text-center card-header'>
+                    Tutorial: Welcome to your Custom Services price list
+                </h5>
+            </div>
+            <div class="card-body m-0 p-1">
+                <ul>
+                    <li>
+                        On this page you advertise custom services that you provide. If there is no appropriate service for what you provide,
+                        please join us on our Discord server and let us know. More on the <a href="{% url 'settings' %}">About page</a>.
+                    </li>
+                    <li>
+                        Set your prices by clicking on the 'Edit Services' button.
+                    </li>
+                    <li>
+                        Once your services have been set, you can share the URL of this page to other Torn players, and they
+                        will be able to view your prices and connect with you.
+                    </li>
+                    <li>
+                        You can customise the message displayed in the textbox at
+                        the top of your price list by visiting your <a href="{% url 'settings' %}">Settings page</a>.
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer p-0 pb-1">
+                <small>To turn off help messages go to your <a
+                        href="{% url 'settings' %}">Settings</a>.</small>
+
+            </div>
+        </div>
+
+        {% endif %}
+    {% endif %}
+
+    <br>
+
+    {%include 'main/includes/profile_card.html'%}
+</div>
+
+<div class="container">
+    <br />
+    <div class='row'>
+        {% for itype in distinct_categories %}
+
+            {% if forloop.counter0|divisibleby:4 %}
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- TE-SquareAds -->
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5083091252165465"
+                    data-ad-slot="4187308828" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            {% endif %}
+            <div class="col-sm-12 col-md-6 col-lg-6 mb-1">
+                <div class='card'>
+                    <div class="card-header bg-dark mb-0 pb-0 p-1 text-center">
+                        <h5 class="text-white allerta-font ">
+                            {{itype}}
+                        </h5>
+                    </div>
+                    <table class="table table-hover table-sm table-responsive">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;" scope="col" class="p-0 m-0">Name</th>
+                                <th style="width: 15%;" scope="col" class="p-0 m-0">Price in cash</th>
+                                <th style="width: 15%;" scope="col" class="p-0 m-0">Price in items</th>
+                                <th style="width: 40%;" scope="col" class="p-0 m-0">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="my_tbody">
+                            {%for service in services%}
+                            {% if service.service.category == itype%}
+                            <tr class="row-striped p-0 w-100">
+                                </td>
+                                <td style="width: 30%;" class="m-0">{{service.service.name}}</td>
+                                <td style="width: 15%;" class="m-0">{{service.money_price|sanitize_number}}</td>
+                                <td style="width: 15%;" class="m-0">{{service.barter_price|sanitize_string}}</td>
+                                <td style="width: 40%;" class="m-0">{{service.offer_description|sanitize_string}}</td>
+                            </tr>
+                            {% endif%}
+                            {%endfor%}
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    const show_message = function(type, message) {
+        $('.alert-success').remove()
+        $('.alert-warning').remove()
+
+        $('#main-container').prepend(
+            `<div class="alert alert-` + type + `">` + message + `</div>`
+        );
+    }
+
+    const vote = function(direction) {
+        var voter_username = '{{user.profile.name}}'
+        var owner_username = '{{owner_profile.name}}'
+        $.ajax({
+            type: 'POST',
+            url: '{% url "vote_view" %}',
+            data: {
+                'direction': direction,
+                'owner_username': owner_username,
+                'voter_username': voter_username,
+                csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+            },
+            success: function (json) {
+                $('#vote-score').empty()
+                $('#vote-score').html('' + json.vote_score + '')
+                $('#vote-count').empty()
+                if (json.vote_count == 1) {
+                    $('#vote-count').html('' + json.vote_count + ' vote')
+                }
+                else {
+                    $('#vote-count').html('' + json.vote_count + ' votes')
+                }
+
+                show_message("success", "Voted!");
+            },
+            error: function (json) {
+                const e = json.responseJSON.error;
+                if(e == "User not logged in") {
+                    alert("You need to log in first! Redirecting...");
+                    const url_to_go = location.origin + "/login/?next=" + location.pathname;
+                    location.href = url_to_go;
+                } else {
+                    show_message("warning", e);
+                }
+
+            }
+        });
+    }
+
+    $(document).on('click', '#vote-down', function (e) {
+        e.preventDefault();
+        vote("down")
+    });
+    $(document).on('click', '#vote-up', function (e) {
+        e.preventDefault();
+        vote("up")
+    });
+</script>
+
+{% endblock content %}

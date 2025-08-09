@@ -1,0 +1,50 @@
+{% load humanize %}
+<div class="card mb-3">
+  <div class="card-header bg-dark text-white">
+    <p class='allerta-font m-0'>{{profile.name}}</p>
+  </div>
+  
+  <div class="statistics-card card-body small m-0 p-2" style="height:270px;">
+    <!-- Each stat row -->
+    <div class="d-flex justify-content-between mb-2">
+      <span>Trader upvote ranking</span>
+      <span>#{{your_rank}} out of {{out_of}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between mb-2">
+      <span>Number of trades</span>
+      <span>{{number_of_trades|intcomma}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between mb-2">
+      <span>Total profit</span>
+      <span>${{total_profit|intcomma}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between mb-2">
+      <span>Average profit per trade</span>
+      <span>${{average_profit|intcomma}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between mb-2">
+      <span>Number of unique sellers</span>
+      <span>{{number_of_sellers|intcomma}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between mb-2">
+      <span>Number of items bought</span>
+      <span>{{number_of_items_bought|intcomma}}</span>
+    </div>
+    <hr class="my-2">
+    
+    <div class="d-flex justify-content-between">
+      <span>Unique price list views</span>
+      <span>{{hits}}</span>
+    </div>
+  </div>
+</div>

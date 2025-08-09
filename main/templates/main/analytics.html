@@ -1,0 +1,199 @@
+{% extends "main/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load humanize %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts" crossorigin="anonymous"></script>
+<div class='container'>
+
+  {% if user_settings.tutorial == True%}
+  <div class="card small mt-3">
+    <div class="card-header p-0 m-0">
+      <h5 class='text-center card-header'>
+        Tutorial: Welcome to your Analytics Dashboard
+      </h5>
+    </div>
+    <div class="card-body m-0 p-1">
+      <ul>
+        <li>
+          Here you can view all of your trade statistics and graphs.
+        </li>
+        <li>
+          Once you have confirmed a trade and generated a receipt, the data will be formatted into a analytical summary
+          for you to see.
+        </li>
+        <li>
+          If you need to remove any incorrect receipts, simply click the bin icon next to each one.
+        </li>
+      </ul>
+    </div>
+    <div class="card-footer p-1 m-0">
+      <small>To turn off help messages go to your <a
+          href="{% url 'settings' %}">Settings</a>.</small>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="text-center col-12">
+      <h1 class="m-4 allerta-font text-center">
+        Analytics
+      </h1>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="text-center col-12">
+      <a class='btn btn-primary' href="{% url 'all_sellers' %}"><i class="fa-solid fa-user-tie"></i> View all sellers</a>
+      <a class='btn btn-primary' href="{% url 'all_trades' %}"><i class="fa-solid fa-receipt"></i> Full receipt history</a>
+    </div>
+  </div>
+
+
+
+
+  {% if has_data == False%}
+  <div class="container mt-2">
+    You have not yet registered any trades, try creating a trade using the <a
+      href="{% url 'calculator' %}">calculator</a> tool
+  </div>
+  {% endif %}
+  <div class="row mt-5">
+    <div class="col-md-6 col-sm-12">
+      {%include 'main/includes/dashboard_cards/main_statistics.html'%}
+    </div>
+
+    <div class="col-md-6 col-sm-12">
+      {%include 'main/includes/dashboard_cards/top_sellers.html'%}
+    </div>
+
+    <!-- Number of trades -->
+    <div class="col-md-6 col-sm-12">
+      <div class="card mt-3 mb-3">
+        <div class="card-header bg-dark text-white">
+          Number of trades
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="position: relative;">
+            <div id="number_of_trades_chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profits -->
+    <div class="col-md-6 col-sm-12">
+      <div class="card mt-3 mb-3">
+        <div class="card-header bg-dark text-white">
+          Profits
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="position: relative;">
+            <div id="profits_last_week_chart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-12 col-sm-12 mt-3">
+      {%include 'main/includes/dashboard_cards/latest_trades.html'%}
+    </div>
+  </div>
+</div>
+</div>
+
+
+<script>
+  Apex.colors = ['#ffffff']
+  var options_graph_1 = {
+    chart: {
+      type: 'bar'
+    },
+    fill: {
+      colors: '#888888'
+    },
+    series: [{
+      name: "Number of Trades",
+      data: {{ data_graph_1| safe}}
+    }],
+    xaxis: {
+      type: "datetime",
+      labels: {
+          style: {
+              colors: '#888888'  // X-axis labels color
+          }
+      }
+    },
+    yaxis: {
+        labels: {
+            style: {
+                colors: '#888888'  // Y-axis labels color
+            }
+        }
+    }
+  }
+
+
+  var chart_1 = new ApexCharts(document.querySelector("#number_of_trades_chart"), options_graph_1);
+  chart_1.render();
+
+  Apex.colors = ['#888888']
+  var options_graph_2 = {
+    chart: {
+      type: 'line'
+    },
+    series: [{
+      name: "Profits",
+      data: {{ data_graph_2| safe}}
+    }],
+    dataLabels: {
+      formatter: numberWithCommas,
+      },
+    xaxis: {
+      type: "datetime",
+      labels: {
+          style: {
+              colors: '#888888'  // X-axis labels color
+          }
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: function (value) {
+          return "$" + numberWithCommas(value);
+        },
+        style: {
+          colors: '#888888'  // Y-axis labels color
+        }
+      }
+    }
+  }
+
+  var chart_2 = new ApexCharts(document.querySelector("#profits_last_week_chart"), options_graph_2);
+  chart_2.render();
+
+  function format_values_list(values_list) {
+    var output_list = []
+    values_list.forEach(function (entry) {
+      output_list.push('$' + numberWithCommas(entry))
+    })
+    return output_list
+  }
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  function shortenLargeNumber(num, digits) {
+    var units = ['k', 'M', 'B', 'T', 'Q', 'E', 'Z', 'Y'],
+      decimal;
+
+    for (var i = units.length - 1; i >= 0; i--) {
+      decimal = Math.pow(1000, i + 1);
+
+      if (num <= -decimal || num >= decimal) {
+        return +(num / decimal).toFixed(digits) + units[i];
+      }
+    }
+
+    return num;
+  }
+</script>
+{% endblock content %}

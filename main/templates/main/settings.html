@@ -1,0 +1,103 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+{% load crispy_forms_tags %}
+<div class='container'>
+    {% if user_settings.tutorial == True%}
+    <div class="card small mt-3">
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center card-header'>
+                Tutorial: Welcome to your settings
+            </h5>
+        </div>
+        <div class="card-body m-0 p-1">
+            <ul>
+                <li>
+                    Here you can make changes to enhance your TE experience - emojis are supported in all of the text
+                    boxes if you wish to make your listings more fun!
+                </li>
+                <li>
+                    <b>If you are a job seeker, reviver or you are selling losses</b>, just tick the corresponding box
+                    and fill in the message box with your prices so that they appear in the appropriate listings.
+                </li>
+                <li>
+                    If you wish to stop advertising your revives or losses, simply un-tick the box and you will no
+                    longer appear in the search. NOTE: You do not need to erase the custom text.
+                </li>
+                <li>
+                    <b>If you are a trader</b>, you can add a custom message to the top of your price list by entering
+                    your text in the Price List Description.
+                </li>
+                <li>
+                    If you have a forum thread with reviews and ratings, you can link it here and it will appear as a
+                    Reviews button on your price list.
+                </li>
+                <li>
+                    If you don't want to see tutorial messages any more once you have gotten used to the website,
+                    un-tick the box and they will no longer appear at the top of each page. You can always show them
+                    again if you need a recap!
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer p-1 m-0">
+            <small>To turn off help messages go to your <a
+                    href="{% url 'settings' %}">Settings</a>.</small>
+        </div>
+    </div>
+    {% endif %}
+
+
+
+    <div class='card mt-3'>
+        <div class='card-header bg-dark text-white text-center '>
+            Settings
+        </div>
+        <form action="{% url 'settings' %}" method="POST">
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active allerta-font" id="traders-tab" data-bs-toggle="tab" href="#traders"
+                            role="tab" aria-controls="traders" aria-selected="true">Traders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="jobseekers-tab" data-bs-toggle="tab" href="#jobseekers"
+                        role="tab" aria-controls="jobseekers" aria-selected="true">Job Seeker</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="services-tab" data-bs-toggle="tab" href="#services"
+                            role="tab" aria-controls="services" aria-selected="true">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="revivers-tab" data-bs-toggle="tab" href="#revivers" role="tab"
+                            aria-controls="revivers" aria-selected="false">Revivers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="losses-tab" data-bs-toggle="tab" href="#losses" role="tab"
+                            aria-controls="losses" aria-selected="false">Loss Sellers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="selling_company-tab" data-bs-toggle="tab"
+                            href="#selling_company" role="tab" aria-controls="selling_company"
+                            aria-selected="false">Selling Company</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="company_hiring-tab" data-bs-toggle="tab"
+                            href="#company_hiring" role="tab" aria-controls="selling_company"
+                            aria-selected="false">Looking to Hire</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link allerta-font" id="general-tab" data-bs-toggle="tab" href="#general" role="tab"
+                            aria-controls="general" aria-selected="true">General</a>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="nav-tabContent">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </div>
+        </form>
+    </div>
+</div>
+<br>
+</div>
+
+{% endblock %}

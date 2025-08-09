@@ -1,0 +1,92 @@
+{% extends "main/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load custom_tags %}
+{% load humanize %}
+
+<div class='container'>
+  <div class="row mt-3 mb-3">
+    <div class="col-12 text-center">
+      <h1>List of all trades and their receipts</h1>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="text-center col-12">
+      <a class='btn btn-primary' href="{% url 'analytics' %}"><i class="fa-solid fa-circle-left"></i> Back to
+        Summary</a>
+      <a class='btn btn-primary' href="{% url 'all_sellers' %}"><i class="fa-solid fa-user-tie"></i> View all sellers
+        </a>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="text-center col-12">
+      {%include 'main/includes/pagination.html'%}
+    </div>
+  </div>
+
+    <!-- Desktop Table (hidden on mobile) -->
+    <div class="d-none d-md-block">
+      <div class="table-responsive">
+          <table id="alltradereceipts">
+              <thead>
+                  <tr>
+                      <th>Name</th>
+                      <th>Date</th>
+                      <th class="text-end">Price</th>
+                      <th class="text-end">Profit</th>
+                      <th class="text-center">Actions</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for receipt in receipts %}
+                  <tr>
+                      <td>{{receipt.seller}}</td>
+                      <td>{{receipt.created_at}}</td>
+                      <td class="text-end">${{receipt.total|intcomma}}</td>
+                      <td class="text-end">${{receipt.profit|intcomma}}</td>
+                      <td class="text-center">
+                          <a href="{% url 'receipt_view' receipt.receipt_url_string %}" 
+                             class="btn btn-info" target="_blank" title="View Receipt">
+                              <i class="fas fa-eye"></i>
+                          </a>
+                          <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-delete" title="Delete Receipt">
+                                  <i class="fas fa-trash-alt"></i>
+                              </button>
+                          </form>
+                      </td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
+  </div>
+
+  <!-- Mobile Cards (hidden on desktop) -->
+  <div id="mobile_container"></div>
+
+  <div class="row mt-3">
+    <div class="text-center col-12">
+      {%include 'main/includes/pagination.html'%}
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.innerWidth < 768) { // Bootstrap's md breakpoint
+            fetch("{% url 'mobile_receipts' %}?page={{ receipts.number }}")
+                .then(response => response.text())
+                .then(html => {
+                    const container = document.createElement('div');
+                    container.className = "d-md-none";
+                    container.innerHTML = html;
+                    document.querySelector('#mobile_container').appendChild(container);
+                });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "main/base.html" %}
+{% block content %}
+{%load crispy_forms_tags %}
+{% load humanize %}
+{% load custom_tags %}
+<div class='container'>
+    <div class='row'>
+        <div class='col-md-3 col-sm-12'>
+            <div class="p-2">
+                <form method="GET">
+                    {{myFilter.form|crispy}}
+                    <button class='btn btn-primary'> Search </button>
+                </form>
+            </div>
+        </div>
+        <div class='col-md-9 col-sm-12'>
+            <div class='row'>
+                <div class="text-center col-12">
+                    <h4 class="m-4 allerta-font text-center">
+                        Companies for Sale
+                    </h4>
+                </div>
+                <div>
+                    {% if not listings.object_list%}
+                    <p>
+                        Sorry no listings were found!
+                    </p>
+                    {% else %}
+                    <p class="ml-5 p-0 m-0 text-center pb-2">
+                        Here are the companies for sale in Torn Exchange! If you own a company you can create an advert
+                        below:
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="offset-md-4  col-4 offset-4 col-md-4 btn btn-primary align-content-center text-center">
+                    <a class="allerta-font h6 text-white text-center" href="{% url 'settings' %}"> Create a Listing </a>
+                </div>
+                <hr>
+                <br>
+                <div class='col-12'>
+                    <div class="text-center col-12">
+                        {%include 'main/includes/pagination.html'%}
+                    </div>
+
+                    <p>
+                        <small class="text-muted ml-4"> {% if number_of_items == 1%}
+                            {{number_of_items}} company found in your search.
+                            {% else %}
+                            {{number_of_items}} companies found in your search.
+                            {% endif %}
+                        </small>
+                    </p>
+                </div>
+                {% for listing in listings%}
+                <div class='col-12'>
+                    <div class='card listing-card  m-0 mb-1 p-0'>
+                        <div class="card-header m-0 p-0">
+                            <div class="row pl-1">
+                                <div class="col-9 mb-0">
+                                    <div class='row'>
+                                        <div class="pl-2 ml-3 col-7 text-center">
+                                            <div class='row'>
+                                                <div class='col text-small'>
+                                                    <a target='blank' class='text-white'
+                                                        href="https://www.torn.com/joblist.php#/p=corpinfo&ID={{listing.company_id}}">
+                                                        {{listing.name}}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 text-right">
+                                            {{listing.rating}} &nbsp; <i class="fas fa-star small mr-2 mb-2 size-2x">
+                                            </i> {{listing.company_type}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-text">
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Owner: </b>&nbsp;
+                                    <a target='blank'
+                                        href="https://www.torn.com/profiles.php?XID={{listing.owner.torn_id}}">
+                                        <b class="float-right">{{listing.owner.name}}</b>
+                                    </a>
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Days old: </b>
+                                    <b class="float-right">&nbsp;{{listing.days_old|intcomma}}</b>
+                                </div>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Rating: </b>&nbsp;
+                                    <b class="float-right">&nbsp;{{listing.rating|intcomma}}*</b>
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Efficiency: </b>
+                                    <b class="float-right">&nbsp;{{listing.efficiency|intcomma}}%</b>
+                                </div>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Employees: &nbsp;</b>
+                                    <b class="float-right">
+                                        {{listing.employees_hired}}/{{listing.employees_capacity}}
+                                    </b>
+
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Popularity: </b>
+                                    <b class="float-right">&nbsp;{{listing.popularity|intcomma}}%</b>
+                                </div>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Weekly Income: </b>
+                                    <b class="float-right">&nbsp;{{listing.weekly_income|intcomma}}</b>
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Weekly Customers: </b>
+                                    <b class="float-right">&nbsp;{{listing.weekly_customers|intcomma}}</b>
+                                </div>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <div class="col">
+                                    <b class="float-left">Average Employee Tenure: </b>
+                                    <b class="float-right">&nbsp;{{listing.average_employee_tenure|intcomma}} days</b>
+                                </div>
+                                <div class="col">
+                                    <b class="float-left">Average Employee Efficiency: </b>
+                                    <b class="float-right">&nbsp;{{listing.average_employee_efficiency|intcomma}}%</b>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class=" text ml-2 p-1">
+                                {{listing.description}}
+                            </div>
+
+                        </div>
+                        <div class="card-footer mt-0  bg-dark text-white">
+                            <div class="row">
+                                <div class=" col text ml-3">
+                                    <b>
+
+                                        <strong>
+                                            <span class="h6 font-weight-bold">
+                                                Price: <span class=" h6 badge badge-light">
+                                                    ${{listing.asking_price|intcomma}}M
+                                                </span>
+                                                {% if listing.negotiable%}
+                                                <span class="badge badge-pill badge-success h6">Negotiable</span>
+                                                {% else %}
+                                                <span
+                                                    class="badge badge-pill badge-secondary h6 text-black">Non-Negotiable</span>
+                                                {%endif %}
+                                            </span>
+                                    </b>
+                                    </strong>
+                                </div>
+                                <div class="col text ml-2 p-1 text-right mr-3">
+                                    Added: {{listing.created_at|naturaltime}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {%include 'main/includes/pagination.html'%}
+            
+        </div>
+
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        $('#id_man_range_0').parent().addClass("row");
+        $('#id_int_range_0').parent().addClass("row");
+        $('#id_end_range_0').parent().addClass("row");
+        $('#id_man_range_1').removeClass("offset-1");
+        $('#id_int_range_1').removeClass("offset-1");
+        $('#id_end_range_1').removeClass("offset-1");
+    });
+
+</script>
+{% endblock %}

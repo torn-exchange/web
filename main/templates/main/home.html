@@ -1,0 +1,291 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+<br />
+<br />
+<div class='container'>
+      <script rel="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if alert should be hidden
+            const alertHidden = localStorage.getItem('warningAlertHidden');
+            if (alertHidden === 'true') {
+                const alert = document.getElementById('warning-alert');
+                if (alert) {
+                    alert.style.display = 'none';
+                }
+            }
+        });
+        
+        function hideAlert() {
+            localStorage.setItem('warningAlertHidden', 'true');
+        }
+        </script>
+
+    {% if user_settings.tutorial == True%}
+    <div class="card small mt-3">
+        <div class="card-header p-0 m-0">
+            <h5 class='text-center card-header'>
+                Tutorial: Welcome to Torn Exchange
+            </h5>
+        </div>
+        <div class="card-body m-0 p-3">
+            <ul>
+                <li>
+                    Hey {{profile.name}}, welcome to Torn Exchange (or TE for short)! Thank you for joining us in your
+                    business ventures. In order to help you find your way around the website, you will find these grey
+                    tutorial cards at the top of the pages explaining what to do and how to use our trading features.
+                    Shall we begin?
+                </li>
+                <li>
+                    You can click Listings to see all of the various search pages (item buy prices set by TE traders
+                    which you can filter by name, price and ranking, revivers and loss sellers) to find the best deals.
+                    You can also see whether users are online or not if you need a swift trade!
+                </li>
+                <li>
+                    <b>If you are a trader</b>, you can click My Price List to view your price list which you can add
+                    your buy items to and share with your clients. Once you have set all of your prices on there, you
+                    can go to the copy and paste Trade Calculator (by clicking Calculator in the nav bar) where you can
+                    generate a receipt to send to your clients after a trade. Finally, click on your username to view
+                    your analytics dashboard of every trade you have made on TE and delete any incorrect trades in your
+                    receipt history.
+                </li>
+                <li>
+                    <b>Job seekers, revivers and loss sellers</b> - to add your listings, go to settings and tick the
+                    correct box, fill in a custom message and that's it! You're all set!
+                </li>
+                <li>
+                    Now, have a browse around the website and contact us if you have any further questions! Happy
+                    trading!
+                </li>
+                <li>
+                    If you no longer wish to see these help cards, you can simply go onto your settings page and un-tick
+                    the Show Page Tutorials check box.
+                </li>
+            </ul>
+        </div>
+        <div class="card-footer p-1 m-0">
+            <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class='row'>
+        <div class='col-12 m-3'>
+            <h2 class="display allerta-font text-center">
+                A community for <a href="https://www.torn.com">Torn</a> traders, buyers and sellers
+            </h2>
+        </div>
+    </div>
+
+    <div class='row'>
+        <div class='col-md-3 col-sm-12'>
+            <!-- {%include 'main/includes/top_active_traders.html'%} -->
+            {%include 'main/includes/most_receipts.html'%}
+            {%include 'main/includes/leaderboard.html'%}
+            <p class="p-4 small mr-3 text-center">
+                <strong>{{ created_today }}</strong> users registered in last 30 days
+            </p>
+
+        </div>
+        <div class='col-md-6 col-sm-12 align-content-center text-center'>
+            <div class="row">
+                <!-- FOR TRADERS -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="card mt-3">
+                        <div class="card-header card-header-inv text-center">
+                            <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
+                        </div>
+                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
+                            <ul class="list-group list-group-flush">
+                                {% if profile %}
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'edit_price_list' %}">Edit price list</a>
+                                </il>
+                                <il class="list-group-item my-0 mt-0">
+                                    <a href="{% url 'edit_services' %}">Edit custom services</a>
+                                </il>
+                                {% else %}
+                                <il class="list-group-item my-0">
+                                    <a href="{% url 'edit_price_list' %}">Create a price list</a>
+                                </il>
+                                <il class="list-group-item my-0 m-0">
+                                    <a href="{% url 'edit_services' %}">Add custom services</a>
+                                </il>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FOR SELLERS -->
+                <div class="col-md-6 col-sm-12">
+                    <div class="card mt-3">
+                        <div class="card-header card-header-inv">
+                            <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
+                        </div>
+                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
+                            <ul class="list-group list-group-flush">
+                                <il class="list-group-item my-0 mt-0">
+                                    <a href="{% url 'listings' %}">Search items and traders</a>
+                                </il>
+                                <il class="list-group-item my-0 mt-0">
+                                    <a href="{% url 'search_services' %}">Search custom service</a>
+                                </il>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BREAKLINE -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <hr />
+                </div>
+            </div>
+
+            <div class="pt-3">
+                {% if not profile %}
+                <div class="mb-3">
+                    <div class="btn btn-primary">
+                        <a class="allerta-font h5 text-white" href="{% url 'login' %}"> Join Now </a>
+                    </div>
+                </div>                
+                {% endif %}
+
+                <!-- LATEST FEATURES -->
+                <div class="card">
+                    <div class="card-header card-header-inv">
+                        <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
+                    </div>
+                    <div class="card-body pl-1 mt-3 pt-0 overflow-auto text-start">
+                        <ul class="pl-3">
+                            <li class="mb-2">
+                                <a href="{% url 'rw_listings' %}" class="text-decoration-none">
+                                    List of all Ranked War Weapons from bazaars and Item Market.
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">
+                                    Ability to toggle between dark and light theme
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">Hiding and Re-arranging of categories</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'api_home' %}" class="text-decoration-none">Torn Exchange API</a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'forum_tutorial' %}" class="text-decoration-none">Tutorial: How to Trade with TE</a></li>
+                            <li class="mb-2">Added TornPal button to price list and services</li>
+                        </ul>
+                    </div>
+                </div>
+
+            <!-- BREAKLINE -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <hr />
+                </div>
+            </div>
+            
+                <!-- WHAT IS TE -->
+                <div class="card mt-3">
+                    <div class="card-header card-header-inv">
+                        <i class="fa-solid fa-question-circle"></i> <b>What is Torn Exchange?</b>
+                    </div>
+                    <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
+                        <p>
+                            Torn Exchange is a platform for Torn players to trade items, services and in-game currency.
+                            It is a community driven project which aims to provide a safe and easy way to trade with
+                            other
+                            players.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- BREAKLINE -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <hr />
+                    </div>
+                </div>
+
+                <p>Want to know more about Torn Exchange?
+                    <br>
+                    Visit our <u>
+                        <a href="https://www.torn.com/forums.php#/p=threads&f=67&t=16383769&b=0&a=0">forum thread</a>
+                    </u>
+                    or join our <a href='https://discord.gg/8NstjM2fbb'><u>Discord server</u></a>.
+                </p>
+
+            </div>
+
+            <!-- PROMO TEXT -->
+            <div class="row mt-5 card-text">
+                <div class='col'>
+                    <i class="fas fa-user-group h3"></i>
+                    <p>
+                        At Torn Exchange we aim to provide a unique space for traders which not only facilitates trades,
+                        but also gives a greater sense of the trading community.
+                    </p>
+                </div>
+                <div class='col'>
+                    <i class="fas fa-star-half-alt h3"></i>
+                    <p>
+                        We wanted to take the forum ratings one step further, so if you become a top rated trader on
+                        Torn Exchange future clients can easily find you on the homepage.
+                    </p>
+
+                </div>
+                <div class='col'>
+                    <i class='fas fa-chart-simple h3'></i>
+                    <p>
+                        Keep track of your trades with a built in analytics dashboard which has all the statistics you
+                        need to maximise profits and visualise your progress.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3 col-sm-12">
+            {%include 'main/includes/changelog.html'%}
+            <p class="p-4 small mr-3 text-center">
+                <strong>{{ number_of_changes_last_month }}</strong> changes in the last month.
+            </p>
+            <div class="container">
+                <div class="card mt-3" style="height:175px">
+                    <div class="card-header text-center text-white"">
+                        <i class="fas fa-puzzle-piece"></i> Extension
+                    </div>
+                    <div class="card-body">
+                        <div class="row small">
+                            <div class="col-12 small pb-2 mb-2 text-center">
+                                Download our TE extension here
+                                <p class="small mt-0 pb-2">
+                                    <a
+                                        href="https://chrome.google.com/webstore/detail/torn-exchange/iggcinpeofcbplffobefiojjgfeoblll">
+                                        <img src="{% static '/main/images/chrome-icon.png'%}" style="max-width: 30%;"
+                                            class="m-1">
+                                    </a>
+                                    <a href="https://addons.mozilla.org/en-GB/firefox/addon/torn-exchange-2-0/">
+                                        <img src="{% static '/main/images/firefox-icon.png'%}" style="max-width: 30%;"
+                                            class='m-1'>
+                                    </a>
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{%endblock%}

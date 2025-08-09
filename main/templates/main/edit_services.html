@@ -1,0 +1,190 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load humanize %}
+{% load custom_tags %}
+
+<div class='container'>
+    <h2 class="text-center mt-3 allerta-font p-2">Change your service prices below</h2>
+
+    <form id='service_form' method="post">
+        <button class='btn btn-primary float-right m-2 ml-4 d-lg-block' type="submit"
+        style="margin-top: 20px;" id="submit-prices"> Submit </button>
+        {% csrf_token %}
+        <div class="row">
+            <div class='card col-12 m-2 p-0 '>
+                <div class='card-header text-center font-weight-bold m-0'>
+                    Custom Services
+                </div>
+                <div class='card-body m-0 p-0 pb-2'>
+                {% for cat in data_dict %}
+                <div class="col-sm-12">
+                    <a class="btn btn-secondary btn-square m-0" data-bs-toggle="collapse"
+                    href="#collapse_{{cat|replace_spaces}}" role="button" aria-expanded="false"
+                    aria-controls="collapseExample" style="width: 100%;">
+                    {{cat}}
+                </a>
+                <br>
+                <div class="collapse" id="collapse_{{cat|replace_spaces}}">
+                    <div class="row g-0">
+                        <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class='text-center'>Service Name</th>
+                                    <th scope="col" class='text-center'>Price (in cash)</th>
+                                    <th scope="col" class='text-center'>Price (in items)</th>
+                                    <th scope="col" class='text-center'>Description</th>
+                                    <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% get_dict_entry data_dict cat as services %}
+                                {% for service in services %}
+                                <tr class="m-0 p-0">
+                                    <td style='width:13%;' class='text-center'>{{service.name}}</td>
+                                    <td style='width:13%;' class='text-center'>
+                                        <div class='input-group  mb-1'>
+                                            <input type="text" class="form-control listing_price text-responsive"
+                                                value="{%prepopulate_service_money service user_services%}" id="onlyNumbers"
+                                                name="{{service}}_money_price" onkeypress="return isNumber(event)"
+                                                onpaste="return true;" />
+                                        </div>
+                                    </td>
+                                    <td style='width:13%;' class='text-center'>
+                                        <div class='input-group  mb-1'>
+                                            <input type="text" class="form-control listing_price text-responsive"
+                                                value="{%prepopulate_service_barter service user_services%}"
+                                                name="{{service}}_barter_price"
+                                                onpaste="return true;" />
+                                        </div>
+                                    </td>
+                                    <td style='width:13%;' class='text-center'>
+                                        <div class='input-group  mb-1'>
+                                            <input type="text" class="form-control listing_price text-responsive"
+                                                value="{%prepopulate_service_desc service user_services%}"
+                                                name="{{service}}_offer_description"
+                                                onpaste="return true;" />
+                                        </div>
+                                    </td>
+                                    <td style='width:1%;' class='text-center'>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <div class="form-check m-0">
+                                                <input type="checkbox" class="form-check-input" 
+                                                       name="{{service}}_checkbox" 
+                                                       id="{{service}}_checkbox">
+                                            </div>
+                                        </div>
+                                    </td>
+                                {% endfor %}
+                            </tbody>                       
+                        </table>
+                    
+                </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<br />
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        console.log("ready!");
+    });
+
+    $('#submit-prices').click(function () {
+        document.body.style.cursor = 'wait'; return true
+    });
+
+    $(".auto_fill_button").click(function (event) {
+        event.preventDefault();
+        var val = $('#auto-fill-all').val();
+        $("input[name*='discount']").val(val);
+        $("input[name*='discount']").val(val).change();
+    });
+
+    $('#mark_all_delete').click(function () {
+        if ($(this).is(':checked')) {
+            $('input[name*="_checkbox"').prop("checked", true);
+        } else {
+            $('input[name*="_checkbox"').prop("checked", false);
+        }
+    });
+
+    $('.mark_category_delete').click(function () {
+        var parent = $(this).closest('.collapse');
+        if ($(this).is(':checked')) {
+            parent.find('input[name*="_checkbox"').prop("checked", true);
+        } else {
+            parent.find('input[name*="_checkbox"').prop("checked", false);
+        }
+    });
+    $(".auto_fill_category_button").click(function () {
+        var parent = $(this).closest('.collapse');
+        var val = parent.find('.auto-fill-category').val();
+        parent.find("input[name*='discount']").val(val);
+        parent.find("input[name*='discount']").change();
+    });
+
+    function isNumber(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if ((charCode > 31 && charCode < 48) || charCode > 57) {
+            return false;
+        }
+        return true;
+    }
+
+    function isBlank(str) {
+        return (!str || /^\s*$/.test(str));
+    }
+
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    function removeDollar(x) {
+        return x.toString().replace('$', "");
+    }
+    function numberWOCommas(x) {
+        x = x.toString().replace('$', "");
+        return parseFloat(x.toString().replaceAll(/,/g, ''));
+    }
+
+    var validNumber = new RegExp(/^-?\d*\.?\d*$/);
+    function validateNumber(elem) {
+        // remove dots and commas from possible copy/paste
+        let v = elem.value;
+        // v = v.replace(",", "");
+        // v = v.replace(".", "");
+        // v = v.replace("$", "");
+        if (validNumber.test(v)) {
+            elem.value = v;
+        } else {
+            elem.value = '';
+        }
+    }
+
+    $(document).on("keypress", function (e) {
+
+        if (e.which == 13) {
+
+            var inputVal = $(this).val();
+
+            $('#test_form').submit();
+            event.preventDefault();
+            console.log("form submitted!")  // sanity check
+        }
+    });
+
+    function getInputValue() {
+        // Selecting the input element and get its value 
+        var inputVal = document.getElementById("onlyNumbers").value;
+    }
+    function popup_text() {
+        var popup = document.getElementById("myPopup");
+        popup.classList.toggle("show");
+    }
+</script>
+
+{% endblock content %}

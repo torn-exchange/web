@@ -1,0 +1,526 @@
+{% extends "main/base.html" %}
+{% block content %}
+    {% load humanize %}
+    {% load custom_tags %}
+
+    <div class='container'>
+    <script src="https://unpkg.com/slim-select@latest/dist/slimselect.min.js"></script>
+    <link href="https://unpkg.com/slim-select@latest/dist/slimselect.css" rel="stylesheet"></link>
+    {% if user_settings.tutorial == True %}
+        <div class="card small mt-3">
+            <div class="card-header p-0 m-0">
+                <h5 class='text-center card-header'>
+                    Tutorial: Welcome to the Change Prices page
+                </h5>
+            </div>
+            <div class="card-body m-0 p-3">
+                <ul>
+                    <li>
+                        Click on a category to open the dropdown of all of its items. Next to each item you buy, you can
+                        either add a set price or a discount value.
+                    </li>
+                    <li>
+                        The discount value will output a price as a percentage of the market value (e.g. 2% profit
+                        margin
+                        means 98% of current market value).
+                    </li>
+                    <li>
+                        If you have both a set price and a profit margin value, the trade list will automatically pick
+                        the
+                        lower of the two prices.
+                    </li>
+                    <li>
+                        If you want to save time filling in all of your buy prices, you can simply enter a profit margin
+                        value in the Auto-fill profit margins box (NOTE: This will override all of your previous profit
+                        margin values).
+                    </li>
+                    <li>
+                        If you wish to remove item buy prices from your price list, you can either tick individual items
+                        you
+                        wish to remove, or simply tick the checkbox at the top of the page to remove every single item
+                        value
+                        (Use this at your own caution).
+                    </li>
+                    <li>
+                        Once you have made all of your changes, click Submit and voila, your price list has been
+                        successfully updated!
+                    </li>
+                    <li>
+                        <b>Torn Market Value</b> - famous MV. It is calculated by the game once a day, at midnight.
+                    </li>
+                    <li>
+                        <b>TE Market Value</b> - Torn Exchange's own MV. It is calculated once an hour by taking
+                        into account Torn MV, 3 lowest bazaar prices and 3 lowest item market prices.
+                    </li>
+                    <li>
+                      Choose which colums to show or hide, especially if you're mobile with limited horizontal space.
+                      Click on "x" next to the column name to hide it. This is purely a visual help, it has no effect on prices! 
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer p-1 m-0">
+                <small>To turn off help messages go to your <a href="{% url 'settings' %}">Settings</a>.</small>
+            </div>
+        </div>
+    {% endif %}
+
+    <h2 class="text-center mt-3 allerta-font p-2">Change your item buy prices below</h2>
+
+    <div class="offset-1 col-10">
+        <div class="row">
+            <div class="col-6">
+                <label for="auto-fill-all">Auto-fill profit margin % </label>
+                <div class='input-group M-1'>
+                    <div class="popup" onclick="popup_text()">
+                        <input type="text" class="form-control price-edit" id="auto-fill-all" placeholder="0%"
+                               name="auto_fill"
+                               oninput="validateNumber(this);"/>
+                        <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
+                            auto-fill your entire price list! Make sure you only list items you can afford to buy from
+                            sellers. Each category has its own separate auto-fill option which we recommend.</span>
+                    </div>
+                    <button type="button" class="btn btn-success auto_fill_button">Fill</button>
+
+                </div>
+                <br>
+                <label for="auto-fill-all-enabled">Auto-fill enabled profit margins % </label>
+                <div class='input-group M-1'>
+                    <div class="popup">
+                        <input type="text" class="form-control price-edit" id="auto-fill-all-enabled" placeholder="0%"
+                               name="auto_fill"
+                               oninput="validateNumber(this);"/>
+                    </div>
+                    <button type="button" class="btn btn-success auto_fill__enabled_button">Fill</button>
+
+                </div>
+            </div>
+            <div class="offset-2 col-4 text-center justify-content-center">
+                <p>
+                    Tick to remove all items from pricelist
+                <div class="mt-1">
+                    <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
+                </div>
+                </p>
+                <hr/>
+                <p>
+                    Item Market Fee is set at: <b>{{ owner_profile.settings.trade_global_fee }}%</b>.
+                    Set it on your <a href="{% url 'manage_price_list' %}" target="_blank">Management Page</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="d-flex flex-wrap justify-content-center m-1 p-1 pt-0 mt-0">
+        <form id='test_form' method="post">
+            <button class='btn btn-primary float-right m-2 ml-4 d-lg-block' type="submit"
+                    style="margin-top: 20px;" id="submit-prices"> Submit
+            </button>
+    </div>
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-12 p-0">
+            <label><small>
+              Show/Hide columns <i class="fa fa-circle-info" data-bs-toggle="tooltip" data-bs-placement="top"
+                                   title="Choose which columns to show or hide, especially if you're mobile with limited horizontal space. Click on 'x' next to the column name to hide it. This is purely a visual help, it has no effect on prices!"></i>
+            </small></label>
+            <select class="form-control multi-select" multiple="multiple">
+                <option value="1">Item</option>
+                <option value="2">Torn Market Value</option>
+                <option value="3">TE Market Value</option>
+                <option value="4">Your Fixed Price</option>
+                <option value="5">Profit Margin %</option>
+                <option value="6">Effective Price</option>
+                <option value="7">Delete</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        {% for item_category_name, item_category_list in category_dict.items %}
+            <div class='card col-12 p-0 '>
+                <div class='card-header text-center font-weight-bold m-0'>
+                    {{ item_category_name }}
+                </div>
+                <div class='card-body m-0 p-0'>
+                    {% for type in item_category_list %}
+                        <div class="col-sm-12">
+                            <a class="btn btn-secondary btn-square m-0" data-bs-toggle="collapse"
+                               href="#collapse_{{ type|replace_spaces }}" role="button" aria-expanded="false"
+                               aria-controls="collapseExample" style="width: 100%;">
+                                {{ type|item_plurals }}
+                            </a>
+                            <br>
+                            <div class="collapse" id="collapse_{{ type|replace_spaces }}">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <label for="auto-fill-category">Auto-fill profit margin for category (%)</label>
+                                        <div class='input-group m-1'>
+                                            <input type="text" class="form-control price-edit auto-fill-category"
+                                                   placeholder="0%"
+                                                   name="auto_fill_category" oninput="validateNumber(this);"/>
+                                            <button type="button" class="btn btn-success auto_fill_category_button">
+                                                Fill
+                                            </button>
+                                        </div>
+
+                                        <label for="auto-fill-enabled-category">Auto-fill enabled profit margins for category (%)</label>
+                                        <div class='input-group m-1'>
+                                            <input type="text" class="form-control price-edit auto-fill-enabled-category"
+                                                   placeholder="0%"
+                                                   name="auto_fill_category" oninput="validateNumber(this);"/>
+                                            <button type="button" class="btn btn-success auto_fill_enabled_category_button">
+                                                Fill
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 text-center">
+                                        {% if type == 'Plushie' or type == 'Flower' %}
+                                            Check {{ type|item_plurals }} price history with <br/>
+                                            <a href='{% url "museum_helper" %}' target="_blank">Museum Helper</a>!
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-4 text-center justify-content-center">
+                                        Tick to remove all items from category
+                                        <div class="mt-1">
+                                            <i class="fas fa-trash-alt m-2"></i> <input type="checkbox"
+                                                                                        class='mark_category_delete'>
+                                        </div>
+                                    </div>
+                                </div>
+                                <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col" class='text-center d-none d-md-table-row'></th>
+                                        <th scope="col" class='text-center'>Item</th>
+                                        <th scope="col" class='text-center'>Torn Market Value</th>
+                                        <th scope="col" class='text-center'>TE Market Value</th>
+                                        <th scope="col" class='text-center'>Your Fixed Price</th>
+                                        <th scope="col" class='text-center'>Profit Margin %</th>
+                                        <th scope="col" class='text-center'
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="The price that shows on the Price List (TE Market Value - Profit Margin - Global Fee)">
+                                            Effective Price
+                                        </th>
+                                        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% get_dict_entry data_dict type as items %}
+                                    {% for item in items %}
+                                        <tr class="m-0 p-0"
+                                            data-global-fee="{{ owner_profile.settings.trade_global_fee }}">
+                                            <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
+                                                    src="{{ item.image_url }}" style="width:50%;"></td>
+                                            <td style='width:13%;' class='text-center link-blue item_name'>
+                                              {{ item.name }}
+                                            </td>
+                                            <td style='width:15%;' class='text-center torn_market_value'>
+                                                ${{ item.market_value|intcomma }}
+                                            </td>
+                                            <td style='width:15%;' class='text-center market_value'>
+                                                ${{ item.TE_value|intcomma }}
+                                            </td>
+                                            <td style='width:13%;' class='text-center'>
+                                                <div class='input-group  mb-1'>
+                                                    <input type="text"
+                                                           class="form-control price-edit listing_price text-responsive"
+                                                           value="{{ item.price }}" id="onlyNumbers"
+                                                           name="{{ item.name }}_max_price"
+                                                           onkeypress="return isNumber(event)"
+                                                           onpaste="return true;"/>
+                                                </div>
+                                            </td>
+                                            <td style='width:13%;' class='text-center'>
+                                                <div class='input-group  mb-1'>
+
+                                                    <input type="text"
+                                                           class="form-control price-edit listing_discount text-responsive"
+                                                           value="{{ item.discount }}" id="onlyNumbers"
+                                                           name="{{ item.name }}_discount"
+                                                           oninput="validateNumber(this);"
+                                                           onpaste="return true;"/>
+                                                </div>
+                                            </td>
+                                            <td style='width:13%;' class='text-center effective_price'>
+                                                ${{ item.effective_price|intcomma }}</td>
+                                            <td style='width:1%;' class='text-center'>
+                                                <div class="form-check d-flex justify-content-center align-items-center">
+                                                    <input type="checkbox"
+                                                           class="form-check-input"
+                                                           name="{{ item.name }}_checkbox"
+                                                           id="{{ item.name }}_checkbox">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+        <br>
+    </div>
+    </form>
+
+    <br>
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+        // Initialize all tooltips
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+      });
+      $('body').on('change', '.listing_price', function () {
+        var parent = $(this).closest('tr');
+        var item_name = parent.find('.item_name').text().trim();
+        var listing_price = numberWOCommas($(this).val());
+        var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
+        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
+      });
+      $('body').on('change', '.listing_discount', function () {
+        var parent = $(this).closest('tr');
+        var item_name = parent.find('.item_name').text().trim();
+        var listing_price = numberWOCommas(parent.find('.listing_price').val());
+        var profit_margin = numberWOCommas($(this).val());
+        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
+      });
+
+      $('#submit-prices').click(function () {
+        document.body.style.cursor = 'wait';
+        return true
+      });
+
+      $(".auto_fill_button").click(function (event) {
+        event.preventDefault();
+        var val = $('#auto-fill-all').val();
+        $("input[name*='discount']").val(val);
+        $("input[name*='discount']").val(val).change();
+      });
+
+    
+    $(".auto_fill__enabled_button").click(function(event) {
+        event.preventDefault();
+        var val = $('#auto-fill-all-enabled').val();
+        $("input[name*='discount']").not('[value=""]').val(val);
+        $("input[name*='discount']").not('[value=""]').change();
+    });
+
+      $('#mark_all_delete').click(function () {
+        if ($(this).is(':checked')) {
+          $('input[name*="_checkbox"').prop("checked", true);
+        } else {
+          $('input[name*="_checkbox"').prop("checked", false);
+        }
+      });
+
+      $('.mark_category_delete').click(function () {
+        var parent = $(this).closest('.collapse');
+        if ($(this).is(':checked')) {
+          parent.find('input[name*="_checkbox"').prop("checked", true);
+        } else {
+          parent.find('input[name*="_checkbox"').prop("checked", false);
+        }
+      });
+      $(".auto_fill_category_button").click(function () {
+        var parent = $(this).closest('.collapse');
+        var val = parent.find('.auto-fill-category').val();
+        parent.find("input[name*='discount']").val(val);
+        parent.find("input[name*='discount']").change();
+      });
+
+      $(".auto_fill_enabled_category_button").click(function () {
+        var parent = $(this).closest('.collapse');
+        var val = parent.find('.auto-fill-enabled-category').val();
+        parent.find("input[name*='discount']").not('[value=""]').val(val);
+        parent.find("input[name*='discount']").not('[value=""]').change();
+      });
+
+      function isNumber(evt) {
+        evt = (evt) ? evt : window.event;
+        var charCode = (evt.which) ? evt.which : evt.keyCode;
+        if ((charCode > 31 && charCode < 48) || charCode > 57) {
+          return false;
+        }
+        return true;
+      }
+
+      function isBlank(str) {
+        return (!str || /^\s*$/.test(str));
+      }
+
+      function effective_price(price, discount, market_value, item_name) {
+        // Get global fee from the closest row
+        let globalFee = parseFloat($('.listing_price, .listing_discount').closest('tr').data('global-fee')) || 0;
+
+        if(item_name == 'Plushie Set' || item_name == 'Flower Set') {
+          globalFee = 0;
+        }
+        
+        // Add global fee to discount
+        const totalDiscount = parseFloat(discount) + globalFee;
+
+        if ((isNaN(discount)) && (isNaN(price))) {
+          return '';
+        }
+        if ((isNaN(discount)) && (!isNaN(price))) {
+          return Math.round(price);
+        }
+        if ((!isNaN(discount)) && (isNaN(price))) {
+          var discount_fraction = (100.0 - totalDiscount) / 100;
+          var discount_price = Math.round(discount_fraction * market_value);
+          return Math.round(discount_price);
+        }
+        if ((!isNaN(discount)) && (!isNaN(price))) {
+          var discount_fraction = (100.0 - totalDiscount) / 100;
+          var discount_price = discount_fraction * Math.round(market_value);
+          return Math.min.apply(null, [price, Math.round(discount_price)]);
+        }
+      }
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      function removeDollar(x) {
+        return x.toString().replace('$', "");
+      }
+
+      function numberWOCommas(x) {
+        x = x.toString().replace('$', "");
+        return parseFloat(x.toString().replaceAll(/,/g, ''));
+      }
+
+      var validNumber = new RegExp(/^-?\d*\.?\d*$/);
+
+      function validateNumber(elem) {
+        // remove dots and commas from possible copy/paste
+        let v = elem.value;
+        // v = v.replace(",", "");
+        // v = v.replace(".", "");
+        // v = v.replace("$", "");
+        if (validNumber.test(v)) {
+          elem.value = v;
+        } else {
+          elem.value = '';
+        }
+      }
+
+      $(document).on("keypress", function (e) {
+
+        if (e.which == 13) {
+
+          var inputVal = $(this).val();
+
+          $('#test_form').submit();
+          event.preventDefault();
+          console.log("form submitted!")  // sanity check
+        }
+      });
+
+      function getInputValue() {
+        // Selecting the input element and get its value
+        var inputVal = document.getElementById("onlyNumbers").value;
+      }
+
+      function popup_text() {
+        var popup = document.getElementById("myPopup");
+        popup.classList.toggle("show");
+      }
+
+      function storeColumnOptionsInLocalStorage(selectedColumnValues) {
+        if (selectedColumnValues.includes("1")) {
+          selectedColumnValues.push("0");
+        }
+        localStorage.setItem('edit_price_list_columns', JSON.stringify(selectedColumnValues));
+      }
+
+      function restoreColumnOptionsFromLocalStorage() {
+        let storedValues = localStorage.getItem('edit_price_list_columns');
+        let selectedValues = storedValues ? JSON.parse(storedValues) : null;
+
+        if (selectedValues === null) {
+          selectedValues = ["1", "2", "3", "4", "5", "6", "7"];
+        }
+        
+        if (selectedValues.includes("1")) {
+          selectedValues.push("0");
+        }
+
+        let tables = document.querySelectorAll('table');
+        if (!tables) return;
+
+        tables.forEach(table => {
+          let rows = table.querySelectorAll('tr');
+
+          let headers = table.querySelectorAll('th');
+          headers.forEach((cell, index) => {
+            cell.style.display = !selectedValues || selectedValues.includes(index.toString())
+              ? 'table-cell'
+              : 'none';
+          });
+
+          rows.forEach(row => {
+            let cells = row.querySelectorAll('td');
+            cells.forEach((cell, index) => {
+              cell.style.display = !selectedValues || selectedValues.includes(index.toString())
+                ? 'table-cell'
+                : 'none';
+            });
+          });
+        });
+
+        // Restore SlimSelect values
+        let slimSelectInstance = document.querySelector('.multi-select');
+        if (slimSelectInstance) {
+          let select = new SlimSelect({
+            select: '.multi-select',
+            events: {
+              afterChange: (newVal) => {
+                console.log(newVal);
+                let selectedValues = newVal.map(option => option.value);
+
+                let tables = document.querySelectorAll('table');
+                if (!tables) return;
+
+                storeColumnOptionsInLocalStorage(selectedValues);
+                tables.forEach(table => {
+
+                  let rows = table.querySelectorAll('tr');
+
+                  let cells = table.querySelectorAll('th');
+                  cells.forEach((cell, index) => {
+                    cell.style.display = selectedValues.includes((index).toString())
+                      ? 'table-cell'
+                      : 'none';
+                  });
+
+                  rows.forEach((row) => {
+                    let cells = row.querySelectorAll('td');
+                    cells.forEach((cell, index) => {
+                      cell.style.display = selectedValues.includes((index).toString())
+                        ? 'table-cell'
+                        : 'none';
+                    });
+                  });
+                });
+              }
+            }
+          });
+          select.setSelected(selectedValues);
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        restoreColumnOptionsFromLocalStorage();
+      });
+
+
+    </script>
+
+
+{% endblock content %}
