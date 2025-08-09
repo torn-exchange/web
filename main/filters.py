@@ -19,7 +19,7 @@ class ListingFilter(django_filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
     order_by = OrderingFilter(
-        label=mark_safe('<i class="fa fa-search"></i> Sorty By'), 
+        label=mark_safe('<i class="fa fa-search"></i> Sort By'), 
         choices=(
             ('-traders_price', 'Price (Highest to Lowest)'),
             ('traders_price', 'Price (Lowest to Highest)'),
