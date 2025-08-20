@@ -60,7 +60,7 @@ This project is only compatible with Python 3.8.10.
    ```
 5. **Set up caching folder**
 
-   ```
+   ```sh
    mkdir /path/to/cache
    chmod 755 /path/to/cache
    ```
@@ -70,8 +70,31 @@ This project is only compatible with Python 3.8.10.
    ```sh
    python manage.py migrate
    ```
-7. **Run the Server**: Start the development server using the following command:
+7. **Collect Static"": Make the server's ui and images work using the following command:
+
+   ```sh
+   python manage.py collectstatic
+   ```
+
+8. **Run the Server**: Start the development server using the following command:
 
    ```sh
    python manage.py runserver
    ```
+   
+   **Note:"" If your sever lacks ui and images you need to do the following:
+   in your .env change the value for DJANGO_DEBUG to true
+   ```env
+   DJANGO_DEBUG="True"
+   ```
+   Run the server
+   ```sh
+   python manage.py runserve
+   ```
+   Close the server with Ctrl + C
+   Set DJANGO_DEBUG back to False
+   ```env
+   DJANGO_DEBUG="False"
+   ```
+   
+   
