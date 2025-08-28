@@ -10,7 +10,7 @@ notes.md
 # specific folders
 /static/
 /crons
-
+/venv
 # all folders named as
 __pycache__/
 

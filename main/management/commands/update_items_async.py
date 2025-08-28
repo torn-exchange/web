@@ -173,6 +173,11 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
 
     if data.get('error'):
         print("update_items2 ERROR", data, item_id)
+        
+        if "Too many requests" in data["error"].get("error", ""):
+            print("Rate limit hit. Waiting 30 seconds before retrying...")
+            time.sleep(30)  # wait before retry
+            return None  # retry the same request
         return None
     else:
         itemmarket_data = data.get('itemmarket')
