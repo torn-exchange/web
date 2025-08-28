@@ -422,7 +422,7 @@ def edit_price_list(request):
         .order_by("-TE_value")
     )
 
-    #Merge once per category
+    # Merge once per category
     data_dict = {
         cat: merge_items(
             [item for item in items if item.item_type == cat],
@@ -431,49 +431,63 @@ def edit_price_list(request):
         for cat in cats
     }
 
+    user_settings = profile.settings
+    context = {
+        "page_title": "Edit Prices - Torn Exchange",
+        "item_types": cats,
+        "owner_profile": profile,
+        "user_settings": user_settings,
+        "category_dict": dictionary_of_categories(),
+        "data_dict": data_dict,
+    }
+
     if request.method == "POST":
         updated_prices = {}
         updated_discounts = {}
 
         for cat_items in data_dict.values():
             for item in cat_items:
+                # Parse inputs safely
                 raw_price = request.POST.get(f"{item}_max_price")
                 price = int(re.sub(r"[$,]", "", raw_price)) if raw_price else None
 
                 raw_discount = request.POST.get(f"{item}_discount")
-                discount = float(raw_discount) if raw_discount not in ("", None, "None") else None
+                try:
+                    discount = float(raw_discount) if raw_discount not in ("", None, "None") else None
+                except Exception:
+                    discount = None
 
                 if discount and discount > 100.0:
-                    messages.error(request, f"Discount for {item} cannot exceed 100%")
+                    messages.error(request, "Make sure your discount value is less than 100")
                     return redirect("edit_price_list")
 
-                #Store valid values
-                if price is not None:
+                if price:
                     updated_prices[item] = price
                 if discount is not None:
                     updated_discounts[item] = discount
 
-        #Delete existing listings
+        # Delete in one query
         Listing.objects.filter(owner=profile).delete()
 
-        #Create new listings storing both
+        # Prepare new listings in memory
         new_listings = []
-        for item in set(list(updated_prices.keys()) + list(updated_discounts.keys())):
-            price = updated_prices.get(item)
-            discount = updated_discounts.get(item)
+        for item, price in updated_prices.items():
+            new_listings.append(Listing(owner=profile, item=item, price=price))
 
-            new_listings.append(
-                Listing(
-                    owner=profile,
-                    item=item,
-                    price=price or None,
-                    discount=discount or None
-                )
-            )
+        for item, discount in updated_discounts.items():
+            if item in updated_prices:
+                # Update existing listing with discount
+                for listing in new_listings:
+                    if listing.item == item:
+                        listing.discount = discount
+            else:
+                # Create new listing with just discount
+                new_listings.append(Listing(owner=profile, item=item, discount=discount))
 
-        Listing.objects.bulk_create(new_listings)
+        # Bulk insert
+        Listing.objects.bulk_create(new_listings, ignore_conflicts=True)
 
-        # --- Checkbox deletions ---
+        # Handle checkbox deletions
         for cat_items in data_dict.values():
             for item in cat_items:
                 if request.POST.get(f"{item}_checkbox") == "on":
@@ -483,6 +497,7 @@ def edit_price_list(request):
         messages.success(request, "Your price list has been updated!")
         return redirect("edit_price_list")
 
+    return render(request, "main/price_list_creation.html", context)
 
 
 @xframe_options_exempt
