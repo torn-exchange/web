@@ -422,7 +422,7 @@ def edit_price_list(request):
         .order_by("-TE_value")
     )
 
-    # Merge once per category
+    #Merge once per category
     data_dict = {
         cat: merge_items(
             [item for item in items if item.item_type == cat],
@@ -431,23 +431,12 @@ def edit_price_list(request):
         for cat in cats
     }
 
-    user_settings = profile.settings
-    context = {
-        "page_title": "Edit Prices - Torn Exchange",
-        "item_types": cats,
-        "owner_profile": profile,
-        "user_settings": user_settings,
-        "category_dict": dictionary_of_categories(),
-        "data_dict": data_dict,
-    }
-
     if request.method == "POST":
         updated_prices = {}
         updated_discounts = {}
 
         for cat_items in data_dict.values():
             for item in cat_items:
-                # Parse inputs safely
                 raw_price = request.POST.get(f"{item}_max_price")
                 price = int(re.sub(r"[$,]", "", raw_price)) if raw_price else None
 
@@ -455,29 +444,36 @@ def edit_price_list(request):
                 discount = float(raw_discount) if raw_discount not in ("", None, "None") else None
 
                 if discount and discount > 100.0:
-                    messages.error(request, "Make sure your discount value is less than 100")
+                    messages.error(request, f"Discount for {item} cannot exceed 100%")
                     return redirect("edit_price_list")
 
-                if price:
+                #Store valid values
+                if price is not None:
                     updated_prices[item] = price
                 if discount is not None:
                     updated_discounts[item] = discount
 
-        # Delete in one query
+        #Delete existing listings
         Listing.objects.filter(owner=profile).delete()
 
-        # Prepare new listings in memory
+        #Create new listings storing both
         new_listings = []
-        for item, price in updated_prices.items():
-            new_listings.append(Listing(owner=profile, item=item, price=price))
+        for item in set(list(updated_prices.keys()) + list(updated_discounts.keys())):
+            price = updated_prices.get(item)
+            discount = updated_discounts.get(item)
 
-        for item, discount in updated_discounts.items():
-            new_listings.append(Listing(owner=profile, item=item, discount=discount))
+            new_listings.append(
+                Listing(
+                    owner=profile,
+                    item=item,
+                    price=price or None,
+                    discount=discount or None
+                )
+            )
 
-        # Bulk insert
-        Listing.objects.bulk_create(new_listings, ignore_conflicts=True)
+        Listing.objects.bulk_create(new_listings)
 
-        # Handle checkbox deletions
+        # --- Checkbox deletions ---
         for cat_items in data_dict.values():
             for item in cat_items:
                 if request.POST.get(f"{item}_checkbox") == "on":
@@ -487,7 +483,6 @@ def edit_price_list(request):
         messages.success(request, "Your price list has been updated!")
         return redirect("edit_price_list")
 
-    return render(request, "main/price_list_creation.html", context)
 
 
 @xframe_options_exempt
