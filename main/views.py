@@ -12,7 +12,8 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F, Q, Prefetch, Max, OuterRef, Subquery
+from django.db import transaction
+from django.db.models import F, Q, Prefetch
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -408,6 +409,7 @@ def edit_price_list(request):
      
     data_dict = {}
     cats = categories()
+    
     for category in cats:
         cat_items = Item.objects.filter(
             item_type=category, circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM, TE_value__gt=10
@@ -431,32 +433,21 @@ def edit_price_list(request):
     if request.method == 'POST':
         updated_prices = {}
         updated_discounts = {}
+        to_delete = []
         
         # first go through all categories
         for items in data_dict:
             all_relevant_items = data_dict[items]
             
             for item in all_relevant_items:
-                price = request.POST.get(f'{item}_max_price')
-                if price and price.strip():
-                    price = re.sub(r'[$,]', '', price)
-                    
-                discount = (request.POST.get(f'{item}_discount'))
+                checkbox_output = request.POST.get(f'{item}_checkbox')
+                if checkbox_output == 'on':
+                    to_delete.append(item)
                 
-                try:
-                    if discount == '' or discount is None or discount == 'None':
-                        discount = ''
-                    else:
-                        discount = float(discount)
-                except Exception as e:
-                    discount = ''
+                price = _get_price(request, item)
                     
-                try:
-                    if price and price != '':
-                        price = int(price)
-                except Exception as e:
-                    price = ''
-
+                discount = _get_discount(request, item)
+                    
                 if type(discount) == float:
                     if discount > 100.0:
                         # prevent message alert from fading away
@@ -469,42 +460,88 @@ def edit_price_list(request):
                 
                 if price != '':
                     updated_prices.update({item: price})
+                    
                 if discount != '':
                     updated_discounts.update({item: discount})
-
-        # delete all items first
-        [a.delete() for a in Listing.objects.filter(owner=profile)]
         
-        # then recreate them again
-        for key in updated_prices:
-            Listing.objects.update_or_create(
-                owner=profile,
-                item=key,
-                defaults={'price': updated_prices.get(key)})
-        
-        for key in updated_discounts:
-            Listing.objects.update_or_create(
-                owner=profile,
-                item=key,
-                defaults={'discount': updated_discounts.get(key)})
+        #####################################################
+        # TODO: save hidden cats before deleting all listings
+        #####################################################
 
-        for items in data_dict:
-            all_relevant_items = data_dict[items]
+        # Get all current listings for user in one query
+        current_listings = {
+            l.item: l for l in Listing.objects.filter(owner=profile)
+        }
 
-            for item in all_relevant_items:
-                checkbox_output = request.POST.get(f'{item}_checkbox')
-                if checkbox_output == 'on':
-                    try:
-                        Listing.objects.get(owner=profile, item=item).delete()
-                    except:
-                        pass
+        new_listings = []
+        listings_to_update = []
 
+        # Build new/updated objects
+        for item, price in updated_prices.items():
+            listing = current_listings.get(item)
+            if listing:
+                listing.price = price
+                listings_to_update.append(listing)
+            else:
+                new_listings.append(Listing(owner=profile, item=item, price=price))
+
+        for item, discount in updated_discounts.items():
+            listing = current_listings.get(item)
+            if listing:
+                listing.discount = discount
+                listings_to_update.append(listing)
+            else:
+                new_listings.append(Listing(owner=profile, item=item, discount=discount))
+
+        # atomic function that will roll back if any error occurs
+        _update_listings(profile, new_listings, listings_to_update, to_delete)
+                    
         cache.delete(f'price_list_{profile.torn_id}')
 
         messages.success(request, f'Your price list has been updated!')
         return redirect('edit_price_list')
     else:
         return render(request, 'main/price_list_creation.html', context)
+
+
+@transaction.atomic
+def _update_listings(profile, new_listings, listings_to_update, to_delete):
+    if new_listings:
+        Listing.objects.bulk_create(new_listings)
+
+    if listings_to_update:
+        Listing.objects.bulk_update(listings_to_update, ['price', 'discount'])
+
+    if to_delete:
+        Listing.objects.filter(owner=profile, item__in=to_delete).delete()
+        # Listing.objects.filter(pk__in=[l.pk for l in to_delete]).delete()
+
+
+def _get_price(request, item):
+    price = request.POST.get(f'{item}_max_price')
+    if price and price.strip():
+        price = re.sub(r'[$,]', '', price)
+        
+    try:
+        if price and price != '':
+            price = int(price)
+    except Exception as e:
+        price = ''
+        
+    return price
+
+
+def _get_discount(request, item):
+    discount = (request.POST.get(f'{item}_discount'))
+    try:
+        if discount == '' or discount is None or discount == 'None':
+            discount = ''
+        else:
+            discount = float(discount)
+    except Exception as e:
+        discount = ''
+        
+    return discount
 
 
 @xframe_options_exempt
