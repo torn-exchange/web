@@ -257,28 +257,33 @@ def listings(request):
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
             
-            listings = Listing.objects.filter(item=item, hidden=False)
+            queryset = Listing.objects.filter(item=item, hidden=False).select_related('owner', 'item')
+
+            # in order to not break existing functionality, map 'price' to 'traders_price'
+            # since this is what users expect when they say 'price'
+            if(sort_by == 'price'):
+                sort_by = 'traders_price'
 
             # Apply ListingFilter
-            valid_sort_fields = ['price']
+            valid_sort_fields = ['traders_price']
             if sort_by not in valid_sort_fields:
                 return je("Invalid sort field")
 
             if order == 'desc':
                 sort_by = f'-{sort_by}'
 
-            listings = listings.order_by(sort_by)
-
-            filterset = ListingFilter(request.GET, queryset=listings)
-            filtered_listings = filterset.qs
-
+            myFilter = ListingFilter(request.GET, queryset=queryset)
+            filtered_listings = myFilter.qs
+            filtered_listings = filtered_listings.exclude(traders_price__isnull=True)
+            filtered_listings = filtered_listings.order_by(sort_by)
+            
             # Handle pagination
             paginator = Paginator(filtered_listings, 20)
             try:
                 paged_listings = paginator.page(page)
             except (PageNotAnInteger, EmptyPage):
                 paged_listings = paginator.page(1)
-
+            
             return JsonResponse({
                 "status": "success",
                 "data": {
