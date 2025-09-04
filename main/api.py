@@ -276,14 +276,14 @@ def listings(request):
             filtered_listings = myFilter.qs
             filtered_listings = filtered_listings.exclude(traders_price__isnull=True)
             filtered_listings = filtered_listings.order_by(sort_by)
-            
+
             # Handle pagination
             paginator = Paginator(filtered_listings, 20)
             try:
                 paged_listings = paginator.page(page)
             except (PageNotAnInteger, EmptyPage):
                 paged_listings = paginator.page(1)
-            
+
             return JsonResponse({
                 "status": "success",
                 "data": {
