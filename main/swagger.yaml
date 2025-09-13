@@ -442,3 +442,57 @@ paths:
                   message:
                     type: string
                     example: "Invalid HTTP method"
+  /api/TE_prices:
+    get:
+      summary: Get all listings for a specific item.
+      description: |
+        This endpoint retrieves all listings for a specific item, sorted by the lowest price available.
+        The argument `item_id` is required to specify the item.
+        The `sort_by` parameter can be used to sort listings by price.
+        The `order` parameter can be used to specify the order (asc or desc).
+        The `page` parameter can be used for pagination.
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            default: price
+            enum:
+              - price
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trader:
+                          type: string
+                        price:
+                          type: integer
+                        item_id:
+                          type: integer
