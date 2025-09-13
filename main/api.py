@@ -2,7 +2,6 @@ import csv
 import json
 import os
 import time
-from io import StringIO
 from functools import wraps
 
 from django.core.cache import cache
@@ -90,6 +89,7 @@ def rate_limit_exponential(view_func):
 
     return _wrapped_throttle
 
+
 def get_client_ip(request):
     return (
         request.META.get("HTTP_X_FORWARDED_FOR")
@@ -97,6 +97,7 @@ def get_client_ip(request):
         or request.META.get("CF_CONNECTING_IPV6")
         or request.META.get("REMOTE_ADDR")
     )
+
 
 @ce
 @rate_limit_exponential
@@ -157,7 +158,10 @@ def price(request):
             item_id = request.GET.get('item_id')
 
             profile = get_object_or_404(Profile, torn_id=user_id)
-            item = get_object_or_404(Item, item_id=item_id)
+            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
+            
+            if not item:
+                return je("Item does not exist in TE DB. Check item's circulation number.")
 
             listing = Listing.objects.filter(owner=profile, item=item).first()
 
@@ -217,7 +221,10 @@ def TE_price(request):
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
-            item = get_object_or_404(Item, item_id=item_id)
+            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
+            
+            if not item:
+                return je("Item does not exist in TE DB. Check item's circulation number.")
             
             data = {
                     "item": item.name,
@@ -245,21 +252,30 @@ def listings(request):
             order = request.GET.get('order', 'asc').lower()
             page = request.GET.get('page', '1')
 
-            item = get_object_or_404(Item, item_id=item_id)
-            listings = Listing.objects.filter(item=item, hidden=False)
+            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
+            
+            if not item:
+                return je("Item does not exist in TE DB. Check item's circulation number.")
+            
+            queryset = Listing.objects.filter(item=item, hidden=False).select_related('owner', 'item')
+
+            # in order to not break existing functionality, map 'price' to 'traders_price'
+            # since this is what users expect when they say 'price'
+            if(sort_by == 'price'):
+                sort_by = 'traders_price'
 
             # Apply ListingFilter
-            valid_sort_fields = ['price']
+            valid_sort_fields = ['traders_price']
             if sort_by not in valid_sort_fields:
                 return je("Invalid sort field")
 
             if order == 'desc':
                 sort_by = f'-{sort_by}'
 
-            listings = listings.order_by(sort_by)
-
-            filterset = ListingFilter(request.GET, queryset=listings)
-            filtered_listings = filterset.qs
+            myFilter = ListingFilter(request.GET, queryset=queryset)
+            filtered_listings = myFilter.qs
+            filtered_listings = filtered_listings.exclude(traders_price__isnull=True)
+            filtered_listings = filtered_listings.order_by(sort_by)
 
             # Handle pagination
             paginator = Paginator(filtered_listings, 20)
@@ -301,7 +317,10 @@ def best_listing(request):
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
-            item = get_object_or_404(Item, item_id=item_id)
+            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
+            
+            if not item:
+                return je("Item does not exist in TE DB. Check item's circulation number.")
 
             listing = Listing.objects.filter(item=item).order_by('price').first()
 
@@ -421,6 +440,7 @@ def sellers(request):
     else:
         return je("Invalid HTTP method")
 
+
 @ce
 @rate_limit_exponential
 def modify_listing(request):
@@ -452,7 +472,11 @@ def modify_listing(request):
                 if not item_id or not action:
                     continue
 
-                item = get_object_or_404(Item, item_id=item_id)
+                item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
+            
+                if not item:
+                    continue
+                
                 listing = Listing.objects.filter(owner=profile, item=item).first()
 
                 if action == 'update':
@@ -494,6 +518,7 @@ def modify_listing(request):
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
+
 
 @ce
 @rate_limit_exponential
