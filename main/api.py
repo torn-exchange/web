@@ -2,7 +2,10 @@ import csv
 import json
 import os
 import time
+from io import StringIO
 from functools import wraps
+from collections import defaultdict
+import hashlib
 
 from django.core.cache import cache
 
@@ -10,6 +13,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
@@ -89,7 +93,6 @@ def rate_limit_exponential(view_func):
 
     return _wrapped_throttle
 
-
 def get_client_ip(request):
     return (
         request.META.get("HTTP_X_FORWARDED_FOR")
@@ -97,7 +100,6 @@ def get_client_ip(request):
         or request.META.get("CF_CONNECTING_IPV6")
         or request.META.get("REMOTE_ADDR")
     )
-
 
 @ce
 @rate_limit_exponential
@@ -158,10 +160,7 @@ def price(request):
             item_id = request.GET.get('item_id')
 
             profile = get_object_or_404(Profile, torn_id=user_id)
-            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
-            if not item:
-                return je("Item does not exist in TE DB. Check item's circulation number.")
+            item = get_object_or_404(Item, item_id=item_id)
 
             listing = Listing.objects.filter(owner=profile, item=item).first()
 
@@ -216,28 +215,80 @@ def profile(request):
 @ce
 @rate_limit_exponential
 def TE_price(request):
-    # Gets the TE MV from the database and compares it to torn MV
-    # ExAmple URL usage: /api/TE_price?item_id=<ITEM_ID>
-    if request.method == 'GET':
-        try:
-            item_id = request.GET.get('item_id')
-            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
-            if not item:
-                return je("Item does not exist in TE DB. Check item's circulation number.")
-            
-            data = {
+    """
+    Returns the TE MV from the database and compares it to torn MV or a list of prices.
+    Example usage: /api/TE_price?item_id=<ITEM_ID>
+    Or multiple items: /api/TE_price?item_id=<ITEM_ID_1>,<ITEM_ID_2>,<ITEM_ID_3>
+
+    Maximum allowed items is 10 per request.
+    If more than 10 items are requested, it will return an error.
+    """
+
+    if request.method != 'GET':
+        return je("Invalid HTTP method")
+
+    try:
+        item_ids_param = request.GET.get('item_id')
+        if not item_ids_param:
+            return je("Missing 'item_id' parameter")
+
+        item_ids = [i.strip() for i in item_ids_param.split(',') if i.strip()]
+        if len(item_ids) > 10:
+            return je("Too many items requested. Maximum is 10.")
+
+        # Generate a hashed cache key for uniqueness
+        cache_key_raw = f"te_price:{','.join(sorted(item_ids))}"
+        cache_key = "te_price:" + hashlib.md5(cache_key_raw.encode()).hexdigest()
+
+        # Check if cached data exists
+        cached = cache.get(cache_key)
+        if cached:
+            # Calculate remaining time to not confuse users
+            remaining_ttl = int(cached['expires_at'] - time.time())
+            return js({
+                "cached": True,
+                "expires_in_seconds": remaining_ttl,
+                "result": cached["data"]
+            })
+
+        items_data = []
+        for item_id in item_ids:
+            try:
+                item = get_object_or_404(Item, item_id=item_id)
+                items_data.append({
                     "item": item.name,
                     "te_price": item.TE_value,
                     "torn_price": item.market_value
-                }
+                })
+            except Exception:
+                items_data.append({
+                    "item_id": item_id,
+                    "error": "Item not found"
+                })
 
-            return js(data)
-        except Exception as E:
-            return je("Invalid request parameters")
-    else:
-        return je("Invalid HTTP method")
+        result = items_data if len(items_data) > 1 else items_data[0]
 
+        # Cache both the data and the expiration timestamp
+        expires_in = 60 * 30  # 30 minutes
+        cache.set(cache_key, {
+            "data": result,
+            "expires_at": time.time() + expires_in
+        }, timeout=expires_in)
+
+        return js({
+            "cached": False,
+            "expires_in_seconds": expires_in,
+            "result": result
+        })
+
+    except Exception:
+        return je("An error occurred while processing the request")
+
+@ce
+@rate_limit_exponential
+def TE_prices(request):
+    "Returns all the listings for an item with an 1 hour cache"
+    
 
 @ce
 @rate_limit_exponential
@@ -252,30 +303,21 @@ def listings(request):
             order = request.GET.get('order', 'asc').lower()
             page = request.GET.get('page', '1')
 
-            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
-            if not item:
-                return je("Item does not exist in TE DB. Check item's circulation number.")
-            
-            queryset = Listing.objects.filter(item=item, hidden=False).select_related('owner', 'item')
-
-            # in order to not break existing functionality, map 'price' to 'traders_price'
-            # since this is what users expect when they say 'price'
-            if(sort_by == 'price'):
-                sort_by = 'traders_price'
+            item = get_object_or_404(Item, item_id=item_id)
+            listings = Listing.objects.filter(item=item, hidden=False)
 
             # Apply ListingFilter
-            valid_sort_fields = ['traders_price']
+            valid_sort_fields = ['price']
             if sort_by not in valid_sort_fields:
                 return je("Invalid sort field")
 
             if order == 'desc':
                 sort_by = f'-{sort_by}'
 
-            myFilter = ListingFilter(request.GET, queryset=queryset)
-            filtered_listings = myFilter.qs
-            filtered_listings = filtered_listings.exclude(traders_price__isnull=True)
-            filtered_listings = filtered_listings.order_by(sort_by)
+            listings = listings.order_by(sort_by)
+
+            filterset = ListingFilter(request.GET, queryset=listings)
+            filtered_listings = filterset.qs
 
             # Handle pagination
             paginator = Paginator(filtered_listings, 20)
@@ -312,31 +354,74 @@ def listings(request):
 @rate_limit_exponential
 def best_listing(request):
     """
-    Example URL usage: /api/best_listing?item_id=<ITEM_ID>
+    Returns the best (lowest price) listing for a given item or a list of items.
+    Example: /api/best_listing?item_id=<IT
+  /api/best_listing:EM_ID>
+    Or multiple items: /api/best_listing?item_id=<ITEM_ID_1>,<ITEM_ID_2>,<ITEM_ID_3>
+
+    Maximum allowed items is 10 per request.
+    If more than 10 items are requested, it will return an error.
     """
-    if request.method == 'GET':
-        try:
-            item_id = request.GET.get('item_id')
-            item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
-            if not item:
-                return je("Item does not exist in TE DB. Check item's circulation number.")
-
-            listing = Listing.objects.filter(item=item).order_by('price').first()
-
-            if listing:
-                return js({
-                        "item": item.name,
-                        "trader": listing.owner.name,
-                        "price": listing.effective_price,
-                    })
-            else:
-                return je("No listings found for the specified item")
-            
-        except Exception as E:
-            return je("Invalid request parameters")
-    else:
+    
+    if request.method != 'GET':
         return je("Invalid HTTP method")
+    
+    item_ids = request.GET.get('item_id')
+    if not item_ids:
+        return je("Missing item_id parameter")
+    
+    item_ids = item_ids.split(',')
+    
+    # Validate the number of items requested (max 10)
+    if len(item_ids) > 10:
+        return je("Cannot request more than 10 items at once.")
+    # Bulk fetch all requested items
+    items = Item.objects.filter(item_id__in=item_ids)
+    items_map = {str(item.item_id): item for item in items}
+
+    if not items:
+        return je("No valid items found.")
+
+    # Bulk fetch all listings for these items
+    listings = (
+        Listing.objects
+        .filter(item__in=items, hidden=False)
+        .select_related('owner', 'item')
+        .order_by('item_id', 'price')
+    )
+
+    # Track best listing per item_id
+    best_listings_map = {} # Hashmap go brrrrrr
+    for listing in listings:
+        iid = str(listing.item.item_id)
+        if iid not in best_listings_map:
+            best_listings_map[iid] = listing  # first one is lowest due to order_by (I think)
+
+    # Build the response in array 
+    best_listings = [] # Well technically its called a list in python
+    for item_id in item_ids:
+        item = items_map.get(item_id)
+        if not item:
+            best_listings.append({
+                "item": item_id,
+                "message": "Item not found"
+            })
+            continue
+
+        listing = best_listings_map.get(item_id)
+        if not listing:
+            best_listings.append({
+                "item": item.name,
+                "message": "No listings found"
+            })
+        else:
+            best_listings.append({
+                "item": item.name,
+                "trader": listing.owner.name,
+                "price": listing.effective_price,
+            })
+
+    return js({"best_listings": best_listings})
 
 
 @ce
@@ -440,7 +525,6 @@ def sellers(request):
     else:
         return je("Invalid HTTP method")
 
-
 @ce
 @rate_limit_exponential
 def modify_listing(request):
@@ -472,11 +556,7 @@ def modify_listing(request):
                 if not item_id or not action:
                     continue
 
-                item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
-                if not item:
-                    continue
-                
+                item = get_object_or_404(Item, item_id=item_id)
                 listing = Listing.objects.filter(owner=profile, item=item).first()
 
                 if action == 'update':
@@ -519,7 +599,6 @@ def modify_listing(request):
     else:
         return je("Invalid HTTP method")
 
-
 @ce
 @rate_limit_exponential
 def active_traders(request):
@@ -549,71 +628,3 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
-    
-@ce
-@rate_limit_exponential
-def prices(request):
-    """
-    Returns the listings of a trader in JSON format.
-    Example URL usage: /api/prices?trader_id=<user_ID>&page=<num>&per_page=<num>
-    """
-    if request.method != 'GET':
-        return je("Invalid HTTP method")
-
-    # Get query parameters
-    trader_id = request.GET.get('trader_id')
-    if not trader_id:
-        return je("Missing 'trader_id' parameter")
-
-    try:
-        page = int(request.GET.get('page', 1))
-        per_page = int(request.GET.get('per_page', 100))
-    except ValueError:
-        return je("'page' and 'per_page' must be integers")
-
-    try:
-        # Fetch trader profile
-        profile = Profile.objects.get(torn_id=trader_id)
-
-        # Fetch visible listings, select related item to reduce DB hits
-        listings_qs = Listing.objects.filter(owner=profile, hidden=False)\
-                                     .select_related('item')\
-                                     .order_by('item__name')
-
-        # Paginate the queryset
-        paginator = Paginator(listings_qs, per_page)
-        try:
-            paged_listings = paginator.page(page)
-        except PageNotAnInteger:
-            paged_listings = paginator.page(1)
-        except EmptyPage:
-            paged_listings = paginator.page(paginator.num_pages)
-
-        # Serialize listings
-        data = [
-            {
-                "item": listing.item.name,
-                "item_id": listing.item.item_id,
-                "price": listing.effective_price,
-                "fixed_price": listing.price,
-                "discount": listing.discount,
-                "last_updated": listing.last_updated,
-            }
-            for listing in paged_listings
-        ]
-
-        # Pagination metadata
-        meta = {
-            "count": paginator.count,       # total listings
-            "page": page,
-            "per_page": per_page,
-            "total_pages": paginator.num_pages,
-        }
-
-        return js(data, meta)
-
-    except Profile.DoesNotExist:
-        return je("Trader profile does not exist")
-    except Exception as e:
-        print("Error fetching trader prices")
-        return je("Invalid request parameters")
