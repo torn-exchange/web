@@ -287,8 +287,57 @@ def TE_price(request):
 @ce
 @rate_limit_exponential
 def TE_prices(request):
-    "Returns all the listings for an item with an 1 hour cache"
-    
+    """
+    Returns all the listings for an item with an 1 hour cache
+    Example URL usage: /api/TE_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
+    If cached version is returned, a timer with cache expiry is also returned
+    """
+
+    if request.method != 'GET':
+        return je("Invalid HTTP method") # Im still wondering wether its better to do this, or the other if statement I used in the other
+
+    try:
+        item_id = request.GET.get('item_id')
+        if not item_id:
+            return je("Missing 'item_id' parameter")
+
+        # Generate a hashed cache key for uniqueness in the cache key
+        cache_key_raw = f"te_prices:{item_id}:{request.GET.get('sort_by','price')}:{request.GET.get('order','asc')}:{request.GET.get('page','1')}"
+        cache_key = "te_prices:" + hashlib.md5(cache_key_raw.encode()).hexdigest()
+
+        # Check if cached data exists
+        cached = cache.get(cache_key)
+        if cached:
+            # Calculate remaining time to not confuse users
+            remaining_ttl = int(cached['expires_at'] - time.time())
+            return js({
+                "cached": True,
+                "expires_in_seconds": remaining_ttl,
+                "result": cached["data"]
+            })
+
+        # Call the listings function to get fresh data
+        response = listings(request)
+        if response.status_code != 200:
+            return response  # Forward the error response
+
+        response_data = json.loads(response.content)
+
+        # Cache both the data and the expiration timestamp
+        expires_in = 60 * 60  # 1 hour
+        cache.set(cache_key, {
+            "data": response_data,
+            "expires_at": time.time() + expires_in
+        }, timeout=expires_in)
+
+        return js({
+            "cached": False,
+            "expires_in_seconds": expires_in,
+            "result": response_data
+        })
+
+    except Exception:
+        return je("An error occurred while processing the request")
 
 @ce
 @rate_limit_exponential
