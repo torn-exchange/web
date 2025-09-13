@@ -549,3 +549,71 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
+    
+@ce
+@rate_limit_exponential
+def prices(request):
+    """
+    Returns the listings of a trader in JSON format.
+    Example URL usage: /api/prices?trader_id=<user_ID>&page=<num>&per_page=<num>
+    """
+    if request.method != 'GET':
+        return je("Invalid HTTP method")
+
+    # Get query parameters
+    trader_id = request.GET.get('trader_id')
+    if not trader_id:
+        return je("Missing 'trader_id' parameter")
+
+    try:
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 100))
+    except ValueError:
+        return je("'page' and 'per_page' must be integers")
+
+    try:
+        # Fetch trader profile
+        profile = Profile.objects.get(torn_id=trader_id)
+
+        # Fetch visible listings, select related item to reduce DB hits
+        listings_qs = Listing.objects.filter(owner=profile, hidden=False)\
+                                     .select_related('item')\
+                                     .order_by('item__name')
+
+        # Paginate the queryset
+        paginator = Paginator(listings_qs, per_page)
+        try:
+            paged_listings = paginator.page(page)
+        except PageNotAnInteger:
+            paged_listings = paginator.page(1)
+        except EmptyPage:
+            paged_listings = paginator.page(paginator.num_pages)
+
+        # Serialize listings
+        data = [
+            {
+                "item": listing.item.name,
+                "item_id": listing.item.item_id,
+                "price": listing.effective_price,
+                "fixed_price": listing.price,
+                "discount": listing.discount,
+                "last_updated": listing.last_updated,
+            }
+            for listing in paged_listings
+        ]
+
+        # Pagination metadata
+        meta = {
+            "count": paginator.count,       # total listings
+            "page": page,
+            "per_page": per_page,
+            "total_pages": paginator.num_pages,
+        }
+
+        return js(data, meta)
+
+    except Profile.DoesNotExist:
+        return je("Trader profile does not exist")
+    except Exception as e:
+        print("Error fetching trader prices")
+        return je("Invalid request parameters")

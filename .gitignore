@@ -6,11 +6,14 @@
 # specific files
 update.txt
 notes.md
+505.log
 
 # specific folders
 /static/
 /crons
 /venv
+/cache/
+
 # all folders named as
 __pycache__/
 
