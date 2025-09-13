@@ -26,6 +26,9 @@ paths:
   /api/status:
     get:
       summary: Check API status
+      description: |
+        This endpoint checks the status of the API.
+        It returns a simple message indicating that the API is working.
       responses:
         '200':
           description: Success
@@ -41,6 +44,10 @@ paths:
   /api/price:
     get:
       summary: Get item price
+      description: |
+        This endpoint retrieves the price details for a specific item.
+        The arguments `user_id` and `item_id` are required to specify the user and item.
+        The response includes the price and item details.
       parameters:
         - name: user_id
           in: query
@@ -71,6 +78,9 @@ paths:
   /api/profile:
     get:
       summary: Get user profile
+      description: |
+        This endpoint retrieves the profile details of a user.
+        The argument `user_id` is required to specify the user.
       parameters:
         - name: user_id
           in: query
@@ -94,6 +104,9 @@ paths:
   /api/te_price:
     get:
       summary: Get TE and Torn prices
+      description: |
+        This endpoint retrieves the Torn Exchange (TE) and Torn prices for a specific item.
+        The argument `item_id` is required to specify the item.
       parameters:
         - name: item_id
           in: query
@@ -116,6 +129,13 @@ paths:
   /api/listings:
     get:
       summary: List item listings
+      description: |
+        This endpoint retrieves listings for a specific item.
+        The listings are sorted by the lowest price available.
+        The argument `item_id` is required to specify the item.
+        The `sort_by` parameter can be used to sort listings by price.
+        The `order` parameter can be used to specify the order (asc or desc).
+        The `page` parameter can be used for pagination.
       parameters:
         - name: item_id
           in: query
@@ -163,6 +183,10 @@ paths:
   /api/best_listing:
     get:
       summary: Best item listing
+      description: |
+        This endpoint retrieves the best listing for a specific item based on the provided item ID.
+        The best listing is determined by the lowest price available.
+        (for multiple items, separate with commas)
       parameters:
         - name: item_id
           in: query
@@ -185,6 +209,14 @@ paths:
   /api/receipts:
     get:
       summary: User trade receipts
+      description: |
+        This endpoint retrieves the trade receipts for a specific user.
+        The receipts are sorted by the most recent trades first.
+        The argument `key` is required to authenticate the request.
+        The `format` parameter can be used to specify the response format (json or csv).
+        The `page` parameter can be used to specify the page number for pagination.
+        The `per_page` parameter can be used to specify the number of receipts per page (default is 100).
+
       parameters:
         - name: key
           in: query
@@ -224,6 +256,12 @@ paths:
   /api/sellers:
     get:
       summary: Sellers information
+      description: |
+        This endpoint retrieves information about sellers for a specific item.
+        The sellers are sorted by the lowest price available.
+        The argument `key` is required to authenticate the request.
+        The `item_id` parameter is required to specify the item.
+
       parameters:
         - name: key
           in: query
@@ -250,7 +288,451 @@ paths:
     post:
       summary: Modify a listing by updating its price or deleting it
       description: |
-        This endpoint allows you to modify a listing by either updating its price, updating its discount, or deleting it.
+        This endpoint allows you to modify a listing by either updating its price, or deleting it.
+        - This endpoint has 2 actins: delete and update
+        - To update the price, provide the `fixed_price` parameter with the (torn) `item_id`.
+        - To update the discount, provide the `discount` parameter with the (torn) `item_id`.
+        - To update both the price and discount, provide both parameters with the (torn) `item_id`.
+        - To delete the listing, provide the `action: delete` field for the item you wish to remove, this can be set at the parent level OR per listing item.
+        - You cannot delete a listing by posting `action: update` with discount and fixed_price not set.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: The torn api key to authorize the request
+                  example: "192XXXXXXXX931XX"
+                action:
+                  type: string
+                  description: Action to be taken on the listing (either `update` or `delete`)
+                  enum:
+                    - update
+                    - delete
+                  example: delete
+                listings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      item_id:
+                        type: integer
+                        description: The ID of the item to modify
+                        example: 206
+                      fixed_price:
+                        type: integer
+                        description: The fixed price of the item (optional for update - must have either fixed_price or discount)
+                        example: 780000
+                      discount:
+                        type: number
+                        format: float
+                        description: The discount percentage. Cannot be more than 100 or less than 0 (optional for update - must have either fixed_price or discount)
+                        example: 50
+                        minimum: 0
+                        maximum: 100
+                      action:
+                        type: string
+                        description: Action to be taken on the listing (either `update` or `delete`)
+                        enum:
+                          - update
+                          - delete
+                        example: delete
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      updated_listings:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ 206, 200, 197 ]
+                      failed_listings:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ ]
+                      deleted_listings:
+                        type: array
+                        items:
+                          type: integer
+                        example: [ ]
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Invalid request parameters"
+        '404':
+          description: Listing not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Listing not found"
+        '405':
+          description: Invalid HTTP method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: "Invalid HTTP method"
+openapi: 3.1.0
+info:
+  title: TE API
+  version: 1.0.0
+  description: |
+    API documentation for the Torn Exchange API.
+
+    **Rate Limiting:**
+
+    - Maximum **10 requests per minute** per IP.
+    - If exceeded, requests will be blocked with an exponential backoff penalty.
+    - Backoff starts at 15 seconds and doubles with each violation, capped at 48 hours.
+    - Example backoff sequence (seconds): 15, 30, 60, 120, 240, ..., up to 172800 (48 hours).
+    - Max theoretical allowed requests per day without penalty: ~14,400.
+    - If the API is continuously used at the rate limit, you may be banned permanently.
+    - Rate limit violations return HTTP 429 with JSON payload:
+      ```json
+      {
+        "status": "error",
+        "rate_limited": true,
+        "retry_after": <seconds>
+      }
+      ```
+
+paths:
+  /api/status:
+    get:
+      summary: Check API status
+      description: |
+        This endpoint checks the status of the API.
+        It returns a simple message indicating that the API is working.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Working"
+
+  /api/price:
+    get:
+      summary: Get item price
+      description: |
+        This endpoint retrieves the price details for a specific item.
+        The arguments `user_id` and `item_id` are required to specify the user and item.
+        The response includes the price and item details.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Price details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  price:
+                    type: integer
+                    example: 100
+                  item:
+                    type: string
+        '404':
+          description: Not found
+
+  /api/profile:
+    get:
+      summary: Get user profile
+      description: |
+        This endpoint retrieves the profile details of a user.
+        The argument `user_id` is required to specify the user.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  activity_status:
+                    type: string
+                    example: "Active"
+
+  /api/te_price:
+    get:
+      summary: Get TE and Torn prices
+      description: |
+        This endpoint retrieves the Torn Exchange (TE) and Torn prices for a specific item or items.
+        The `item_id` query parameter is required and should contain one or more item IDs, separated by commas.
+      
+        - Maximum of 10 items per request.
+        - If data is cached, the response includes how long until the cache expires.
+
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Comma-separated list of item IDs (max 10)
+
+      responses:
+        '200':
+          description: Successful response with item price data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cached:
+                    type: boolean
+                    description: Indicates whether the response was returned from cache
+                  expires_in_seconds:
+                    type: integer
+                    description: Time (in seconds) until the cached data expires
+                  result:
+                    oneOf:
+                      - type: object
+                        properties:
+                          item:
+                            type: string
+                          te_price:
+                            type: integer
+                          torn_price:
+                            type: integer
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            item:
+                              type: string
+                            te_price:
+                              type: integer
+                            torn_price:
+                              type: integer
+                            item_id:
+                              type: string
+                            error:
+                              type: string
+
+
+  /api/listings:
+    get:
+      summary: List item listings
+      description: |
+        This endpoint retrieves listings for a specific item.
+        The listings are sorted by the lowest price available.
+        The argument `item_id` is required to specify the item.
+        The `sort_by` parameter can be used to sort listings by price.
+        The `order` parameter can be used to specify the order (asc or desc).
+        The `page` parameter can be used for pagination.
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            default: price
+            enum:
+              - price
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: asc
+            enum:
+              - asc
+              - desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  listings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        trader:
+                          type: string
+                        price:
+                          type: integer
+
+  /api/best_listing:
+    get:
+      summary: Best item listing
+      description: |
+        This endpoint retrieves the best listing for a specific item based on the provided item ID.
+        The best listing is determined by the lowest price available.
+        (for multiple items, separate with commas)
+      parameters:
+        - name: item_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Best listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trader:
+                    type: string
+                  price:
+                    type: integer
+
+  /api/receipts:
+    get:
+      summary: User trade receipts
+      description: |
+        This endpoint retrieves the trade receipts for a specific user.
+        The receipts are sorted by the most recent trades first.
+        The argument `key` is required to authenticate the request.
+        The `format` parameter can be used to specify the response format (json or csv).
+        The `page` parameter can be used to specify the page number for pagination.
+        The `per_page` parameter can be used to specify the number of receipts per page (default is 100).
+
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Receipts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipts:
+                    type: array
+                    items:
+                      type: object
+
+  /api/sellers:
+    get:
+      summary: Sellers information
+      description: |
+        This endpoint retrieves information about sellers for a specific item.
+        The sellers are sorted by the lowest price available.
+        The argument `key` is required to authenticate the request.
+        The `item_id` parameter is required to specify the item.
+
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+      responses:
+        '200':
+          description: Sellers data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+  /api/modify_listing:
+    post:
+      summary: Modify a listing by updating its price or deleting it
+      description: |
+        This endpoint allows you to modify a listing by either updating its price, or deleting it.
+        - This endpoint has 2 actins: delete and update
         - To update the price, provide the `fixed_price` parameter with the (torn) `item_id`.
         - To update the discount, provide the `discount` parameter with the (torn) `item_id`.
         - To update both the price and discount, provide both parameters with the (torn) `item_id`.
