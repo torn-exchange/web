@@ -450,9 +450,13 @@
     --bs-btn-disabled-border-color: #93c;
 }
 
+[data-bs-theme=dark] .table-bordered {
+    --bs-table-border-color: #ffffff;
+}
+
 [data-bs-theme=dark] .alert-primary {
     background-color: #000;
-  }
+}
 
 [data-bs-theme=dark] #checkbox {
     accent-color: #ffffff;
@@ -482,6 +486,7 @@
   color: #000000;
   background-color: #ffffff;
 }
+
 /*DARK MODE END*/
 
 /*OVERIDES CYBORG PROPERTIES*/

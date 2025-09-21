@@ -1,6 +1,5 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
-from .models import Profile  # Adjust this to your actual model
 
 class StaticViewSitemap(Sitemap):
     priority = 0.5
@@ -27,8 +26,9 @@ class StaticViewSitemap(Sitemap):
             'analytics',
             'settings',
             'api_home',
-            'forum_tutorial',
+            'how-to-use-torn-exchange',
             'about',
+            'tos',
         ]
 
     def location(self, item):
