@@ -1,8 +1,8 @@
 {% extends "main/base.html" %}
 {% block content %}
 {% load static %}
-<div class='container py-4'>
-    <div class="row mt-3">
+<div class='container'>
+    <div class="row mt-12">
         <div class="card col-12 col-md p-0 m-1 shadow-sm">
             <div class="card-header bg-dark text-white py-3">
                 <h4 class="mb-0">Terms of Service (ToS)</h4>
@@ -16,50 +16,43 @@
                 <div class="alert alert-primary mb-4">
                     <strong>By using / logging into / providing your key to TornExchange.com, you agree to the Terms Of Service as outlined below.</strong>
                 </div>
+                
+                <table class="table table-striped table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th class="text-gold">Data Storage</th>
+                            <th class="text-gold">Data Sharing</th>
+                            <th class="text-gold">Purpose of Use</th>
+                            <th class="text-gold">Key Storage & Sharing</th>
+                            <th class="text-gold">Key Access Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Will the data be stored for any purpose?</td>
+                            <td>Who can access the data besides the end user?</td>
+                            <td>What is the stored data being used for?</td>
+                            <td>Will the API key be stored securely and who can access it?</td>
+                            <td>What key access level or specific selections are required?</td>
+                        </tr>
+                        <tr>
+                            <td>Your data will be persistent - until account deletion.</td>
+                            <td>Your data will be viewable by users and guests of the Torn Exchange website.</td>
+                            <td>
+                                <p>Your API key will be used for the following purposes:</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Ensure you are an active, real player on Torn.com</li>
+                                    <li class="list-group-item">To display your username and unique ID on TornExchange.com</li>
+                                    <li class="list-group-item">To pull latest item prices from Torn API</li>
+                                </ul>
+                            </td>
+                            <td>Your API key will be stored in a secure database. It will not be shared with any third parties
+                        without your consent.</td>
+                            <td> Limited Access </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                <div class="mb-4">
-                    <h5 class="border-bottom pb-2 text-gold">Data Storage</h5>
-                    Your data will be persistent - until account deletion.
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="border-bottom pb-2 text-gold">Data Sharing</h5>
-                    Your data will be viewable by users and guests of the Torn Exchange website.
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="border-bottom pb-2 text-gold">Purpose of Use</h5>
-                    <p>Your data & API key will be used for the following purposes:</p>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Ensure you are an active, real player on Torn.com</li>
-                        <li class="list-group-item">To display your username and unique id on TornExchange.com</li>
-                        <li class="list-group-item">To carry out item lookups on Torn.com</li>
-                        <li class="list-group-item">To analyse the market value of items on Torn.com</li>
-                    </ul>
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="border-bottom pb-2 text-gold">Key Storage & Sharing</h5>
-                    Your API key will be stored in a secure database. It will not be shared with any third parties
-                        without your consent.
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="border-bottom pb-2 text-gold">Key Access Level</h5>
-                    Limited Access
-                </div>
-            </div>
-        </div>
-
-        <div class="card col-12 col-md-3 p-0 m-1 shadow-sm">
-            <div class="card-header bg-dark text-white py-3">
-                <h5 class="mb-0">Contacts</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2">Ata [2507441]</li>
-                    <li class="mb-2">ReConnected [1286142]</li>
-                </ul>
             </div>
         </div>
     </div>

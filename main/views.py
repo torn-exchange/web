@@ -80,6 +80,14 @@ def about(request):
     return render(request, 'main/about.html', context)
 
 
+def tos(request):
+    context = {
+        'page_title': 'Terms of Service - Torn Exchange',
+    }
+    
+    return render(request, 'main/tos.html', context)
+
+
 def rw_listings(request):
     item_bonus_title_1 = request.GET.get('item_bonus_title_1', None)
     item_bonus_title_2 = request.GET.get('item_bonus_title_2', None)
@@ -1520,9 +1528,6 @@ def save_category_order(request):
     return JsonResponse({'success': True})
 
 
-def tos(request):
-    return render(request, 'main/tos.html')
-
 def sitemap(request):
     links = [
         {
@@ -1530,6 +1535,7 @@ def sitemap(request):
             'urls': [
                 {'name': 'Home', 'url': reverse('home')},
                 {'name': 'About', 'url': reverse('about')},
+                {'name': 'ToS', 'url': reverse('tos')},
             ]
         },
         {
