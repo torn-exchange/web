@@ -1260,10 +1260,7 @@ def create_receipt(request):
         
         trade_receipt.save()
         
-        # save trader as an active user if not already
-        if not owner_profile.active_trader:
-            owner_profile.active_trader = True
-            owner_profile.save()
+        _save_active_trader(owner_profile)
     
     ## CREATE CUSTOM MESSAGE
     
@@ -1355,10 +1352,7 @@ def new_create_receipt(request):
                     'total': trade_receipt.total,
                     }
             
-            # save trader as an active user if not already
-            if not owner_profile.active_trader:
-                owner_profile.active_trader = True
-                owner_profile.save()
+            _save_active_trader(owner_profile)
             
         except Exception as e:
             log_error(e)
@@ -1583,3 +1577,11 @@ def sitemap(request):
         },
     ]
     return render(request, 'main/sitemap.html', {'links': links})
+
+
+### HELPFUL FUNCTIONS ###
+
+def _save_active_trader(profile):
+    if not profile.active_trader:
+        profile.active_trader = True
+        profile.save()
