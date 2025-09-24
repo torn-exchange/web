@@ -1259,6 +1259,11 @@ def create_receipt(request):
                 return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
         
         trade_receipt.save()
+        
+        # save trader as an active user if not already
+        if not owner_profile.active_trader:
+            owner_profile.active_trader = True
+            owner_profile.save()
     
     ## CREATE CUSTOM MESSAGE
     
@@ -1349,6 +1354,11 @@ def new_create_receipt(request):
                     'profit': trade_receipt.profit,
                     'total': trade_receipt.total,
                     }
+            
+            # save trader as an active user if not already
+            if not owner_profile.active_trader:
+                owner_profile.active_trader = True
+                owner_profile.save()
             
         except Exception as e:
             log_error(e)
