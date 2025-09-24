@@ -1259,6 +1259,8 @@ def create_receipt(request):
                 return JsonResponse({'error_message': item_trade.is_valid()}, status=400)
         
         trade_receipt.save()
+        
+        _save_active_trader(owner_profile)
     
     ## CREATE CUSTOM MESSAGE
     
@@ -1349,6 +1351,8 @@ def new_create_receipt(request):
                     'profit': trade_receipt.profit,
                     'total': trade_receipt.total,
                     }
+            
+            _save_active_trader(owner_profile)
             
         except Exception as e:
             log_error(e)
@@ -1573,3 +1577,11 @@ def sitemap(request):
         },
     ]
     return render(request, 'main/sitemap.html', {'links': links})
+
+
+### HELPFUL FUNCTIONS ###
+
+def _save_active_trader(profile):
+    if not profile.active_trader:
+        profile.active_trader = True
+        profile.save()
