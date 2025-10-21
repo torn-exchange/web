@@ -322,7 +322,7 @@ def best_listing(request):
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
 
-            listing = Listing.objects.filter(item=item).order_by('price').first()
+            listing = Listing.objects.filter(item=item).order_by('-price').first()
 
             if listing:
                 return js({
