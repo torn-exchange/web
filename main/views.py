@@ -30,7 +30,7 @@ from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, 
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
-                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
+                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
 from users.forms import SettingsForm
 from users.models import Profile, Settings
 from vote.models import Vote
@@ -217,6 +217,8 @@ def search_services(request: HttpRequest):
 
     try:
         query_set = myFilter.qs
+        
+        query_set = query_set.order_by('-last_updated')
         
         # exclude Listings where price is None or 0
         number_of_items = query_set.count()
@@ -478,12 +480,10 @@ def edit_price_list(request):
                         return redirect('edit_price_list')
                 
                 # join price and discount together
-                if price != '' or discount != '':
-                    entry = updated_items.setdefault(item, {})
-                    if price != '':
-                        entry['price'] = price
-                    if discount != '':
-                        entry['discount'] = discount
+                # if price != '' or discount != '':
+                entry = updated_items.setdefault(item, {})
+                entry['price'] = price
+                entry['discount'] = discount
 
         # Get all current listings for user in one query
         current_listings = {
@@ -498,18 +498,22 @@ def edit_price_list(request):
         # Build new/updated objects
         for item, vals in updated_items.items():
             listing = current_listings.get(item)
+            
+            new_price = safe_int(vals['price'])
+            new_discount = safe_float(vals['discount'])
+            
             if listing:
                 if 'price' in vals:
-                    listing.price = vals['price']
+                    listing.price = new_price
                 if 'discount' in vals:
-                    listing.discount = vals['discount']
+                    listing.discount = new_discount
                 listings_to_update.append(listing)
             else:
                 kwargs = {}
                 if 'price' in vals:
-                    kwargs['price'] = vals['price']
+                    kwargs['price'] = new_price
                 if 'discount' in vals:
-                    kwargs['discount'] = vals['discount']
+                    kwargs['discount'] = new_discount
                     
                 new_listings.append(Listing(owner=profile, item=item, **kwargs))
                 
@@ -542,14 +546,14 @@ def _update_listings(profile, new_listings, listings_to_update, to_delete):
 
 def _get_price(request, item):
     price = request.POST.get(f'{item}_max_price')
-    if price and price.strip():
-        price = re.sub(r'[$,]', '', price)
-        
     try:
+        if price and price.strip():
+            price = re.sub(r'[$,]', '', price)
+        
         if price and price != '':
             price = int(price)
     except Exception as e:
-        price = ''
+        price = None
         
     return price
 
@@ -558,11 +562,11 @@ def _get_discount(request, item):
     discount = (request.POST.get(f'{item}_discount'))
     try:
         if discount == '' or discount is None or discount == 'None':
-            discount = ''
+            discount = None
         else:
             discount = float(discount)
     except Exception as e:
-        discount = ''
+        discount = None
         
     return discount
 
