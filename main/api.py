@@ -322,8 +322,19 @@ def best_listing(request):
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
 
-            listing = Listing.objects.filter(item=item).order_by('-price').first()
-
+            base_qs = Listing.objects.filter(item=item).select_related('owner', 'item').order_by('-last_updated')
+            myFilter = ListingFilter(request.GET, queryset=base_qs)
+            filtered = myFilter.qs
+            
+            filtered = (
+                filtered
+                .exclude(hidden=True)
+                .exclude(traders_price__isnull=True)
+                .filter(owner__active_trader=True)
+            )
+            
+            listing = filtered.order_by('-traders_price', '-last_updated').first()
+            
             if listing:
                 return js({
                         "item": item.name,
