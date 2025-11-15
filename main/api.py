@@ -409,6 +409,33 @@ def receipts(request):
 
 @ce
 @rate_limit_exponential
+def receipt(request, receipt_id=None):
+    try:
+        receipt = get_object_or_404(TradeReceipt, receipt_url_string=receipt_id)
+        items_trades = receipt.items_trades.select_related('item').all()
+        meta = {
+            "receipt_id": receipt.receipt_url_string,
+            "created_at": receipt.created_at,
+            "seller": receipt.seller,
+            "total": receipt.total,
+            "profit": receipt.profit,
+        }
+        data = {
+            item_trade.item.item_id: {
+                "name": item_trade.item.name,
+                "price": item_trade.price,
+                "quantity": item_trade.quantity,
+                "subtotal": item_trade.sub_total,
+            }
+            for item_trade in items_trades
+        }
+        return js(data, meta)
+    except Exception as E:
+        return je('Page not found, wrong Receipt ID in the URL')
+
+
+@ce
+@rate_limit_exponential
 def sellers(request):
     """Get all sellers (customers) for a user
 
