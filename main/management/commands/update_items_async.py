@@ -27,7 +27,8 @@ class Command(BaseCommand):
         parser.add_argument('item_name', nargs='?', type=str)
 
     system_api_key = os.getenv('SYSTEM_API_KEY')
-    url = f'https://api.torn.com/torn/?selections=items&key={system_api_key}'
+    comment = os.getenv("API_COMMENT")
+    url = f'https://api.torn.com/torn/?selections=items&key={system_api_key}{comment}'
     req = requests.get(url)
     data = json.loads(req.content)['items']
     df = pd.DataFrame(data).transpose()
@@ -167,7 +168,8 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
         return None
     
     time.sleep(0.05)
-    url = f'https://api.torn.com/v2/market/?selections=itemmarket&id={item_id}&key={api_key}'
+    comment = os.getenv("API_COMMENT")
+    url = f'https://api.torn.com/v2/market/?selections=itemmarket&id={item_id}&key={api_key}{comment}'
     req = requests.get(url)
     data = json.loads(req.content)
 
@@ -210,8 +212,9 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
 
 def get_points_market_value():
     system_api_key = os.getenv('SYSTEM_API_KEY')
+    comment = os.getenv("API_COMMENT")
     req = requests.get(
-        f'https://api.torn.com/market/?selections=pointsmarket&key={system_api_key}')
+        f'https://api.torn.com/market/?selections=pointsmarket&key={system_api_key}{comment}')
     data = json.loads(req.content)
     points_cost = int(round(np.nanmean(
         [data['pointsmarket'][a]['cost'] for a in data['pointsmarket']][0:5])))

@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 import traceback
 
 from django.core.management.base import BaseCommand
@@ -28,8 +29,9 @@ class Command(BaseCommand):
 
         for profile in Profile.objects.filter(user__in=users_to_be_checked):
             if profile.api_key != '':
+                comment = os.getenv("API_COMMENT")
                 req = requests.get(
-                    f'https://api.torn.com/user/?selections=profile&key={profile.api_key}')
+                    f'https://api.torn.com/user/?selections=profile&key={profile.api_key}{comment}')
                 data = json.loads(req.content)
                 
                 try:
