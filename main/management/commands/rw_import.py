@@ -72,7 +72,7 @@ class Command(BaseCommand):
         all_item_ids = []
         
         for category in categories:
-            url = 'https://api.torn.com/v2/torn/items'
+            url = 'https://api.torn.com/v2/torn/items' + os.getenv("API_COMMENT_FIRST")
             headers = {
                 'accept': 'application/json',
                 'Authorization': f'ApiKey {self.api_key}'

@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 import  concurrent.futures
 
@@ -51,7 +52,8 @@ def get_profiles_with_keys():
 
 # Make a dummy call just to check whether the key is still valid or not
 def ping_torn_api(api_key):
-    url = f'https://api.torn.com/v2/market/?selections=timestamp&key={api_key}'
+    comment = os.getenv("API_COMMENT")
+    url = f'https://api.torn.com/v2/market/?selections=timestamp&key={api_key}{comment}'
     req = requests.get(url)
     data = json.loads(req.content)
     

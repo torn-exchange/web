@@ -36,8 +36,9 @@ def register(request):
 def login_request(request):
     if request.method == 'POST':
         api_key = request.POST.get('apikey')
+        comment = os.getenv("API_COMMENT")
         req = requests.get(
-            f'https://api.torn.com/user/?selections=basic&key={api_key}')
+            f'https://api.torn.com/user/?selections=basic&key={api_key}{comment}')
         data = json.loads(req.content)
         if data.get('error') is not None:
             messages.info(request, "Invalid API key.")

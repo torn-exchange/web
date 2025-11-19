@@ -1432,7 +1432,7 @@ def tutorial(request):
     if data:
         html_content = data
     else:
-        api_url = "https://api.torn.com/v2/forum/16447032/thread"
+        api_url = "https://api.torn.com/v2/forum/16447032/thread" + os.getenv("API_COMMENT_FIRST")
         headers = {
             "Authorization": "ApiKey " + os.getenv("SYSTEM_API_KEY")
         }
