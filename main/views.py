@@ -12,7 +12,8 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import F, Q, Prefetch, Max, OuterRef, Subquery
+from django.db.models import F, Q, Prefetch
+from django.db import transaction
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -29,7 +30,7 @@ from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, 
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
-                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error)
+                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
 from users.forms import SettingsForm
 from users.models import Profile, Settings
 from vote.models import Vote
@@ -216,6 +217,8 @@ def search_services(request: HttpRequest):
 
     try:
         query_set = myFilter.qs
+        
+        query_set = query_set.order_by('-last_updated')
         
         # exclude Listings where price is None or 0
         number_of_items = query_set.count()
@@ -449,64 +452,137 @@ def edit_price_list(request):
         "data_dict": data_dict,
     }
 
-    if request.method == "POST":
-        updated_prices = {}
-        updated_discounts = {}
+    if request.method == 'POST':
+        updated_items = {}
+        to_delete = []
+        
+        # first go through all categories
+        for items in data_dict:
+            all_relevant_items = data_dict[items]
+            
+            for item in all_relevant_items:
+                checkbox_output = request.POST.get(f'{item}_checkbox')
+                if checkbox_output == 'on':
+                    to_delete.append(item)
+                
+                price = _get_price(request, item)
+                    
+                discount = _get_discount(request, item)
+                    
+                if type(discount) == float:
+                    if discount > 100.0:
+                        # prevent message alert from fading away
+                        storage = messages.get_messages(request)
+                        storage.used = False
 
-        for cat_items in data_dict.values():
-            for item in cat_items:
-                # Parse inputs safely
-                raw_price = request.POST.get(f"{item}_max_price")
-                price = int(re.sub(r"[$,]", "", raw_price)) if raw_price else None
+                        messages.error(
+                            request, 'Make sure your discount value is less than 100')
+                        return redirect('edit_price_list')
+                
+                # join price and discount together
+                # if price != '' or discount != '':
+                entry = updated_items.setdefault(item, {})
+                entry['price'] = price
+                entry['discount'] = discount
 
-                raw_discount = request.POST.get(f"{item}_discount")
-                try:
-                    discount = float(raw_discount) if raw_discount not in ("", None, "None") else None
-                except Exception:
-                    discount = None
-
-                if discount and discount > 100.0:
-                    messages.error(request, "Make sure your discount value is less than 100")
-                    return redirect("edit_price_list")
-
-                if price:
-                    updated_prices[item] = price
-                if discount is not None:
-                    updated_discounts[item] = discount
-
-        # Delete in one query
-        Listing.objects.filter(owner=profile).delete()
-
-        # Prepare new listings in memory
+        # Get all current listings for user in one query
+        current_listings = {
+            l.item: l for l in Listing.objects.filter(owner=profile)
+        }
+        
         new_listings = []
-        for item, price in updated_prices.items():
-            new_listings.append(Listing(owner=profile, item=item, price=price))
+        listings_to_update = []
+        
+        to_delete = _get_deleted(current_listings, updated_items, to_delete)
 
-        for item, discount in updated_discounts.items():
-            if item in updated_prices:
-                # Update existing listing with discount
-                for listing in new_listings:
-                    if listing.item == item:
-                        listing.discount = discount
+        # Build new/updated objects
+        for item, vals in updated_items.items():
+            listing = current_listings.get(item)
+            
+            new_price = safe_int(vals['price'])
+            new_discount = safe_float(vals['discount'])
+            
+            if listing:
+                if 'price' in vals:
+                    listing.price = new_price
+                if 'discount' in vals:
+                    listing.discount = new_discount
+                listings_to_update.append(listing)
             else:
-                # Create new listing with just discount
-                new_listings.append(Listing(owner=profile, item=item, discount=discount))
+                kwargs = {}
+                if 'price' in vals:
+                    kwargs['price'] = new_price
+                if 'discount' in vals:
+                    kwargs['discount'] = new_discount
+                    
+                new_listings.append(Listing(owner=profile, item=item, **kwargs))
+                
+        # atomic function that will roll back if any error occurs
+        _update_listings(profile, new_listings, listings_to_update, to_delete)
+                    
+        cache.delete(f'price_list_{profile.torn_id}')
 
-        # Bulk insert
-        Listing.objects.bulk_create(new_listings, ignore_conflicts=True)
+        messages.success(request, f'Your price list has been updated!')
+        return redirect('edit_price_list')
+    else:
+        return render(request, 'main/price_list_creation.html', context)
 
-        # Handle checkbox deletions
-        for cat_items in data_dict.values():
-            for item in cat_items:
-                if request.POST.get(f"{item}_checkbox") == "on":
-                    Listing.objects.filter(owner=profile, item=item).delete()
 
-        cache.delete(f"price_list_{profile.torn_id}")
-        messages.success(request, "Your price list has been updated!")
-        return redirect("edit_price_list")
+@transaction.atomic
+def _update_listings(profile, new_listings, listings_to_update, to_delete):
+    try:
+        if new_listings:
+            Listing.objects.bulk_create(new_listings)
 
-    return render(request, "main/price_list_creation.html", context)
+        if listings_to_update:
+            Listing.objects.bulk_update(listings_to_update, ['price', 'discount'])
 
+        if to_delete:
+            Listing.objects.filter(owner=profile, item__in=to_delete).delete()
+    except Exception as e:
+        log_error(e)
+        raise e
+
+
+def _get_price(request, item):
+    price = request.POST.get(f'{item}_max_price')
+    try:
+        if price and price.strip():
+            price = re.sub(r'[$,]', '', price)
+        
+        if price and price != '':
+            price = int(price)
+    except Exception as e:
+        price = None
+        
+    return price
+
+
+def _get_discount(request, item):
+    discount = (request.POST.get(f'{item}_discount'))
+    try:
+        if discount == '' or discount is None or discount == 'None':
+            discount = None
+        else:
+            discount = float(discount)
+    except Exception as e:
+        discount = None
+        
+    return discount
+
+
+def _get_deleted(current_listings, updated_items, to_delete):
+    # If a listing exists but user provided neither price nor discount for it,
+    # mark it for deletion as well (in addition to checkbox deletions).
+    existing_item_map = {item.id: item for item in current_listings.keys()}
+    existing_ids = set(existing_item_map.keys())
+    updated_ids = set(item.id for item in updated_items.keys())
+    explicit_delete_ids = set(item.id for item in to_delete)
+    extra_delete_ids = existing_ids - updated_ids - explicit_delete_ids
+    for _id in extra_delete_ids:
+        to_delete.append(existing_item_map[_id])
+
+    return to_delete
 
 @xframe_options_exempt
 def price_list(request, identifier=None):
