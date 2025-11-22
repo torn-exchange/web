@@ -139,6 +139,7 @@ def rw_listings(request):
         'user_profile': profile,
         'myFilter': myFilter,
         'number_of_items': number_of_items,
+        'disable_ads': True
     }
 
     return render(request, 'main/rw_listings.html', context)
