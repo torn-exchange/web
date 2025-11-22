@@ -280,3 +280,24 @@ def log_error(e):
     else:
         sentry_sdk.capture_exception(e)
 
+
+def safe_int(v):
+    if v is None or v == '':
+        return None
+    if isinstance(v, int):
+        return v
+    try:
+        return int(v)
+    except (ValueError, TypeError):
+        return None
+    
+
+def safe_float(v):
+    if v is None or v == '':
+        return None
+    if isinstance(v, float):
+        return v
+    try:
+        return float(v)
+    except (ValueError, TypeError):
+        return None
