@@ -60,16 +60,6 @@
     </div>
     <div class='row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3'>
         {% for itype in item_types %}
-
-        {% comment %} {% if forloop.counter0|divisibleby:4 %}
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-        <!-- TE-SquareAds -->
-        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5083091252165465"
-            data-ad-slot="4187308828" data-ad-format="auto" data-full-width-responsive="true"></ins>
-        <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
-        {% endif %} {% endcomment %}
         
         <div class="col category">
             <div class='card price_table'>
@@ -89,7 +79,7 @@
                         </thead>
                         <tbody class="my_tbody">
                             {%for item in items%}
-                            {% if item.item.item_type == itype%}
+                            {% if item.item.item_type == itype %}
                             <tr class="row-striped p-0 item">
                                 </td>
                                 <td style="width: 20%;" class="px-2 m-0"><img src="{{item.item.image_url}}" style="width: 100%;"></td>

@@ -644,7 +644,10 @@ def price_list(request, identifier=None):
     key = f'price_list_{pricelist_profile.torn_id}'
 
     all_relevant_items = Listing.objects.filter(
-        owner=pricelist_profile).select_related('owner', 'item', 'owner__settings').order_by('-item__TE_value')
+        owner=pricelist_profile
+    ).select_related('owner', 'item', 'owner__settings') \
+    .exclude(price__isnull=True, discount__isnull=True) \
+    .order_by('-item__TE_value')
 
     last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
 
