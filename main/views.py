@@ -1125,7 +1125,11 @@ def parse_trade_paste(request: HttpRequest):
             item_map = {item.name: item for item in items}
 
             # Create a mapping of items to their effective prices
-            listing_map = {listing.item: listing.effective_price for listing in listings}
+            listing_map = {
+                listing.item: listing.effective_price 
+                for listing in listings 
+                if listing.effective_price is not None
+            }
             
             price_list = []
             item_urls = []
