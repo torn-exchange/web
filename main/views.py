@@ -1247,19 +1247,18 @@ def new_extension_get_prices(request):
             
             for i in items:
                 try:
-                    # print(i, Listing.objects.get(owner=profile, item__name=i))
-                    listings.append(Listing.objects.get(
-                        owner=profile, item__name=i))
+                    listing = Listing.objects.get(owner=profile, item__name=i)
+                    effective_price = listing.effective_price if listing.effective_price is not None else 0
+                    listings.append(effective_price)
+                    
+                    items_objects.append(Item.objects.get(name=i))
                 except Listing.DoesNotExist:
                     listings.append(None)
                     
-            for i in items:
-                try:
-                    items_objects.append(Item.objects.get(name=i))
                 except Item.DoesNotExist:
                     items_objects.append(None)
                     
-            prices = [a.effective_price if a is not None else 0 for a in listings]
+            prices = [a if a is not None else 0 for a in listings]
             profit_per_item = []
             
             for i in range(len(listings)):
