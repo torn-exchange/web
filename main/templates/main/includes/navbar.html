@@ -11,6 +11,7 @@
   <a class="navbar-brand d-flex d-lg-none float-right" href="{% url 'home' %}">
     <img src="{% static '/main/images/mainlogo.png'%}" style="max-width: 300px;" alt="HOMEPAGE" class="mainlogo-small ml-3">
   </a>
+
   <a class="navbar-brand mt-0 d-none d-lg-flex" href="{% url 'home' %}">
     <img src="{% static '/main/images/mainlogo.png'%}" alt="HOMEPAGE" class="mainlogo ml-sm-0" style="max-width: 300px;">
   </a>
@@ -25,35 +26,15 @@
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">
-          Buy
+          Search
         </a>
         <div class="dropdown-menu" aria-labelledby="defaultDropdown">
-          <a class="dropdown-item" href='{% url "rw_listings" %}'>Ranked War Weapons</a>
-          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies</a>
-        </div>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
-          aria-haspopup="true" aria-expanded="false">
-          Sell
-        </a>
-        <div class="dropdown-menu" aria-labelledby="defaultDropdown">
-          <a class="dropdown-item" href='{% url "listings" %}'>Search for best deals</a>
-          <a class="dropdown-item" href='{% url "search_services" %}'>Search custom services</a>
+          <a class="dropdown-item" href='{% url "listings" %}'>Best deals</a>
+          <a class="dropdown-item" href='{% url "rw_listings" %}'>RW Weapons</a>
           <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href='{% url "revives_listings" %}'>Revives</a>
-            <a class="dropdown-item" href='{% url "losses_listings" %}'>Losses</a>
-        </div>
-      </li>
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
-          aria-haspopup="true" aria-expanded="false">
-          Listings
-        </a>
-        <div class="dropdown-menu" aria-labelledby="defaultDropdown">
+          <a class="dropdown-item" href='{% url "company_listings" %}'>Companies for sale</a>
+          <a class="dropdown-item" href='{% url "search_services" %}'>Custom services</a>
           <a class="dropdown-item" href='{% url "employee_listings" %}'>Job Seekers</a>
-          <a class="dropdown-item" href='{% url "companies_hiring" %}'>Companies Hiring</a>
-          <a class="dropdown-item" href='{% url "museum_helper" %}'>Museum Helper</a>
         </div>
       </li>
       <li class="nav-item dropdown">
@@ -79,29 +60,32 @@
           <a class="dropdown-item" href='{% url "settings" %}'>Settings</a>
         </div>
       </li>
-      <li class='nav-item float-right'>
-        <a class="nav-link" href='{% url "api_home" %}' target="_blank">API</a>
-      </li>
-      <li class='nav-item float-right'>
-        <a class="nav-link{% if request.path == "/how-to-use-torn-exchange/" %} active {% endif %}" href='{% url "forum_tutorial" %}'>
-          Tutorial
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="te-menu" role="button" data-bs-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          TE
         </a>
+        <div class="dropdown-menu" aria-labelledby="te-menu">
+          <a class="dropdown-item" href='{% url "api_home" %}' target="_blank">API</a>
+          <a class="dropdown-item{% if request.path == "/how-to-use-torn-exchange/" %} active {% endif %}" href='{% url "forum_tutorial" %}'>
+            Tutorial
+          </a>
+
+          <a class="dropdown-item{% if request.path == "/about/" %} active {% endif %}" href='{% url "about" %}'>
+            About
+          </a>
+
+          <a class="dropdown-item{% if request.path == "/tos/" %} active {% endif %}" href='{% url "tos" %}'>
+            ToS
+          </a>
+
+          <a class="dropdown-item{% if request.path == "/sitemap" %} active {% endif %}" href='{% url "sitemap" %}'>
+            Sitemap
+          </a>
+        </div>
       </li>
-      <li class='nav-item float-right'>
-        <a class="nav-link{% if request.path == "/about/" %} active {% endif %}" href='{% url "about" %}'>
-          About
-        </a>
-      </li>
-      <li class='nav-item float-right'>
-        <a class="nav-link{% if request.path == "/tos/" %} active {% endif %}" href='{% url "tos" %}'>
-          ToS
-        </a>
-      </li>
-      <li class='nav-item float-right'>
-        <a class="nav-link{% if request.path == "/sitemap" %} active {% endif %}" href='{% url "sitemap" %}'>
-          Sitemap
-        </a>
-      </li>
+
       {% if user.is_authenticated%}
       <li class='nav-item float-right'><a class="nav-link" href='{% url "logout" %}'>Log Out</a></li>
       {% else %}
