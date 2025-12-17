@@ -21,6 +21,7 @@ def categories():
         'Medical',
         'Temporary',
         'Candy',
+        'Contraband',
         'Special',
         'Supply Pack',
         'Enhancer',
@@ -89,9 +90,9 @@ def get_ordered_categories(
 
 def dictionary_of_categories():
     return {
-        'Equipment': ['Melee', 'Primary', 'Secondary', 'Defensive'],
-        'Useful Supplies': ['Medical', 'Temporary', 'Energy Drink', 'Candy', 'Drug', 'Enhancer', 'Alcohol', 'Booster'],
-        'General Shopping': ['Material', 'Jewelry', 'Tool', 'Flower', 'Supply Pack', 'Clothing', 'Car', 'Artifact', 'Plushie', 'Special', 'Other'],
+        'Equipment': ['Primary', 'Secondary', 'Melee', 'Defensive'],
+        'Useful Supplies': ['Alcohol', 'Booster', 'Candy', 'Drug', 'Enhancer', 'Energy Drink', 'Medical', 'Temporary'],
+        'General Shopping': ['Artifact', 'Car', 'Clothing', 'Contraband', 'Flower', 'Jewelry', 'Material', 'Other', 'Plushie', 'Special', 'Supply Pack', 'Tool'],
         'Estate Agency': ['Basic Properties', 'Fully Upgraded Properties'],
     }
     

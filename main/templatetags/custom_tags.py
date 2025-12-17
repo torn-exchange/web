@@ -54,7 +54,7 @@ def replace_spaces(string):
 
 @register.simple_tag(name='get_dict_entry')
 def get_dict_entry(dict, entry):
-    return dict[entry]
+    return dict.get(entry, '')
 
 @register.filter
 def time_since(value):
