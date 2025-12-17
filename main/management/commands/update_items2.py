@@ -38,8 +38,12 @@ class Command(BaseCommand):
         for index, row in df.iterrows():
             if row['circulation'] < project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM:
                 continue
+            
             item_id = row['image'].replace(
                 'https://www.torn.com/images/items/', '').replace('/large.png', '')
+            
+            # special case for contraband items
+            is_contraband_item = 1481 < int(item_id) < 1505
             
             TE_price = get_lowest_market_price(
                 item_id, get_random_key(), row['market_value'])
@@ -77,7 +81,7 @@ class Command(BaseCommand):
                                 item_id=item_id,
                                 description=row['description'],
                                 requirement=row['requirement'],
-                                item_type=row['type'],
+                                item_type='Contraband' if is_contraband_item else row['type'],
                                 weapon_type=row['weapon_type'],
                                 buy_price=row['buy_price'],
                                 sell_price=row['sell_price'],
@@ -110,7 +114,7 @@ class Command(BaseCommand):
                             item_id=item_id,
                             description=row['description'],
                             requirement=row['requirement'],
-                            item_type=row['type'],
+                            item_type='Contraband' if is_contraband_item else row['type'],
                             weapon_type=row['weapon_type'],
                             buy_price=row['buy_price'],
                             sell_price=row['sell_price'],
@@ -255,4 +259,3 @@ def sanitize_numbers(number):
         number = max_price
 
     return number
-
