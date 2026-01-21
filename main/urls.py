@@ -83,6 +83,7 @@ urlpatterns = [
     path('api/price', api.price, name='api_price'),
     path('api/profile', api.profile, name='api_profile'),
     path('api/te_price', api.TE_price, name='api_TE_price'),
+    path('api/all_prices', api.allTE_prices, name='all_prices'),
     path('api/listings', api.listings, name='api_listings'),
     path('api/best_listing', api.best_listing, name='api_best_listing'),
     path('api/receipts', api.receipts, name='api_receipts'),
