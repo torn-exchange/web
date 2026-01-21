@@ -241,34 +241,6 @@ def TE_price(request):
 
 @ce
 @rate_limit_exponential
-def allTE_prices(request):
-    if request.method == 'GET':
-        try:
-            cache_key = 'allTE_prices_data'
-            data = cache.get(cache_key)
-            
-            if data is None:
-                items = Item.objects.all().order_by('item_id')
-                data = [
-                    {
-                        "item_id": item.item_id,
-                        "item_name": item.name,
-                        "te_price": item.TE_value,
-                        "torn_price": item.market_value
-                    }
-                    for item in items
-                ]
-                
-                # Cache for 5 minutes (300 seconds)
-                cache.set(cache_key, data, timeout=300)
-                
-            return js(data)
-        except Exception as E:
-            return je("Invalid request parameters")
-
-
-@ce
-@rate_limit_exponential
 def listings(request):
     """
     Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
