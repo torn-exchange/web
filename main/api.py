@@ -10,10 +10,13 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
 from .models import Item, Listing, Profile, TradeReceipt
+from main.te_utils import (get_ordered_categories)
+
 
 # This variable should make typing faster
 ce = csrf_exempt
@@ -615,3 +618,87 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
+
+
+@ce
+@rate_limit_exponential
+def price_list(request, identifier=None):
+    """
+    Example URL usage: /api/prices/<IDENTIFIER>
+    """
+    if request.method == 'GET':
+        try:
+            pricelist_profile = (
+                Profile.objects.select_related('settings')
+                .filter(Q(torn_id=identifier) | Q(name__iexact=identifier))
+                .order_by('-created_at')
+                .first()
+            )
+            
+            if pricelist_profile:
+                owner_settings = pricelist_profile.settings
+            else:
+                context = {
+                    'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
+                }
+                return render(request, 'main/error.html', context)
+            
+            all_relevant_items = Listing.objects.filter(
+                owner=pricelist_profile
+            ).select_related('owner', 'item', 'owner__settings') \
+            .exclude(price__isnull=True, discount__isnull=True) \
+            .order_by('-item__TE_value')
+            
+            last_receipt = TradeReceipt.objects.select_related('owner').filter(owner=pricelist_profile).last()
+
+            try:
+                last_updated = all_relevant_items.order_by('-item__last_updated').first().item.last_updated
+            except AttributeError:
+                last_updated = None
+
+            distinct_categories: List[str] = list(
+                all_relevant_items.values_list('item__item_type', flat=True)
+                .distinct()
+                .order_by('item__item_type')
+            )
+            
+            item_types = get_ordered_categories(distinct_categories, pricelist_profile.hidden_categories, pricelist_profile.order_categories)
+            
+            vote_score = pricelist_profile.vote_score
+            vote_count = pricelist_profile.votes.count()
+            
+            time_since_last_trade = getattr(last_receipt, "created_at", None)
+            
+            if owner_settings.trade_list_description:
+                description = owner_settings.trade_list_description
+            else:
+                description = 'Welcome to '+pricelist_profile.name+'\'s price list. Click Start Trade now to start a trade.'
+                 
+            # Serialize queryset to JSON-friendly structures
+            items_serialized = []
+            for listing in all_relevant_items:
+                item = listing.item
+                items_serialized.append({
+                    "item_id": item.item_id,
+                    "name": item.name,
+                    "price": getattr(listing, "effective_price", None),
+                }) if getattr(listing, "hidden", False) == False else None
+                    
+            data = {
+                'items': items_serialized,
+            }        
+            
+            meta = {
+                'description': description,
+                'trader': pricelist_profile.name,
+                'vote_score': vote_score,
+                'last_updated': last_updated.isoformat() if last_updated else None,
+                'time_since_last_trade': time_since_last_trade.isoformat() if time_since_last_trade else None,
+            }
+            
+            return js(data, meta)
+        except Exception as E:
+            print("Error in price_list API:", E)
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")
