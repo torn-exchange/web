@@ -150,10 +150,10 @@ paths:
 
   /api/prices:
     get:
-      summary: Get Trader's price list
+      summary: Get all TE prices (cached)
       responses:
         '200':
-          description: Trader's price list
+          description: All item prices cached for 5 minutes
           content:
             application/json:
               schema:
