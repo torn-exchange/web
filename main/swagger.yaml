@@ -34,13 +34,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  message:
+                  status:
                     type: string
-                    example: "Working"
+                    example: success
+                  data:
+                    type: string
+                    example: "API is working"
 
   /api/price:
     get:
-      summary: Get item price
+      summary: Get item price for a specific user
       parameters:
         - name: user_id
           in: query
@@ -60,11 +63,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  price:
-                    type: integer
-                    example: 100
-                  item:
+                  status:
                     type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      trader:
+                        type: string
+                      price:
+                        type: integer
+                      item:
+                        type: string
         '404':
           description: Not found
 
@@ -85,15 +95,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  name:
+                  status:
                     type: string
-                  activity_status:
-                    type: string
-                    example: "Active"
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      torn_id:
+                        type: string
+                      activity_status:
+                        type: string
+                      last_active:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      votes:
+                        type: integer
+                      reviews:
+                        type: string
 
   /api/te_price:
     get:
-      summary: Get TE and Torn prices
+      summary: Get TE and Torn market prices for an item
       parameters:
         - name: item_id
           in: query
@@ -108,14 +135,50 @@ paths:
               schema:
                 type: object
                 properties:
-                  te_price:
-                    type: integer
-                  torn_price:
-                    type: integer
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      item:
+                        type: string
+                      te_price:
+                        type: integer
+                      torn_price:
+                        type: integer
+
+  /api/prices:
+    get:
+      summary: Get Trader's price list
+      responses:
+        '200':
+          description: Trader's price list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        item_id:
+                          type: integer
+                        item_name:
+                          type: string
+                        te_price:
+                          type: integer
+                        torn_price:
+                          type: integer
 
   /api/listings:
     get:
-      summary: List item listings
+      summary: List item listings with pagination
       parameters:
         - name: item_id
           in: query
@@ -144,25 +207,44 @@ paths:
             default: 1
       responses:
         '200':
-          description: Listings
+          description: Listings with pagination metadata
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  listings:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        trader:
-                          type: string
-                        price:
-                          type: integer
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      item:
+                        type: string
+                      meta:
+                        type: object
+                        properties:
+                          total_listings:
+                            type: integer
+                          total_pages:
+                            type: integer
+                          current_page:
+                            type: integer
+                      listings:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            trader:
+                              type: string
+                            price:
+                              type: integer
+                            item:
+                              type: string
 
   /api/best_listing:
     get:
-      summary: Best item listing
+      summary: Get best (highest price) listing for an item
       parameters:
         - name: item_id
           in: query
@@ -177,10 +259,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  trader:
+                  status:
                     type: string
-                  price:
-                    type: integer
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      item:
+                        type: string
+                      trader:
+                        type: string
+                      price:
+                        type: integer
 
   /api/receipts:
     get:
@@ -210,20 +300,80 @@ paths:
             default: 100
       responses:
         '200':
-          description: Receipts
+          description: Receipts with pagination
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  receipts:
+                  status:
+                    type: string
+                    example: success
+                  data:
                     type: array
                     items:
                       type: object
+                      properties:
+                        created_at:
+                          type: string
+                        seller:
+                          type: string
+                        total:
+                          type: number
+                        profit:
+                          type: number
+                        url:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      page:
+                        type: integer
+                      per_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+
+  /api/receipt/{receipt_id}:
+    get:
+      summary: Get details for a specific receipt
+      parameters:
+        - name: receipt_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Receipt details with items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+                  meta:
+                    type: object
+                    properties:
+                      receipt_id:
+                        type: string
+                      created_at:
+                        type: string
+                      seller:
+                        type: string
+                      total:
+                        type: number
+                      profit:
+                        type: number
 
   /api/sellers:
     get:
-      summary: Sellers information
+      summary: Get sellers information for authenticated user
       parameters:
         - name: key
           in: query
@@ -239,13 +389,116 @@ paths:
               - csv
       responses:
         '200':
-          description: Sellers data
+          description: Sellers data with statistics
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        trades:
+                          type: integer
+                        profit:
+                          type: integer
+                        last_traded:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+
+  /api/active_traders:
+    get:
+      summary: Get list of active traders
+      responses:
+        '200':
+          description: Active traders data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      ids:
+                        type: array
+                        items:
+                          type: integer
+                      verbose:
+                        type: object
+                        additionalProperties:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            torn_id:
+                              type: integer
+                            last_trade:
+                              type: integer
+
+  /api/prices/{identifier}:
+    get:
+      summary: Get pricelist for a specific trader
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          description: Trader name or Torn ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Trader's pricelist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            item_id:
+                              type: integer
+                            name:
+                              type: string
+                            price:
+                              type: integer
+                  meta:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                      trader:
+                        type: string
+                      vote_score:
+                        type: number
+                      last_updated:
+                        type: string
+                      time_since_last_trade:
+                        type: string
+
   /api/modify_listing:
     post:
       summary: Modify a listing by updating its price or deleting it
@@ -356,16 +609,3 @@ paths:
                   message:
                     type: string
                     example: "Listing not found"
-        '405':
-          description: Invalid HTTP method
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: "Invalid HTTP method"
