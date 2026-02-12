@@ -306,3 +306,12 @@ if ERROR_LOG != "":
             },
         },
     }
+
+# Add after CSRF_FAILURE_VIEW line
+CSRF_COOKIE_SECURE = True  # Only send cookie over HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Must be False for JS to access it (needed for form submission)
+CSRF_COOKIE_SAMESITE = 'Lax'  # Prevent cross-site cookie sending
+CSRF_TRUSTED_ORIGINS = [
+    'https://tornexchange.com',
+    'https://www.tornexchange.com',
+]
