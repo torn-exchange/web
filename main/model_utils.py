@@ -21,16 +21,23 @@ def get_most_trades() -> QuerySet:
         created_at__gte=one_month_ago
     ).values('owner_id').annotate(
         id_count=Count('owner_id')
-        ).order_by('-id_count')[:30]
+        ).order_by('-id_count')[:100]
     
     most_receipts = []
     for item in counts:
         user = Profile.objects.get(id=item['owner_id'])
         most_receipts.append({
             "trader_name": user.name,
-            "trade_count": item['id_count'],
+            "trade_count": min_of_two(item['id_count'], user.monthly_trades),
+            "te_receipts": item['id_count'],
+            "torn_trades": user.monthly_trades,
         })
         
+    # we took top 100 traders by number of receipts, but we want to show only top 30, 
+    # so we need to sort them by the minimum of number of receipts and number of trades 
+    # in the last month, because some traders can have a lot of receipts but not many trades
+    most_receipts.sort(key=lambda x: x['trade_count'], reverse=True)
+    most_receipts = most_receipts[:30]
     return most_receipts
 
 def get_changelog() -> Tuple[str, str, str]:
@@ -42,3 +49,12 @@ def get_changelog() -> Tuple[str, str, str]:
         created_at__gte=timezone.now()-timedelta(days=30)).order_by('-created_at')
     
     return created_today, changes_this_week, changes_this_month
+
+def min_of_two(a, b):
+    if a is None and b is None:
+        return 0
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return a if a < b else b

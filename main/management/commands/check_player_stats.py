@@ -10,8 +10,20 @@ from users.models import Profile, Settings
 from main.models import Listing, Company, TradeReceipt
 from django.db.models import Q
 from django.utils import timezone
-from django.contrib.humanize.templatetags.humanize import naturaltime
-import datetime
+import time
+
+last_request_time = 0
+
+# Enforce Torn API rate limit of 100 requests per minute by adding a delay between requests
+def api_get(url):
+    global last_request_time
+    current_time = time.time()
+    time_since_last = current_time - last_request_time
+    min_interval = 60 / 1000  # 0.06 seconds for 1000 requests per minute
+    if time_since_last < min_interval:
+        time.sleep(min_interval - time_since_last)
+    last_request_time = time.time()
+    return requests.get(url)
 
 
 '''
@@ -40,7 +52,7 @@ class Command(BaseCommand):
         for profile in Profile.objects.filter(user__in=users_to_be_checked):
             if profile.api_key != '':
                 comment = os.getenv("API_COMMENT")
-                req = requests.get(
+                req = api_get(
                     f'https://api.torn.com/user/?selections=profile&key={profile.api_key}{comment}')
                 data = json.loads(req.content)
                 try:
@@ -77,7 +89,7 @@ def update_companies():
 
 def update_workstats_data(profile):
     comment = os.getenv("API_COMMENT")
-    work_data = json.loads(requests.get(
+    work_data = json.loads(api_get(
         f'https://api.torn.com/user/?selections=workstats&key={profile.api_key}{comment}').content)
     work_end = work_data.get('endurance')
     work_man = work_data.get('manual_labor')
@@ -90,6 +102,8 @@ def update_workstats_data(profile):
 
 def update_company_sale_data(profile):
     print(f"Updating company stats of {profile.name}")
+    if(profile.api_key == ''):
+        return None
     try:
         name, company_id, company_type, rating, days_old, weekly_income, weekly_customers, employees_hired, employees_capacity, popularity, efficiency, average_employee_efficiency, average_employee_tenure = get_company_info(
             profile.api_key)
@@ -174,13 +188,12 @@ def get_company_info(api_key):
         "39": "Detective Agency",
         "40": "Logistics Management",
     }
-    req = requests.get(
+    req = api_get(
         f'https://api.torn.com/company/?selections=detailed,profile,employees&key={api_key}{comment}')
     data = json.loads(req.content)
     if data.get('error') is not None:
         return None
     else:
-
         name = data['company']['name']
         company_id = data['company']['ID']
         company_type = company_dict.get(str(data['company']['company_type']))
@@ -217,6 +230,11 @@ def set_last_traded_time(profile: Profile) -> int:
         if time_since_last_trade > one_month_ago:
             print(f"{profile.name} is an active trader")
             profile.active_trader = True
+            
+            # save number of trades in the last month to profile, 
+            # this can be used for filtering and sorting active traders on the frontend
+            profile.monthly_trades = get_monthly_trades(profile)
+            
             profile.save()
             return 1
         else:
@@ -228,3 +246,22 @@ def set_last_traded_time(profile: Profile) -> int:
         print("Last Traded Time error", e)
         return 0
 
+
+def get_monthly_trades(profile: Profile) -> int:
+    one_month_ago = (timezone.now() - timezone.timedelta(days=30)).timestamp()
+    comment = os.getenv("API_COMMENT")
+    today = api_get(
+        f'https://api.torn.com/v2/user/{profile.torn_id}/personalstats?stat=trades&key={profile.api_key}{comment}'
+    )
+    today_data = json.loads(today.content)
+    
+    history = api_get(
+        f'https://api.torn.com/v2/user/{profile.torn_id}/personalstats?stat=trades&key={profile.api_key}&timestamp={one_month_ago}{comment}'
+    )
+    history_data = json.loads(history.content)
+    
+    # safe difference between trades now and trades a month ago to get number of trades in the last month
+    today = today_data['personalstats'][0]['value']
+    history = history_data['personalstats'][0]['value']
+    delta = today - history
+    return delta
