@@ -71,7 +71,7 @@ class Settings(models.Model):
     link_to_forum_post = models.CharField(
         max_length=250, null=True, blank=True)
     receipt_paste_text = models.TextField(
-        max_length=250, null=True, blank=True)
+        max_length=500, null=True, blank=True)
     tutorial = models.BooleanField(default=True)
     selling_revives = models.BooleanField(default=False)
     selling_losses = models.BooleanField(default=False)
