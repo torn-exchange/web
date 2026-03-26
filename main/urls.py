@@ -86,6 +86,7 @@ urlpatterns = [
     path('api/all_prices', api.allTE_prices, name='all_prices'),
     path('api/listings', api.listings, name='api_listings'),
     path('api/best_listing', api.best_listing, name='api_best_listing'),
+    path('api/all_best_listings', api.all_best_listings, name='api_all_best_listings'),
     path('api/receipts', api.receipts, name='api_receipts'),
     path('api/receipt/<str:receipt_id>', api.receipt, name='receipt'),
     path('api/sellers', api.sellers, name='api_sellers'),

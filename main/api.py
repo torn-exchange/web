@@ -10,7 +10,8 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
+from django.db.models import Q, F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
+from django.db.models.functions import Cast, Coalesce, Least, Round
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
@@ -376,6 +377,91 @@ def best_listing(request):
                 return je("No listings found for the specified item")
             
         except Exception as E:
+            return je("Invalid request parameters")
+    else:
+        return je("Invalid HTTP method")
+
+
+@ce
+@rate_limit_exponential
+def all_best_listings(request):
+    """
+    Example URL usage: /api/all_best_listings
+    Returns the 3 best traders (ordered by price) for each item.
+    
+    Filters:
+    - Excludes hidden listings
+    - Excludes listings with null traders_price
+    - Only includes active traders
+    - Excludes traders with negative vote_score
+    """
+    if request.method == 'GET':
+        try:
+            # Single query to fetch all relevant listings
+            listings = Listing.objects.filter(
+                hidden=False,
+                owner__active_trader=True,
+                owner__vote_score__gte=0
+            ).select_related('owner', 'item').annotate(
+                total_discount=Cast(
+                    Coalesce(F('discount'), Value(0)) + 
+                    Cast(Coalesce(F('owner__settings__trade_global_fee'), Value(0)), FloatField()),
+                    FloatField()
+                ),
+                traders_price=ExpressionWrapper(
+                    Round(
+                        Case(
+                            When(discount__isnull=True, price__isnull=True, 
+                                 then=Value(None, output_field=FloatField())),
+                            When(discount__isnull=True, 
+                                 then=Cast(F('price'), FloatField())),
+                            When(price__isnull=True, 
+                                 then=Round(
+                                     Cast(
+                                         (100.0 - F('total_discount')) / 100.0 * 
+                                         Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
+                                         FloatField()
+                                     )
+                                 )),
+                            default=Round(
+                                Cast(
+                                    Least(
+                                        (100.0 - F('total_discount')) / 100.0 * 
+                                        Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
+                                        Cast(F('price'), FloatField())
+                                    ),
+                                    FloatField()
+                                )
+                            ),
+                            output_field=FloatField()
+                        )
+                    ),
+                    output_field=IntegerField()
+                )
+            ).exclude(traders_price=0).exclude(traders_price__isnull=True).order_by('item_id', '-traders_price', '-last_updated')
+            
+            # Group listings by item in memory
+            data = {}
+            for listing in listings:
+                item_id = str(listing.item.item_id)
+                
+                if item_id not in data:
+                    data[item_id] = {
+                        "item": listing.item.name,
+                        "traders": []
+                    }
+                
+                # Only add up to 3 traders per item
+                if len(data[item_id]["traders"]) < 3:
+                    data[item_id]["traders"].append({
+                        "trader": listing.owner.name,
+                        "price": listing.effective_price,
+                        "vote_score": listing.owner.vote_score
+                    })
+            
+            return js(data)
+        except Exception as E:
+            print("Error in all_best_listings API:", E)
             return je("Invalid request parameters")
     else:
         return je("Invalid HTTP method")
