@@ -21,6 +21,7 @@ from django.utils.safestring import mark_safe
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
+from django.views.decorators.cache import cache_page
 
 from hitcount.models import HitCount
 from hitcount.views import HitCountMixin
@@ -36,6 +37,7 @@ from users.models import Profile, Settings
 from vote.models import Vote
 
 
+@cache_page(600)
 def homepage(request):
     cached_data = cache.get('hompeage_data')
     
@@ -89,6 +91,7 @@ def tos(request):
     return render(request, 'main/tos.html', context)
 
 
+@cache_page(600)
 def rw_listings(request):
     item_bonus_title_1 = request.GET.get('item_bonus_title_1', None)
     item_bonus_title_2 = request.GET.get('item_bonus_title_2', None)
@@ -146,6 +149,7 @@ def rw_listings(request):
     return render(request, 'main/rw_listings.html', context)
 
 
+@cache_page(600)
 def listings(request):
     # Convert to a dictionary for easier inspection
     param_keys = list(request.GET.keys())
@@ -585,6 +589,7 @@ def _get_deleted(current_listings, updated_items, to_delete):
 
     return to_delete
 
+@cache_page(600)
 @xframe_options_exempt
 def price_list(request, identifier=None):
     """Trader's public price list
@@ -780,6 +785,7 @@ def edit_services(request):
     return render(request, 'main/edit_services.html', context)
 
 
+@cache_page(600)
 def services_list(request, identifier=None):
     if identifier is None:
         if request.user.is_authenticated:
