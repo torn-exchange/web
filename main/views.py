@@ -9,6 +9,8 @@ from collections import defaultdict
 
 from django.conf import settings as project_settings
 from django.contrib import messages
+from functools import wraps
+
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -22,7 +24,6 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_page
-
 from hitcount.models import HitCount
 from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
@@ -37,7 +38,27 @@ from users.models import Profile, Settings
 from vote.models import Vote
 
 
-# @cache_page(600)
+def cache_page_for_anonymous(timeout):
+    """Cache the rendered response only for anonymous users.
+
+    Authenticated users always bypass this cache to avoid leaking profile-specific data,
+    but anonymous users can still get the performance benefits.
+    """
+    def decorator(view_func):
+        cached_view = cache_page(timeout)(view_func)
+
+        @wraps(view_func)
+        def _wrapped(request, *args, **kwargs):
+            if request.user.is_authenticated:
+                return view_func(request, *args, **kwargs)
+            return cached_view(request, *args, **kwargs)
+
+        return _wrapped
+
+    return decorator
+
+
+@cache_page_for_anonymous(600)
 def homepage(request):
     cached_data = cache.get('hompeage_data')
     
@@ -91,7 +112,7 @@ def tos(request):
     return render(request, 'main/tos.html', context)
 
 
-# @cache_page(600)
+@cache_page_for_anonymous(600)
 def rw_listings(request):
     item_bonus_title_1 = request.GET.get('item_bonus_title_1', None)
     item_bonus_title_2 = request.GET.get('item_bonus_title_2', None)
@@ -149,7 +170,7 @@ def rw_listings(request):
     return render(request, 'main/rw_listings.html', context)
 
 
-# @cache_page(600)
+@cache_page_for_anonymous(600)
 def listings(request):
     # Convert to a dictionary for easier inspection
     param_keys = list(request.GET.keys())
@@ -589,7 +610,8 @@ def _get_deleted(current_listings, updated_items, to_delete):
 
     return to_delete
 
-# @cache_page(600)
+
+@cache_page_for_anonymous(600)
 @xframe_options_exempt
 def price_list(request, identifier=None):
     """Trader's public price list
@@ -785,7 +807,7 @@ def edit_services(request):
     return render(request, 'main/edit_services.html', context)
 
 
-# @cache_page(600)
+@cache_page_for_anonymous(600)
 def services_list(request, identifier=None):
     if identifier is None:
         if request.user.is_authenticated:
