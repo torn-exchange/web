@@ -8,86 +8,34 @@ from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeF
 from django_filters.widgets import RangeWidget
 from django.utils.safestring import mark_safe
 
-from django.db.models import F, Case, When, Value, FloatField, IntegerField, ExpressionWrapper
-from django.db.models.functions import Cast, Coalesce, Least, Round
-
-
 class ListingFilter(django_filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
-        data.setdefault('order', '-traders_price')
+        data.setdefault('order', '-effective_price')
         super().__init__(data, *args, **kwargs)
 
     order_by = OrderingFilter(
-        label=mark_safe('<i class="fa fa-search"></i> Sort By'), 
+        label=mark_safe('<i class="fa fa-search"></i> Sort By'),
         choices=(
-            ('-traders_price', 'Price (Highest to Lowest)'),
-            ('traders_price', 'Price (Lowest to Highest)'),
+            ('-effective_price', 'Price (Highest to Lowest)'),
+            ('effective_price', 'Price (Lowest to Highest)'),
             ('-owner__vote_score', 'Rating (Highest to Lowest)'),
             ('owner__vote_score', 'Rating (Lowest to Highest)'),
         )
     )
-    
+
     def filter_queryset(self, queryset):
         queryset = queryset.filter(owner__active_trader=True)
-        
-        queryset = queryset.select_related('owner__settings', 'item')
-        
-        # Annotate the queryset with the computed effective_price
-        queryset = queryset.annotate(
-            total_discount=Cast(
-                Coalesce(F('discount'), Value(0)) + 
-                Cast(Coalesce(F('owner__settings__trade_global_fee'), Value(0)), FloatField()),
-                FloatField()
-            ),
-   
-        traders_price=ExpressionWrapper(
-            Round(
-                Case(
-                    When(discount__isnull=True, price__isnull=True, 
-                         then=Value(None, output_field=FloatField())),
-                    When(discount__isnull=True, 
-                         then=Cast(F('price'), FloatField())),
-                    
-                    # Calculate discount price including item market (global) fee
-                    When(price__isnull=True, 
-                         then=Round(
-                             Cast(
-                                 (100.0 - F('total_discount')) / 100.0 * 
-                                 Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
-                                 FloatField()
-                             )
-                         )),
-                    
-                    # Default case
-                    default=Round(
-                        Cast(
-                            Least(
-                                (100.0 - F('total_discount')) / 100.0 * 
-                                Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
-                                Cast(F('price'), FloatField())
-                            ),
-                            FloatField()
-                        )
-                    ),
-                    output_field=FloatField()
-                )
-            ),
-            output_field=IntegerField()  # Final conversion to Integer
-        )
-        )
-        
-        # Exclude rows where traders_price is 0 or None
-        queryset = queryset.exclude(traders_price=0).exclude(traders_price__isnull=True)
-    
-        # Ensure the annotated field is used correctly in the queryset
+
+        queryset = queryset.exclude(effective_price=0).exclude(effective_price__isnull=True)
+
         if 'order' in self.data:
             order = self.data['order']
-            if order in ['-traders_price', 'traders_price']:
+            if order in ['-effective_price', 'effective_price']:
                 queryset = queryset.order_by(order)
-        
+
         return super().filter_queryset(queryset)
-    
+
     @property
     def qs(self):
         return self.filter_queryset(super().qs)

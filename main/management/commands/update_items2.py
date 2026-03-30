@@ -12,6 +12,7 @@ from random import choice
 import os
 import sys
 from django.db import connection, reset_queries
+from main.models import Listing
 
 
 class Command(BaseCommand):
@@ -71,7 +72,7 @@ class Command(BaseCommand):
                             row[key] = sanitize_numbers(row[key])
                         TE_price = sanitize_numbers(TE_price)
 
-                        Item.objects.update_or_create(
+                        item_obj, _ = Item.objects.update_or_create(
                             name=row['name'],
                             defaults=dict(
                                 item_id=item_id,
@@ -87,6 +88,7 @@ class Command(BaseCommand):
                                 TE_value=TE_price
                             ),
                         )
+                        recalculate_listings_for_item(item_obj)
                     except Exception as e:
                         print(e)
                         print(f'Did NOT save item: {row["name"]} [{item_id}]', row)
@@ -242,6 +244,11 @@ def create_or_update_sets():
             TE_value=10*points_cost
         ),
     )
+
+
+def recalculate_listings_for_item(item):
+    for listing in Listing.objects.filter(item=item).select_related('owner__settings', 'item'):
+        listing.save(update_fields=['effective_price'])
 
 
 def sanitize_numbers(number):

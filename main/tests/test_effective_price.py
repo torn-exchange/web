@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from users.models import Profile, Settings
 from main.models import Item, Listing
+from main.management.commands.update_items2 import recalculate_listings_for_item
 
 
 # ---------------------------------------------------------------------------
@@ -185,6 +186,7 @@ class EffectivePriceCalculationTests(TestCase):
 
         self.item.TE_value = 200_000
         self.item.save()
+        recalculate_listings_for_item(self.item)
         listing.refresh_from_db()
 
         # 10% off 200_000 = 180_000

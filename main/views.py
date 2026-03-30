@@ -200,7 +200,7 @@ def listings(request):
             query_set = query_set.exclude(hidden=True)
             
             # exclude Listings where price is None or 0
-            query_set = query_set.exclude(traders_price__isnull=True)
+            query_set = query_set.exclude(effective_price__isnull=True)
             number_of_items = query_set.count()
 
             # Attempt to get the user's profile

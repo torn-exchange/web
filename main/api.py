@@ -10,8 +10,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q, F, Case, When, Value, ExpressionWrapper, FloatField
-from django.db.models.functions import Coalesce, Cast, Round, Least
+from django.db.models import Q
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
@@ -291,13 +290,11 @@ def listings(request):
             
             queryset = Listing.objects.filter(item=item, hidden=False).select_related('owner', 'item')
 
-            # in order to not break existing functionality, map 'price' to 'traders_price'
-            # since this is what users expect when they say 'price'
-            if(sort_by == 'price'):
-                sort_by = 'traders_price'
+            # map 'price' to 'effective_price' for backward compatibility
+            if sort_by == 'price':
+                sort_by = 'effective_price'
 
-            # Apply ListingFilter
-            valid_sort_fields = ['traders_price']
+            valid_sort_fields = ['effective_price']
             if sort_by not in valid_sort_fields:
                 return je("Invalid sort field")
 
@@ -306,7 +303,7 @@ def listings(request):
 
             myFilter = ListingFilter(request.GET, queryset=queryset)
             filtered_listings = myFilter.qs
-            filtered_listings = filtered_listings.exclude(traders_price__isnull=True)
+            filtered_listings = filtered_listings.exclude(effective_price__isnull=True)
             filtered_listings = filtered_listings.order_by(sort_by)
 
             # Handle pagination
@@ -328,7 +325,7 @@ def listings(request):
                     "listings": [
                         {
                             "trader": listing.owner.name,
-                            "price": listing.traders_price,
+                            "price": listing.effective_price,
                             "item": listing.item.name
                         } for listing in paged_listings
                     ]
@@ -361,11 +358,11 @@ def best_listing(request):
             filtered = (
                 filtered
                 .exclude(hidden=True)
-                .exclude(traders_price__isnull=True)
+                .exclude(effective_price__isnull=True)
                 .filter(owner__active_trader=True)
             )
-            
-            listing = filtered.order_by('-traders_price', '-last_updated').first()
+
+            listing = filtered.order_by('-effective_price', '-last_updated').first()
             
             if listing:
                 return js({
@@ -712,7 +709,7 @@ def all_best_listings(request):
     
     Filters:
     - Excludes hidden listings
-    - Excludes listings with null traders_price
+    - Excludes listings with null effective_price
     - Only includes active traders
     - Excludes traders with negative vote_score
     """
@@ -723,43 +720,11 @@ def all_best_listings(request):
                 hidden=False,
                 owner__active_trader=True,
                 owner__vote_score__gte=0
-            ).select_related('owner', 'item').annotate(
-                total_discount=Cast(
-                    Coalesce(F('discount'), Value(0)) + 
-                    Cast(Coalesce(F('owner__settings__trade_global_fee'), Value(0)), FloatField()),
-                    FloatField()
-                ),
-                traders_price=ExpressionWrapper(
-                    Round(
-                        Case(
-                            When(discount__isnull=True, price__isnull=True, 
-                                 then=Value(None, output_field=FloatField())),
-                            When(discount__isnull=True, 
-                                 then=Cast(F('price'), FloatField())),
-                            When(price__isnull=True, 
-                                 then=Round(
-                                     Cast(
-                                         (100.0 - F('total_discount')) / 100.0 * 
-                                         Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
-                                         FloatField()
-                                     )
-                                 )),
-                            default=Round(
-                                Cast(
-                                    Least(
-                                        (100.0 - F('total_discount')) / 100.0 * 
-                                        Cast(Coalesce(F('item__TE_value'), Value(0)), FloatField()),
-                                        Cast(F('price'), FloatField())
-                                    ),
-                                    FloatField()
-                                )
-                            ),
-                            output_field=FloatField()
-                        )
-                    ),
-                    output_field=IntegerField()
-                )
-            ).exclude(traders_price=0).exclude(traders_price__isnull=True).order_by('item_id', '-traders_price', '-last_updated')
+            ).select_related('owner', 'item').exclude(
+                effective_price=0
+            ).exclude(
+                effective_price__isnull=True
+            ).order_by('item_id', '-effective_price', '-last_updated')
             
             # Group listings by item in memory
             data = {}
