@@ -129,7 +129,10 @@ DATABASES = {
         # the name of the depends_on value from docker-compose.yml
         'HOST': os.getenv('POSTGRES_HOST'),
         'PORT': os.getenv('POSTGRES_PORT'),  # PgBouncer port
-        'CONN_MAX_AGE': 0  # Required for connection pooling
+        'CONN_MAX_AGE': 0,  # Required for connection pooling
+        'TEST': {
+            'NAME': 'test_tornexchange',
+        },
     }
 }
 
