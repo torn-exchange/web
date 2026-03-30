@@ -662,7 +662,7 @@ def price_list(request, identifier=None):
         context = {
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
         }
-        return render(request, 'main/error.html', context)
+        return render(request, 'main/error.html', context, status=404)
     
     # COUNTING HITS
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
@@ -857,7 +857,7 @@ def services_list(request, identifier=None):
         context = {
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid service list! Try checking the spelling for any typos.'
         }
-        return render(request, 'main/error.html', context)
+        return render(request, 'main/error.html', context, status=404)
     
     owner_services = Services.objects.filter(
         owner=pricelist_profile).all()

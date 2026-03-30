@@ -115,7 +115,7 @@ def js(data, meta=None):
 
 
 def je(message):
-    return JsonResponse({"status": "error", "message": message})
+    return JsonResponse({"status": "error", "message": message}, status=400)
 
 ### API functions ###
 
@@ -638,10 +638,8 @@ def price_list(request, identifier=None):
             if pricelist_profile:
                 owner_settings = pricelist_profile.settings
             else:
-                context = {
-                    'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
-                }
-                return render(request, 'main/error.html', context)
+                message = f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
+                return je(message=message)
             
             all_relevant_items = Listing.objects.filter(
                 owner=pricelist_profile
