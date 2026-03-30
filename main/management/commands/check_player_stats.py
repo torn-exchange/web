@@ -97,7 +97,6 @@ def update_workstats_data(profile):
     profile.work_stats_int = work_int
     profile.work_stats_man = work_man
     profile.work_stats_end = work_end
-    print(profile.name, work_int, work_man, work_end)
 
 
 def update_company_sale_data(profile):
@@ -262,6 +261,12 @@ def get_monthly_trades(profile: Profile) -> int:
     
     # safe difference between trades now and trades a month ago to get number of trades in the last month
     today = today_data['personalstats'][0]['value']
-    history = history_data['personalstats'][0]['value']
+    
+    # Check if historic data is empty (account less than 30 days old)
+    if history_data['personalstats']:
+        history = history_data['personalstats'][0]['value']
+    else:
+        history = 0  # No trades a month ago, so return current trades count
+    
     delta = today - history
     return delta
