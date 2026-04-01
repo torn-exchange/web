@@ -3,6 +3,7 @@ import json
 import os
 import time
 from functools import wraps
+from typing import List
 
 from django.core.cache import cache
 
@@ -10,7 +11,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
@@ -117,6 +118,27 @@ def js(data, meta=None):
 def je(message):
     return JsonResponse({"status": "error", "message": message}, status=400)
 
+
+def require_api_key(view_func):
+    """Authenticate requests via ?key= parameter matched against Profile.api_key."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        key = request.GET.get('key') or (
+            json.loads(request.body).get('key')
+            if request.content_type == 'application/json' and request.body
+            else None
+        )
+        if not key:
+            return JsonResponse({"status": "error", "message": "Missing API key"}, status=401)
+        try:
+            profile = Profile.objects.get(api_key=key)
+        except Profile.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Invalid API key"}, status=401)
+        request.api_profile = profile
+        return view_func(request, *args, **kwargs)
+    return _wrapped
+
+
 ### API functions ###
 
 @ce
@@ -153,30 +175,38 @@ def test(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def price(request):
-    # Example usage: /api/price?item_id=<ITEM_ID>?user_id=<USER_ID>
+    # Example usage: /api/price?item_id=<ITEM_ID>&user_id=<USER_ID>&key=<KEY>
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
             item_id = request.GET.get('item_id')
 
+            cache_key = f'api_price_{user_id}_{item_id}'
+            cached = cache.get(cache_key)
+            if cached:
+                return JsonResponse(cached)
+
             profile = get_object_or_404(Profile, torn_id=user_id)
             item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
+
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
 
             listing = Listing.objects.filter(owner=profile, item=item).first()
 
             if listing:
-                return JsonResponse({
+                data = {
                     "status": "success",
                     "data": {
                         "trader": listing.owner.name,
                         "price": listing.effective_price,
                         "item": listing.item.name
                     }
-                })
+                }
+                cache.set(cache_key, data, timeout=300)
+                return JsonResponse(data)
             else:
                 return je("Listing not found")
         except Exception as E:
@@ -187,29 +217,38 @@ def price(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def profile(request):
     """
     Example URL usage:
-    /api/profile?user_id=<USER_ID>
+    /api/profile?user_id=<USER_ID>&key=<KEY>
     """
     if request.method == 'GET':
         try:
             user_id = request.GET.get('user_id')
-            profile = Profile.objects.select_related('settings').filter(torn_id=user_id).get()
 
-            return JsonResponse({
+            cache_key = f'api_profile_{user_id}'
+            cached = cache.get(cache_key)
+            if cached:
+                return JsonResponse(cached)
+
+            p = Profile.objects.select_related('settings').filter(torn_id=user_id).get()
+
+            data = {
                 "status": "success",
                 "data": {
-                    "name": profile.name,
-                    "torn_id": profile.torn_id,
-                    "activity_status": profile.activity_status,
-                    "last_active": profile.last_active,
-                    "created_at": profile.created_at,
-                    "updated_at": profile.updated_at,
-                    "votes": profile.vote_score,
-                    "reviews": profile.settings.link_to_forum_post,
+                    "name": p.name,
+                    "torn_id": p.torn_id,
+                    "activity_status": p.activity_status,
+                    "last_active": p.last_active,
+                    "created_at": p.created_at,
+                    "updated_at": p.updated_at,
+                    "votes": p.vote_score,
+                    "reviews": p.settings.link_to_forum_post,
                 }
-            })
+            }
+            cache.set(cache_key, data, timeout=300)
+            return JsonResponse(data)
         except Exception as E:
             return je("Invalid request parameters")
     else:
@@ -218,23 +257,30 @@ def profile(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def TE_price(request):
     # Gets the TE MV from the database and compares it to torn MV
-    # ExAmple URL usage: /api/TE_price?item_id=<ITEM_ID>
+    # Example URL usage: /api/TE_price?item_id=<ITEM_ID>&key=<KEY>
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
+
+            cache_key = f'api_TE_price_{item_id}'
+            cached = cache.get(cache_key)
+            if cached:
+                return js(cached)
+
             item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
+
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
-            
-            data = {
-                    "item": item.name,
-                    "te_price": item.TE_value,
-                    "torn_price": item.market_value
-                }
 
+            data = {
+                "item": item.name,
+                "te_price": item.TE_value,
+                "torn_price": item.market_value
+            }
+            cache.set(cache_key, data, timeout=300)
             return js(data)
         except Exception as E:
             return je("Invalid request parameters")
@@ -244,6 +290,7 @@ def TE_price(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def allTE_prices(request):
     if request.method == 'GET':
         try:
@@ -272,9 +319,10 @@ def allTE_prices(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def listings(request):
     """
-    Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1
+    Example URL usage: /api/get_prices?item_id=<ITEM_ID>&sort_by=<SORT_BY>&order=<ORDER>&page=1&key=<KEY>
     """
     if request.method == 'GET':
         try:
@@ -282,6 +330,11 @@ def listings(request):
             sort_by = request.GET.get('sort_by', 'price').lower()
             order = request.GET.get('order', 'asc').lower()
             page = request.GET.get('page', '1')
+
+            cache_key = f'api_listings_{item_id}_{sort_by}_{order}_{page}'
+            cached = cache.get(cache_key)
+            if cached:
+                return JsonResponse(cached)
 
             item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
             
@@ -313,7 +366,7 @@ def listings(request):
             except (PageNotAnInteger, EmptyPage):
                 paged_listings = paginator.page(1)
 
-            return JsonResponse({
+            data = {
                 "status": "success",
                 "data": {
                     "item": item.name,
@@ -330,7 +383,9 @@ def listings(request):
                         } for listing in paged_listings
                     ]
                 }
-            })
+            }
+            cache.set(cache_key, data, timeout=300)
+            return JsonResponse(data)
         except Exception as E:
             return je("Invalid request parameters")
     else:
@@ -339,22 +394,29 @@ def listings(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def best_listing(request):
     """
-    Example URL usage: /api/best_listing?item_id=<ITEM_ID>
+    Example URL usage: /api/best_listing?item_id=<ITEM_ID>&key=<KEY>
     """
     if request.method == 'GET':
         try:
             item_id = request.GET.get('item_id')
+
+            cache_key = f'api_best_listing_{item_id}'
+            cached = cache.get(cache_key)
+            if cached:
+                return js(cached)
+
             item = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
-            
+
             if not item:
                 return je("Item does not exist in TE DB. Check item's circulation number.")
 
             base_qs = Listing.objects.filter(item=item).select_related('owner', 'item').order_by('-last_updated')
             myFilter = ListingFilter(request.GET, queryset=base_qs)
             filtered = myFilter.qs
-            
+
             filtered = (
                 filtered
                 .exclude(hidden=True)
@@ -363,16 +425,18 @@ def best_listing(request):
             )
 
             listing = filtered.order_by('-effective_price', '-last_updated').first()
-            
+
             if listing:
-                return js({
-                        "item": item.name,
-                        "trader": listing.owner.name,
-                        "price": listing.effective_price,
-                    })
+                data = {
+                    "item": item.name,
+                    "trader": listing.owner.name,
+                    "price": listing.effective_price,
+                }
+                cache.set(cache_key, data, timeout=300)
+                return js(data)
             else:
                 return je("No listings found for the specified item")
-            
+
         except Exception as E:
             return je("Invalid request parameters")
     else:
@@ -381,6 +445,7 @@ def best_listing(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def receipts(request):
     """Get all receipts for a user
 
@@ -392,12 +457,11 @@ def receipts(request):
     """    
     if request.method == 'GET':
         try:
-            key = request.GET.get('key')
             output_format = request.GET.get('format')
             page = int(request.GET.get('page', 1))
             per_page = int(request.GET.get('per_page', 100))
-            
-            profile = Profile.objects.filter(api_key=key).get()
+
+            profile = request.api_profile
             receipts = TradeReceipt.objects.filter(owner=profile).all().order_by('-created_at')
             
             paginator = Paginator(receipts, per_page)
@@ -465,6 +529,7 @@ def receipt(request, receipt_id=None):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def sellers(request):
     """Get all sellers (customers) for a user
 
@@ -476,10 +541,9 @@ def sellers(request):
     """    
     if request.method == 'GET':
         try:
-            key = request.GET.get('key')
             outputFormat = request.GET.get('format')
-            
-            profile = Profile.objects.filter(api_key=key).get()
+
+            profile = request.api_profile
             raw_data = return_profile_stats(profile)
             
             sellers = raw_data['sellers']
@@ -510,21 +574,18 @@ def sellers(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def modify_listing(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            key = data.get('key')
             global_action = data.get('action')
             listings_data = data.get('listings', [])
 
-            if not key or not listings_data:
+            if not listings_data:
                 return je("Missing required parameters")
 
-            try:
-                profile = Profile.objects.get(api_key=key)
-            except Profile.DoesNotExist:
-                return je("Profile matching query does not exist")
+            profile = request.api_profile
 
             updated = []
             failed = []
@@ -564,7 +625,8 @@ def modify_listing(request):
 
                         listing.price = fixed_price if fixed_price is not None else None
                         listing.discount = float(discount) if discount is not None else None
-                        listing.save(update_fields=['price', 'discount'])
+                        listing.effective_price = listing.calculate_effective_price()
+                        listing.save(update_fields=['price', 'discount', 'effective_price'])
                         updated.append(item_id)
 
                     except Exception as e:
@@ -589,29 +651,40 @@ def modify_listing(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def active_traders(request):
     try:
-        active_traders = Profile.objects.filter(active_trader=True)
+        cache_key = 'api_active_traders'
+        cached = cache.get(cache_key)
+        if cached:
+            return js(cached)
+
+        last_receipt_qs = TradeReceipt.objects.filter(
+            owner=OuterRef('pk')
+        ).order_by('-created_at').values('created_at')[:1]
+
+        traders = Profile.objects.filter(active_trader=True).annotate(
+            last_receipt_at=Subquery(last_receipt_qs)
+        )
         ids_only = []
         full_data = {}
-        
-        for trader in active_traders:
+
+        for trader in traders:
             ids_only.append(int(trader.torn_id))
-            
-            last_receipt = TradeReceipt.objects.filter(owner=trader).last()
-            time_since_last_trade = int(last_receipt.created_at.timestamp()) if last_receipt and last_receipt.created_at else None
-            
+
+            time_since_last_trade = int(trader.last_receipt_at.timestamp()) if trader.last_receipt_at else None
+
             full_data[trader.torn_id] = {
                 "name": trader.name,
                 "torn_id": int(trader.torn_id),
                 "last_trade": time_since_last_trade
             }
-            
+
         data = {
             "ids": ids_only,
             "verbose": full_data
         }
-        
+        cache.set(cache_key, data, timeout=300)
         return js(data)
     except Exception as e:
         print("Error fetching active traders:", e)
@@ -620,12 +693,18 @@ def active_traders(request):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def price_list(request, identifier=None):
     """
     Example URL usage: /api/prices/<IDENTIFIER>
     """
     if request.method == 'GET':
         try:
+            cache_key = f'api_price_list_{identifier}'
+            cached = cache.get(cache_key)
+            if cached:
+                return JsonResponse(cached)
+
             pricelist_profile = (
                 Profile.objects.select_related('settings')
                 .filter(Q(torn_id=identifier) | Q(name__iexact=identifier))
@@ -692,7 +771,9 @@ def price_list(request, identifier=None):
                 'time_since_last_trade': time_since_last_trade.isoformat() if time_since_last_trade else None,
             }
             
-            return js(data, meta)
+            response_data = {"status": "success", "meta": meta, "data": data}
+            cache.set(cache_key, response_data, timeout=300)
+            return JsonResponse(response_data)
         except Exception as E:
             print("Error in price_list API:", E)
             return je("Invalid request parameters")
@@ -702,11 +783,12 @@ def price_list(request, identifier=None):
 
 @ce
 @rate_limit_exponential
+@require_api_key
 def all_best_listings(request):
     """
     Example URL usage: /api/all_best_listings
     Returns the 3 best traders (ordered by price) for each item.
-    
+
     Filters:
     - Excludes hidden listings
     - Excludes listings with null effective_price
@@ -715,36 +797,56 @@ def all_best_listings(request):
     """
     if request.method == 'GET':
         try:
-            # Single query to fetch all relevant listings
-            listings = Listing.objects.filter(
-                hidden=False,
-                owner__active_trader=True,
-                owner__vote_score__gte=0
-            ).select_related('owner', 'item').exclude(
-                effective_price=0
-            ).exclude(
-                effective_price__isnull=True
-            ).order_by('item_id', '-effective_price', '-last_updated')
-            
-            # Group listings by item in memory
+            cache_key = 'api_all_best_listings'
+            cached = cache.get(cache_key)
+            if cached:
+                return js(cached)
+
+            from django.db import connection
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT
+                        i.item_id,
+                        i.name        AS item_name,
+                        p.name        AS trader_name,
+                        l.effective_price,
+                        p.vote_score
+                    FROM (
+                        SELECT
+                            l2.id,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY l2.item_id
+                                ORDER BY l2.effective_price DESC, l2.last_updated DESC
+                            ) AS rn
+                        FROM main_listing l2
+                        INNER JOIN users_profile p2 ON p2.id = l2.owner_id
+                        WHERE l2.hidden = FALSE
+                          AND l2.effective_price IS NOT NULL
+                          AND l2.effective_price <> 0
+                          AND p2.active_trader = TRUE
+                          AND p2.vote_score >= 0
+                    ) ranked
+                    INNER JOIN main_listing l  ON l.id  = ranked.id
+                    INNER JOIN main_item    i  ON i.id  = l.item_id
+                    INNER JOIN users_profile p ON p.id  = l.owner_id
+                    WHERE ranked.rn <= 3
+                    ORDER BY i.item_id, l.effective_price DESC
+                """)
+                rows = cursor.fetchall()
+
             data = {}
-            for listing in listings:
-                item_id = str(listing.item.item_id)
-                
-                if item_id not in data:
-                    data[item_id] = {
-                        "item": listing.item.name,
-                        "traders": []
-                    }
-                
-                # Only add up to 3 traders per item
-                if len(data[item_id]["traders"]) < 3:
-                    data[item_id]["traders"].append({
-                        "trader": listing.owner.name,
-                        "price": listing.effective_price,
-                        "vote_score": listing.owner.vote_score
-                    })
+            for item_id, item_name, trader_name, effective_price, vote_score in rows:
+                key = str(item_id)
+                if key not in data:
+                    data[key] = {"item": item_name, "traders": []}
+                data[key]["traders"].append({
+                    "trader": trader_name,
+                    "price": effective_price,
+                    "vote_score": vote_score,
+                })
             
+            cache.set(cache_key, data, timeout=300)
             return js(data)
         except Exception as E:
             print("Error in all_best_listings API:", E)
