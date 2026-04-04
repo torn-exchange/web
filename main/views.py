@@ -200,7 +200,7 @@ def listings(request):
             query_set = query_set.exclude(hidden=True)
             
             # exclude Listings where price is None or 0
-            query_set = query_set.exclude(traders_price__isnull=True)
+            query_set = query_set.exclude(effective_price__isnull=True)
             number_of_items = query_set.count()
 
             # Attempt to get the user's profile
@@ -513,7 +513,7 @@ def edit_price_list(request):
 
         # Get all current listings for user in one query
         current_listings = {
-            l.item: l for l in Listing.objects.filter(owner=profile)
+            l.item: l for l in Listing.objects.filter(owner=profile).select_related('owner__settings', 'item')
         }
         
         new_listings = []
@@ -524,15 +524,16 @@ def edit_price_list(request):
         # Build new/updated objects
         for item, vals in updated_items.items():
             listing = current_listings.get(item)
-            
+
             new_price = safe_int(vals['price'])
             new_discount = safe_float(vals['discount'])
-            
+
             if listing:
                 if 'price' in vals:
                     listing.price = new_price
                 if 'discount' in vals:
                     listing.discount = new_discount
+                listing.effective_price = listing.calculate_effective_price()
                 listings_to_update.append(listing)
             else:
                 kwargs = {}
@@ -540,8 +541,10 @@ def edit_price_list(request):
                     kwargs['price'] = new_price
                 if 'discount' in vals:
                     kwargs['discount'] = new_discount
-                    
-                new_listings.append(Listing(owner=profile, item=item, **kwargs))
+
+                obj = Listing(owner=profile, item=item, **kwargs)
+                obj.effective_price = obj.calculate_effective_price()
+                new_listings.append(obj)
                 
         # atomic function that will roll back if any error occurs
         _update_listings(profile, new_listings, listings_to_update, to_delete)
@@ -561,7 +564,7 @@ def _update_listings(profile, new_listings, listings_to_update, to_delete):
             Listing.objects.bulk_create(new_listings)
 
         if listings_to_update:
-            Listing.objects.bulk_update(listings_to_update, ['price', 'discount'])
+            Listing.objects.bulk_update(listings_to_update, ['price', 'discount', 'effective_price'])
 
         if to_delete:
             Listing.objects.filter(owner=profile, item__in=to_delete).delete()

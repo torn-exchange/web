@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from users.models import Profile
 import numpy as np
 from django.utils.crypto import get_random_string
@@ -113,37 +115,35 @@ class Listing(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     discount = models.FloatField(null=True)
     hidden = models.BooleanField(default=False)
-    
-    @property
-    def effective_price(self):
-       
-        # Return computed effective price (read-only)
-        return self.calculate_effective_price()
-    
-    # Computation logic for effective price
+    effective_price = models.BigIntegerField(null=True)
+
     def calculate_effective_price(self):
         if (self.discount is None) and (self.price is None):
             return None
-        
+
         # special case where we want user-set price to prevail
         if (self.discount is None) and (self.price is not None):
             return round(self.price)
-        
+
         # Get global fee from owner's settings
         global_fee = self.owner.settings.trade_global_fee or 0
-        
+
         # for custom items like Sets and Properties, global fee should not be applied
         if self.item.item_id > 9000:
             global_fee = 0
-        
+
         total_discount = (self.discount or 0) + global_fee
         discount_fraction = (100.0 - total_discount) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
-        
+
         if self.price is None:
             return round(discount_price or 0)
-        
-        return round(np.nan_to_num(np.nanmin([discount_price, self.price]))) 
+
+        return round(np.nan_to_num(np.nanmin([discount_price, self.price])))
+
+    def save(self, *args, **kwargs):
+        self.effective_price = self.calculate_effective_price()
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = (("owner", "item"),)
@@ -153,7 +153,7 @@ class Listing(models.Model):
 
     @property
     def profit_per_item(self):
-        return (self.item.TE_value)-(self.effective_price)
+        return (self.item.TE_value) - (self.effective_price)
 
 
 class ItemTrade(models.Model):
@@ -322,3 +322,10 @@ class JobLog(models.Model):
     message = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+# When a trader's global fee changes, recalculate effective_price for all their listings
+@receiver(post_save, sender='users.Settings')
+def recalculate_listings_on_settings_change(sender, instance, **kwargs):
+    for listing in instance.owner.listing_set.select_related('owner__settings', 'item').all():
+        listing.save(update_fields=['effective_price'])
