@@ -5,7 +5,10 @@ def populate_effective_price(apps, schema_editor):
     Listing = apps.get_model('main', 'Listing')
     for listing in Listing.objects.select_related('owner__settings', 'item').iterator():
         listing.effective_price = _calculate(listing)
-        listing.save(update_fields=['effective_price'])
+        try:
+            listing.save(update_fields=['effective_price'])
+        except Exception:
+            pass
 
 
 def _calculate(listing):
