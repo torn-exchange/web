@@ -143,17 +143,23 @@ def require_api_key(view_func):
 
 @ce
 def swag_yaml(request):
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, 'swagger.yaml')
-    
-    try:
-        with open(file_path, 'r') as file:
-            file_content = file.read()
+    import logging
+    logger = logging.getLogger(__name__)
 
-        return HttpResponse(file_content, content_type='text/plain')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    logger.error(f"[swag_yaml] current_dir={current_dir}")
     
-    except FileNotFoundError:
-        return HttpResponse("File not found.", status=404)
+    file_path = os.path.join(current_dir, 'swagger.yaml')
+    logger.error(f"[swag_yaml] file_path={file_path}")
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            file_content = file.read()
+        logger.error(f"[swag_yaml] read ok, length={len(file_content)}")
+        return HttpResponse(file_content, content_type='text/plain')
+    except Exception as e:
+        logger.error(f"[swag_yaml] exception: {type(e).__name__}: {e}")
+        return HttpResponse(f"Error: {type(e).__name__}: {e}", status=500)
 
 
 def api_home(request):
