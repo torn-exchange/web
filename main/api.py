@@ -255,7 +255,6 @@ def profile(request):
 
 @ce
 @rate_limit_exponential
-@require_api_key
 def TE_price(request):
     # Gets the TE MV from the database and compares it to torn MV
     # Example URL usage: /api/TE_price?item_id=<ITEM_ID>&key=<KEY>
@@ -392,7 +391,6 @@ def listings(request):
 
 @ce
 @rate_limit_exponential
-@require_api_key
 def best_listing(request):
     """
     Example URL usage: /api/best_listing?item_id=<ITEM_ID>&key=<KEY>
@@ -422,13 +420,18 @@ def best_listing(request):
                 .filter(owner__active_trader=True)
             )
 
-            listing = filtered.order_by('-effective_price', '-last_updated').first()
+            candidates = filtered.order_by('-effective_price', '-last_updated')[:10]
+            listing = next((l for l in candidates if l.owner.vote_score >= 0), None)
 
             if listing:
                 data = {
                     "item": item.name,
                     "trader": listing.owner.name,
+                    "trader_id": listing.owner.torn_id,
+                    "vote": listing.owner.vote_score,
                     "price": listing.effective_price,
+                    "te_price": item.TE_value,
+                    "torn_mv": item.market_value,
                 }
                 cache.set(cache_key, data, timeout=300)
                 return js(data)
@@ -808,6 +811,7 @@ def all_best_listings(request):
                         i.item_id,
                         i.name        AS item_name,
                         p.name        AS trader_name,
+                        p.torn_id      AS trader_id,
                         l.effective_price,
                         p.vote_score
                     FROM (
@@ -834,12 +838,13 @@ def all_best_listings(request):
                 rows = cursor.fetchall()
 
             data = {}
-            for item_id, item_name, trader_name, effective_price, vote_score in rows:
+            for item_id, item_name, trader_name, trader_id, effective_price, vote_score in rows:
                 key = str(item_id)
                 if key not in data:
                     data[key] = {"item": item_name, "traders": []}
                 data[key]["traders"].append({
                     "trader": trader_name,
+                    "trader_id": trader_id,
                     "price": effective_price,
                     "vote_score": vote_score,
                 })
