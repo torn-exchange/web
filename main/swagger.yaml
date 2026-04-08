@@ -5,12 +5,17 @@ info:
   description: |
     API documentation for the Torn Exchange API.
 
+    **Authentication:**
+
+    Most endpoints require a `key` query parameter matching your TE API key (found on your profile page).
+    Endpoints marked with a lock icon require authentication. Unauthenticated requests return HTTP 401.
+
     **Rate Limiting:**
 
     - Maximum **10 requests per minute** per IP.
     - If exceeded, requests will be blocked with an exponential backoff penalty.
     - Backoff starts at 15 seconds and doubles with each violation, capped at 48 hours.
-    - Example backoff sequence (seconds): 15, 30, 60, 120, 240, ..., up to 172800 (48 hours).
+    - examples backoff sequence (seconds): 15, 30, 60, 120, 240, ..., up to 172800 (48 hours).
     - Max theoretical allowed requests per day without penalty: ~14,400.
     - If the API is continuously used at the rate limit, you may be banned permanently.
     - Rate limit violations return HTTP 429 with JSON payload:
@@ -22,10 +27,15 @@ info:
       }
       ```
 
+    **Caching:**
+
+    Many endpoints cache responses for 5 minutes. Cached data may be slightly stale.
+
 paths:
   /api/status:
     get:
       summary: Check API status
+      description: Returns a simple success message confirming the API is reachable. No authentication required.
       responses:
         '200':
           description: Success
@@ -36,23 +46,29 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: string
-                    example: "API is working"
+                    examples: ["API is working"]
 
   /api/price:
     get:
-      summary: Get item price for a specific user
+      summary: Get listing price for a specific user and item
+      description: Returns the effective price a trader has listed for a specific item. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: user_id
           in: query
           required: true
+          description: Torn user ID of the trader
           schema:
             type: string
         - name: item_id
           in: query
           required: true
+          description: Torn item ID
           schema:
             type: string
       responses:
@@ -65,26 +81,36 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
                       trader:
                         type: string
+                        examples: ["SomeName"]
                       price:
                         type: integer
+                        examples: [750000]
                       item:
                         type: string
-        '404':
-          description: Not found
+                        examples: ["Xanax"]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/profile:
     get:
-      summary: Get user profile
+      summary: Get trader profile
+      description: Returns public profile data for a trader. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: user_id
           in: query
           required: true
+          description: Torn user ID
           schema:
             type: string
       responses:
@@ -97,7 +123,7 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
@@ -117,14 +143,23 @@ paths:
                         type: integer
                       reviews:
                         type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/te_price:
     get:
       summary: Get TE and Torn market prices for an item
+      description: Returns the TE market value and Torn market value for a specific item. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: item_id
           in: query
           required: true
+          description: Torn item ID
           schema:
             type: string
       responses:
@@ -137,23 +172,35 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
                       item:
                         type: string
+                        examples: ["Xanax"]
                       te_price:
                         type: integer
+                        examples: [800000]
                       torn_price:
                         type: integer
+                        examples: [750000]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /api/prices:
+  /api/all_prices:
     get:
-      summary: Get all TE prices (cached)
+      summary: Get TE and Torn market prices for all items
+      description: Returns TE and Torn market values for every item in the database, ordered by item ID. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
       responses:
         '200':
-          description: All item prices cached for 5 minutes
+          description: All item prices
           content:
             application/json:
               schema:
@@ -161,7 +208,7 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: array
                     items:
@@ -169,24 +216,36 @@ paths:
                       properties:
                         item_id:
                           type: integer
+                          examples: [206]
                         item_name:
                           type: string
+                          examples: ["Xanax"]
                         te_price:
                           type: integer
+                          examples: [800000]
                         torn_price:
                           type: integer
+                          examples: [750000]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/listings:
     get:
-      summary: List item listings with pagination
+      summary: Get all listings for an item with pagination
+      description: Returns paginated trader listings for a specific item. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: item_id
           in: query
           required: true
+          description: Torn item ID
           schema:
             type: string
         - name: sort_by
           in: query
+          description: Field to sort by (`price` maps to effective price)
           schema:
             type: string
             default: price
@@ -215,12 +274,13 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
                       item:
                         type: string
+                        examples: ["Xanax"]
                       meta:
                         type: object
                         properties:
@@ -241,14 +301,23 @@ paths:
                               type: integer
                             item:
                               type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/best_listing:
     get:
-      summary: Get best (highest price) listing for an item
+      summary: Get the best listing for an item
+      description: Returns the highest-priced active listing for an item from a trader with an active account. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: item_id
           in: query
           required: true
+          description: Torn item ID
           schema:
             type: string
       responses:
@@ -261,28 +330,35 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
                       item:
                         type: string
+                        examples: ["Xanax"]
                       trader:
                         type: string
+                        examples: ["SomeName"]
                       price:
                         type: integer
+                        examples: [750000]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/receipts:
     get:
-      summary: User trade receipts
+      summary: Get trade receipts for the authenticated user
+      description: Returns paginated trade receipts for the user identified by the API key. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
-        - name: key
-          in: query
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ApiKey'
         - name: format
           in: query
+          description: Response format (`csv` returns a downloadable CSV file)
           schema:
             type: string
             enum:
@@ -308,7 +384,7 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: array
                     items:
@@ -316,6 +392,7 @@ paths:
                       properties:
                         created_at:
                           type: string
+                          format: date-time
                         seller:
                           type: string
                         total:
@@ -324,6 +401,7 @@ paths:
                           type: number
                         url:
                           type: string
+                          examples: ["https://tornexchange.com/receipt/abc123"]
                   meta:
                     type: object
                     properties:
@@ -335,14 +413,18 @@ paths:
                         type: integer
                       total_pages:
                         type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/receipt/{receipt_id}:
     get:
       summary: Get details for a specific receipt
+      description: Returns a receipt and its line items by receipt URL string. No authentication required.
       parameters:
         - name: receipt_id
           in: path
           required: true
+          description: Receipt URL string (from receipts list `url` field)
           schema:
             type: string
       responses:
@@ -355,8 +437,21 @@ paths:
                 properties:
                   status:
                     type: string
+                    examples: [success]
                   data:
                     type: object
+                    description: Keyed by item_id
+                    additionalProperties:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        price:
+                          type: integer
+                        quantity:
+                          type: integer
+                        subtotal:
+                          type: integer
                   meta:
                     type: object
                     properties:
@@ -364,24 +459,27 @@ paths:
                         type: string
                       created_at:
                         type: string
+                        format: date-time
                       seller:
                         type: string
                       total:
                         type: number
                       profit:
                         type: number
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /api/sellers:
     get:
-      summary: Get sellers information for authenticated user
+      summary: Get seller statistics for the authenticated user
+      description: Returns a breakdown of all customers who have traded with the authenticated user, including trade counts, profits, and last trade date. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
-        - name: key
-          in: query
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ApiKey'
         - name: format
           in: query
+          description: Response format (`csv` returns a downloadable CSV file)
           schema:
             type: string
             enum:
@@ -397,7 +495,7 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: array
                     items:
@@ -411,15 +509,146 @@ paths:
                           type: integer
                         last_traded:
                           type: string
+                          format: date-time
                   meta:
                     type: object
                     properties:
                       count:
                         type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/modify_listing:
+    post:
+      summary: Create, update, or delete listings
+      description: |
+        Batch endpoint to create, update, or delete listings. The `key` field must be included in the JSON body.
+
+        **Actions (per listing or global):**
+        - `update` — sets the listing price/discount. Creates the listing if it doesn't exist.
+        - `delete` — removes the listing.
+
+        The `action` field can be set at the top level (applies to all listings) or per individual listing entry (overrides global).
+
+        **Rules:**
+        - For `update`, at least one of `fixed_price` or `discount` must be provided.
+        - `discount` must be between 1 and 100.
+        - `fixed_price` must be a positive integer (in Torn currency).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - key
+                - listings
+              properties:
+                key:
+                  type: string
+                  description: Your TE API key
+                  examples: ["192XXXXXXXX931XX"]
+                action:
+                  type: string
+                  description: Default action applied to all listings unless overridden per item
+                  enum:
+                    - update
+                    - delete
+                  examples: [update]
+                listings:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - item_id
+                    properties:
+                      item_id:
+                        type: integer
+                        description: Torn item ID
+                        examples: [206]
+                      action:
+                        type: string
+                        description: Per-item action (overrides global `action`)
+                        enum:
+                          - update
+                          - delete
+                      fixed_price:
+                        type: integer
+                        description: Fixed price in Torn currency (optional — required if no `discount`)
+                        examples: [780000]
+                      discount:
+                        type: number
+                        format: float
+                        description: Discount percentage off TE value (optional — required if no `fixed_price`). Must be between 1 and 100.
+                        examples: [5]
+                        minimum: 1
+                        maximum: 100
+            examples:
+              update_price:
+                summary: Set a fixed price
+                value:
+                  key: "192XXXXXXXX931XX"
+                  action: update
+                  listings:
+                    - item_id: 206
+                      fixed_price: 780000
+              update_discount:
+                summary: Set a discount
+                value:
+                  key: "192XXXXXXXX931XX"
+                  action: update
+                  listings:
+                    - item_id: 206
+                      discount: 5
+              delete_item:
+                summary: Delete a listing
+                value:
+                  key: "192XXXXXXXX931XX"
+                  listings:
+                    - item_id: 206
+                      action: delete
+      responses:
+        '200':
+          description: Batch result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    examples: [success]
+                  data:
+                    type: object
+                    properties:
+                      updated_listings:
+                        type: array
+                        items:
+                          type: integer
+                        examples: [206, 200, 197]
+                      failed_listings:
+                        type: array
+                        items:
+                          type: integer
+                        examples: []
+                      deleted_listings:
+                        type: array
+                        items:
+                          type: integer
+                        examples: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/active_traders:
     get:
-      summary: Get list of active traders
+      summary: Get all active traders
+      description: Returns a list of all traders marked as active, including their Torn IDs and last trade timestamps. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
       responses:
         '200':
           description: Active traders data
@@ -430,16 +659,19 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
                       ids:
                         type: array
+                        description: Torn IDs of all active traders
                         items:
                           type: integer
+                        examples: [1234567, 7654321]
                       verbose:
                         type: object
+                        description: Full details keyed by Torn ID
                         additionalProperties:
                           type: object
                           properties:
@@ -449,17 +681,25 @@ paths:
                               type: integer
                             last_trade:
                               type: integer
+                              description: Unix timestamp of last trade, or null if never traded
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   /api/prices/{identifier}:
     get:
       summary: Get pricelist for a specific trader
+      description: Returns the full price list for a trader, identified by Torn ID or username. Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
       parameters:
+        - $ref: '#/components/parameters/ApiKey'
         - name: identifier
           in: path
           required: true
-          description: Trader name or Torn ID
+          description: Trader's Torn ID or username
           schema:
             type: string
+            examples: ["SomeName"]
       responses:
         '200':
           description: Trader's pricelist
@@ -470,7 +710,7 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
                     properties:
@@ -481,10 +721,13 @@ paths:
                           properties:
                             item_id:
                               type: integer
+                              examples: [206]
                             name:
                               type: string
+                              examples: ["Xanax"]
                             price:
                               type: integer
+                              examples: [750000]
                   meta:
                     type: object
                     properties:
@@ -496,67 +739,29 @@ paths:
                         type: number
                       last_updated:
                         type: string
+                        format: date-time
                       time_since_last_trade:
                         type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  /api/modify_listing:
-    post:
-      summary: Modify a listing by updating its price or deleting it
+  /api/all_best_listings:
+    get:
+      summary: Get the top 3 listings per item across all traders
       description: |
-        This endpoint allows you to modify a listing by either updating its price, updating its discount, or deleting it.
-        - To update the price, provide the `fixed_price` parameter with the (torn) `item_id`.
-        - To update the discount, provide the `discount` parameter with the (torn) `item_id`.
-        - To update both the price and discount, provide both parameters with the (torn) `item_id`.
-        - To delete the listing, provide the `action: delete` field for the item you wish to remove, this can be set at the parent level OR per listing item.
-        - You cannot delete a listing by posting `action: update` with discount and fixed_price not set.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                key:
-                  type: string
-                  description: The torn api key to authorize the request
-                  example: "192XXXXXXXX931XX"
-                action:
-                  type: string
-                  description: Action to be taken on the listing (either `update` or `delete`)
-                  enum:
-                    - update
-                    - delete
-                  example: delete
-                listings:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      item_id:
-                        type: integer
-                        description: The ID of the item to modify
-                        example: 206
-                      fixed_price:
-                        type: integer
-                        description: The fixed price of the item (optional for update - must have either fixed_price or discount)
-                        example: 780000
-                      discount:
-                        type: number
-                        format: float
-                        description: The discount percentage. Cannot be more than 100 or less than 0 (optional for update - must have either fixed_price or discount)
-                        example: 50
-                        minimum: 0
-                        maximum: 100
-                      action:
-                        type: string
-                        description: Action to be taken on the listing (either `update` or `delete`)
-                        enum:
-                          - update
-                          - delete
-                        example: delete
+        Returns the top 3 traders (by effective price, descending) for every item.
+        Only includes active traders with non-negative vote scores and non-hidden listings.
+        Cached for 5 minutes. Requires authentication.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
       responses:
         '200':
-          description: Successful operation
+          description: Top listings grouped by item
           content:
             application/json:
               schema:
@@ -564,48 +769,64 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: success
+                    examples: [success]
                   data:
                     type: object
-                    properties:
-                      updated_listings:
-                        type: array
-                        items:
-                          type: integer
-                        example: [ 206, 200, 197 ]
-                      failed_listings:
-                        type: array
-                        items:
-                          type: integer
-                        example: [ ]
-                      deleted_listings:
-                        type: array
-                        items:
-                          type: integer
-                        example: [ ]
-        '400':
-          description: Invalid request parameters
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: "Invalid request parameters"
-        '404':
-          description: Listing not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: "Listing not found"
+                    description: Keyed by item_id (as string)
+                    additionalProperties:
+                      type: object
+                      properties:
+                        item:
+                          type: string
+                          examples: ["Xanax"]
+                        traders:
+                          type: array
+                          maxItems: 3
+                          items:
+                            type: object
+                            properties:
+                              trader:
+                                type: string
+                              price:
+                                type: integer
+                              vote_score:
+                                type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  parameters:
+    ApiKey:
+      name: key
+      in: query
+      required: true
+      description: Your TE API key
+      schema:
+        type: string
+        examples: ["192XXXXXXXX931XX"]
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                examples: [error]
+              message:
+                type: string
+                examples: ["Invalid API key"]
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                examples: [error]
+              message:
+                type: string
+                examples: ["Invalid request parameters"]
