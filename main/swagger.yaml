@@ -532,7 +532,7 @@ paths:
 
         **Rules:**
         - For `update`, at least one of `fixed_price` or `discount` must be provided.
-        - `discount` must be between 1 and 100.
+        - `discount` must be between -100 and 100.
         - `fixed_price` must be a positive integer (in Torn currency).
       requestBody:
         required: true
@@ -581,7 +581,7 @@ paths:
                         format: float
                         description: Discount percentage off TE value (optional — required if no `fixed_price`). Must be between 1 and 100.
                         examples: [5]
-                        minimum: 1
+                        minimum: -100
                         maximum: 100
             examples:
               update_price:

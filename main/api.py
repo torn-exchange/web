@@ -613,7 +613,7 @@ def modify_listing(request):
                         if fixed_price is not None:
                             fixed_price = int(fixed_price)
                         if discount is not None:
-                            if discount < 1 or discount > 100:
+                            if discount < -100 or discount > 100:
                                 failed.append(item_id)
                                 continue
 
