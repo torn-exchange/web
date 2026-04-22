@@ -931,10 +931,9 @@ def analytics(request):
     if len(context['sellers']) > 0:
         # Extract the first 10 items from the dictionary
         first_10_sellers = dict(islice(context['sellers'].items(), 10))
-        first_30_receipts = context['receipts'][:30]
     else:
         first_10_sellers = {}
-        first_30_receipts = {}
+    first_30_receipts = context['receipts'].prefetch_related('items_trades')[:30]
         
     context.update({
         'user_settings': user_settings,
