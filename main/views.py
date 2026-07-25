@@ -18,6 +18,8 @@ from django.db.models import F, Q, Prefetch
 from django.db import transaction
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.test import RequestFactory
+from django.utils.cache import get_cache_key
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -666,7 +668,15 @@ def price_list(request, identifier=None):
             'error_message': f'Oops, looks like {identifier} does not correspond to a valid pricelist! Try checking the spelling for any typos.'
         }
         return render(request, 'main/error.html', context, status=404)
-    
+
+    is_owner = bool(profile) and profile.pk == pricelist_profile.pk
+
+    if pricelist_profile.on_vacation and not is_owner:
+        context = {
+            'error_message': f'{pricelist_profile.name} is currently on vacation and their price list is hidden.'
+        }
+        return render(request, 'main/error.html', context, status=404)
+
     # COUNTING HITS
     hit_count = HitCount.objects.get_for_object(pricelist_profile)
     HitCountMixin.hit_count(request, hit_count)
@@ -1654,6 +1664,8 @@ def toggle_vacation_mode(request):
         vacation=on_vacation,
     )
 
+    _bust_price_list_cache(request, profile)
+
     return JsonResponse({'success': True, 'on_vacation': on_vacation})
 
 
@@ -1718,6 +1730,25 @@ def sitemap(request):
 
 
 ### HELPFUL FUNCTIONS ###
+
+def _bust_price_list_cache(request, profile):
+    """
+    Evicts the cache_page_for_anonymous entry for this profile's /prices/<name>
+    page, so a vacation-mode toggle (or similar) is visible immediately instead
+    of waiting out the cache timeout. The page is only ever cached for anonymous
+    visitors and varies on the Cookie header, so we compute the key against a
+    synthetic request with no cookies (matching what an anonymous visitor sends)
+    rather than the real request, which carries the toggling user's session cookie.
+    """
+    synthetic_request = RequestFactory().get(
+        reverse('price_list', args=[profile.name]),
+        HTTP_HOST=request.get_host(),
+        secure=request.is_secure(),
+    )
+    cache_key = get_cache_key(synthetic_request, cache=cache)
+    if cache_key:
+        cache.delete(cache_key)
+
 
 def _save_active_trader(profile):
     if not profile.active_trader:
