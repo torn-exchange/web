@@ -29,7 +29,7 @@ from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
 from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, get_changelog,
                               get_most_trades, get_active_traders_count)
-from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses
+from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses, set_listing_hidden_reason
 from main.profile_stats import return_profile_stats
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
@@ -1510,6 +1510,12 @@ def museum_helper(request):
     return render(request, 'main/museum_helper.html', context)
 
 
+@require_POST
+def dismiss_inactive_banner(request):
+    request.session['inactive_trader_banner_dismissed'] = True
+    return JsonResponse({'ok': True})
+
+
 def custom_csrf_failure_view(request, reason=""):
     """
     Handles CSRF failures and returns an appropriate JSON response for APIs.
@@ -1621,15 +1627,34 @@ def toggle_category_visibility(request):
     else:
         profile.hidden_categories[category] = True
         hidden = True
-        
-    # save all category items of the user with new hidden value
-    Listing.objects.filter(
-        owner=profile, 
-        item__item_type=category
-    ).update(hidden=hidden)
+
+    # update the category hide-reason on the user's listings, preserving any other hide reason
+    set_listing_hidden_reason(
+        Listing.objects.filter(owner=profile, item__item_type=category),
+        category=hidden,
+    )
 
     profile.save()
     return JsonResponse({'success': True})
+
+
+@login_required
+@csrf_exempt
+@require_POST
+def toggle_vacation_mode(request):
+    data = json.loads(request.body)
+    on_vacation = bool(data.get('on_vacation'))
+    profile = request.user.profile
+
+    profile.on_vacation = on_vacation
+    profile.save()
+
+    set_listing_hidden_reason(
+        Listing.objects.filter(owner=profile),
+        vacation=on_vacation,
+    )
+
+    return JsonResponse({'success': True, 'on_vacation': on_vacation})
 
 
 @login_required
@@ -1698,3 +1723,7 @@ def _save_active_trader(profile):
     if not profile.active_trader:
         profile.active_trader = True
         profile.save()
+        set_listing_hidden_reason(
+            Listing.objects.filter(owner=profile, hidden_by_inactivity=True),
+            inactivity=False,
+        )

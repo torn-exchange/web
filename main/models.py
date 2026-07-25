@@ -115,6 +115,9 @@ class Listing(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     discount = models.FloatField(null=True)
     hidden = models.BooleanField(default=False)
+    hidden_by_category = models.BooleanField(default=False)
+    hidden_by_inactivity = models.BooleanField(default=False)
+    hidden_by_vacation = models.BooleanField(default=False)
     effective_price = models.BigIntegerField(null=True)
 
     def calculate_effective_price(self):
@@ -154,6 +157,38 @@ class Listing(models.Model):
     @property
     def profit_per_item(self):
         return (self.item.TE_value) - (self.effective_price)
+
+
+def set_listing_hidden_reason(queryset, *, category=None, inactivity=None, vacation=None):
+    """
+    Sets the given hide-reason flag(s) on every Listing in queryset, then
+    derives `hidden` as the OR of all three reason flags on those same rows.
+    This is the only supported way to write hidden/hidden_by_* in bulk, so that
+    one reason being cleared never clobbers another reason still in effect.
+    """
+    reason_fields = {}
+    if category is not None:
+        reason_fields['hidden_by_category'] = category
+    if inactivity is not None:
+        reason_fields['hidden_by_inactivity'] = inactivity
+    if vacation is not None:
+        reason_fields['hidden_by_vacation'] = vacation
+
+    # Capture identity of the affected rows before mutating them: the caller's
+    # queryset may itself filter on one of the fields we're about to change
+    # (e.g. Listing.objects.filter(hidden_by_inactivity=True)), so re-evaluating
+    # it after .update() would silently match zero rows.
+    affected_pks = list(queryset.values_list('pk', flat=True))
+    if not affected_pks:
+        return
+
+    if reason_fields:
+        Listing.objects.filter(pk__in=affected_pks).update(**reason_fields)
+
+    still_hidden = models.Q(hidden_by_category=True) | models.Q(hidden_by_inactivity=True) | models.Q(hidden_by_vacation=True)
+    scoped = Listing.objects.filter(pk__in=affected_pks)
+    scoped.filter(still_hidden).update(hidden=True)
+    scoped.exclude(still_hidden).update(hidden=False)
 
 
 class ItemTrade(models.Model):

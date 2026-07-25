@@ -32,6 +32,7 @@ urlpatterns = [
     path('edit_price_list', views.edit_price_list, name='edit_price_list'),
     path('manage_price_list', views.manage_price_list, name='manage_price_list'),
     path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
+    path('toggle_vacation_mode', views.toggle_vacation_mode, name='toggle_vacation_mode'),
     path('save_category_order', views.save_category_order, name='save_category_order'),
     path('prices/<str:identifier>', views.price_list, name='price_list'),
     path('prices/<str:identifier>/', views.price_list, name='price_list'),
@@ -69,6 +70,7 @@ urlpatterns = [
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
+    path('dismiss-inactive-banner', views.dismiss_inactive_banner, name='dismiss_inactive_banner'),
     path('tos', views.tos, name='tos'),
 
     # STATIC FILES

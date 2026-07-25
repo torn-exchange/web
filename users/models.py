@@ -30,6 +30,7 @@ class Profile(VoteModel, models.Model, HitCountMixin):
     te_plus_status = models.BooleanField(default=False)
     te_plus_days = models.IntegerField(null=True)
     active_trader = models.BooleanField(default=False)
+    on_vacation = models.BooleanField(default=False)
     hidden_categories = JSONField(default=dict)
     order_categories = JSONField(default=list)
     monthly_trades = models.IntegerField(null=True)
