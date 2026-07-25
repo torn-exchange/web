@@ -69,6 +69,7 @@ urlpatterns = [
     path('museum_helper', views.museum_helper, name='museum_helper'),
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
+    path('dismiss-inactive-banner', views.dismiss_inactive_banner, name='dismiss_inactive_banner'),
     path('tos', views.tos, name='tos'),
 
     # STATIC FILES

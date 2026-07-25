@@ -1510,6 +1510,12 @@ def museum_helper(request):
     return render(request, 'main/museum_helper.html', context)
 
 
+@require_POST
+def dismiss_inactive_banner(request):
+    request.session['inactive_trader_banner_dismissed'] = True
+    return JsonResponse({'ok': True})
+
+
 def custom_csrf_failure_view(request, reason=""):
     """
     Handles CSRF failures and returns an appropriate JSON response for APIs.
@@ -1698,3 +1704,6 @@ def _save_active_trader(profile):
     if not profile.active_trader:
         profile.active_trader = True
         profile.save()
+        Listing.objects.filter(owner=profile, hidden_by_inactivity=True).update(
+            hidden=False, hidden_by_inactivity=False
+        )

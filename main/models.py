@@ -115,6 +115,7 @@ class Listing(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     discount = models.FloatField(null=True)
     hidden = models.BooleanField(default=False)
+    hidden_by_inactivity = models.BooleanField(default=False)
     effective_price = models.BigIntegerField(null=True)
 
     def calculate_effective_price(self):

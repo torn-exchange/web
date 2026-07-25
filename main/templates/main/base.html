@@ -142,6 +142,17 @@
       {% endif %}
       {% endfor %}
       {% endif %}
+      {% if user.is_authenticated and not user.profile.active_trader and not request.session.inactive_trader_banner_dismissed %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert" id="inactive-trader-banner">
+        You're not an active trader. This means you haven't made a receipt in the last 30 days and all your listings are hidden from search. If you've gone inactive prior to 19th July 2026, all your listings were deleted. Otherwise, just create a new receipt and all your listings will be restored.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="dismiss-inactive-banner"></button>
+      </div>
+      <script>
+        document.getElementById('dismiss-inactive-banner').addEventListener('click', function() {
+          fetch('/dismiss-inactive-banner', {method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}});
+        });
+      </script>
+      {% endif %}
     </div>
   </div>
 

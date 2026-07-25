@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from main.models import Listing, TradeReceipt
-from users.models import User
+from users.models import User, Profile
 import datetime
 
 
@@ -9,12 +9,24 @@ class Command(BaseCommand):
     def _clean(self):
         today = datetime.datetime.now(tz=datetime.timezone.utc)
         last_month = today - datetime.timedelta(days=30)
-        active_traders = set([a.owner.user for a in TradeReceipt.objects.filter(
-            created_at__range=(last_month, today)).distinct('owner')])
-        users_logged_in_recently = set(
-            [a for a in User.objects.filter(last_login__range=(last_month, today))])
-        listings_to_delete = Listing.objects.exclude(
-            owner__user__in=active_traders.union(users_logged_in_recently)).delete()
+
+        active_trade_user_ids = set(
+            TradeReceipt.objects.filter(
+                created_at__range=(last_month, today)
+            ).distinct('owner').values_list('owner__user', flat=True)
+        )
+        users_logged_in_recently_ids = set(
+            User.objects.filter(last_login__range=(last_month, today)).values_list('pk', flat=True)
+        )
+
+        active_user_ids = active_trade_user_ids.union(users_logged_in_recently_ids)
+        active_profiles = Profile.objects.filter(user__pk__in=active_user_ids)
+
+        inactive_listings = Listing.objects.exclude(owner__in=active_profiles)
+        inactive_listings.update(hidden=True, hidden_by_inactivity=True)
+
+        inactive_profile_ids = set(inactive_listings.values_list('owner__pk', flat=True))
+        Profile.objects.filter(pk__in=inactive_profile_ids).update(active_trader=False)
 
     def handle(self, *args, **options):
         self._clean()
