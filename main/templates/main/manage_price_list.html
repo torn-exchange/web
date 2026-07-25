@@ -108,6 +108,26 @@
 
             <div class='card col-12 m-2 p-0'>
                 <div class='card-header text-center font-weight-bold m-0'>
+                    Vacation mode
+                </div>
+
+                <div class='card-body m-3 p-0 pb-2'>
+                    <div class="alert alert-primary" role="alert">
+                        <i class="fas fa-umbrella-beach"></i> Temporarily hide your entire price list from search. Your prices and profit margins stay saved &mdash; just toggle it back off when you return.
+                    </div>
+                    <hr>
+                    <div class="custom-control custom-switch ms-3">
+                        <input id="vacation-mode-toggle" type="checkbox" class="custom-control-input"
+                            {% if owner_profile.on_vacation %}checked{% endif %}>
+                        <label class="custom-control-label" for="vacation-mode-toggle">
+                            I'm on vacation &mdash; hide my whole price list
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class='card col-12 m-2 p-0'>
+                <div class='card-header text-center font-weight-bold m-0'>
                     Categories: Sorting and visibility
                 </div>
 
@@ -161,6 +181,33 @@
     }
 
     $(document).ready(function () {
+        $('#vacation-mode-toggle').change(function () {
+            toggleSpinner(true);
+            const onVacation = $(this).is(':checked');
+            const csrfToken = $('[name=csrfmiddlewaretoken]').val();
+
+            $.ajax({
+                url: "{% url 'toggle_vacation_mode' %}",
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                contentType: 'application/json',
+                data: JSON.stringify({ on_vacation: onVacation }),
+                complete: function() {
+                    toggleSpinner(false);
+                },
+                success: function (data) {
+                    if (!data.success) {
+                        console.error('Failed to toggle vacation mode.');
+                    }
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
         $('.toggle-category').change(function () {
             toggleSpinner(true);
             const category = $(this).data('category');

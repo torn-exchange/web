@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from main.models import Listing, TradeReceipt
+from main.models import Listing, TradeReceipt, set_listing_hidden_reason
 from users.models import User, Profile
 import datetime
 
@@ -23,9 +23,10 @@ class Command(BaseCommand):
         active_profiles = Profile.objects.filter(user__pk__in=active_user_ids)
 
         inactive_listings = Listing.objects.exclude(owner__in=active_profiles)
-        inactive_listings.update(hidden=True, hidden_by_inactivity=True)
-
         inactive_profile_ids = set(inactive_listings.values_list('owner__pk', flat=True))
+
+        set_listing_hidden_reason(inactive_listings, inactivity=True)
+
         Profile.objects.filter(pk__in=inactive_profile_ids).update(active_trader=False)
 
     def handle(self, *args, **options):
