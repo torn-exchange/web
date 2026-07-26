@@ -1429,9 +1429,25 @@ def new_create_receipt(request):
             item_prices = data.get('prices')
             owner_name = data.get('owner_username')
             seller_name = data.get('seller_username')
-            
+            trade_id = data.get('trade_id')
+
             owner_profile = Profile.objects.filter(name__iexact=owner_name).get()
-            trade_receipt = TradeReceipt(owner=owner_profile, seller=seller_name)
+
+            trade_receipt = None
+            if trade_id:
+                trade_receipt = TradeReceipt.objects.filter(trade_id=trade_id).first()
+
+            if trade_receipt is not None:
+                old_item_trades = list(trade_receipt.items_trades.all())
+                trade_receipt.items_trades.clear()
+                for old_item_trade in old_item_trades:
+                    old_item_trade.delete()
+
+                trade_receipt.owner = owner_profile
+                trade_receipt.seller = seller_name
+            else:
+                trade_receipt = TradeReceipt(owner=owner_profile, seller=seller_name, trade_id=trade_id)
+
             trade_receipt.save()
 
             for i in range(len(item_names)):

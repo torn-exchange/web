@@ -235,6 +235,7 @@ class TradeReceipt(models.Model):
     seller = models.CharField(null=True, max_length=250)
     items_trades = models.ManyToManyField(ItemTrade)
     created_at = models.DateTimeField(auto_now_add=True)
+    trade_id = models.CharField(null=True, max_length=20)
     receipt_url_string = models.CharField(
         max_length=10, null=False, default=generate_url_string, unique=True)
 
