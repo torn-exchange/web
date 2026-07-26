@@ -90,6 +90,7 @@ urlpatterns = [
     path('api/best_listing', api.best_listing, name='api_best_listing'),
     path('api/receipts', api.receipts, name='api_receipts'),
     path('api/receipt/<str:receipt_id>', api.receipt, name='receipt'),
+    path('api/receipt_by_trade_id/<str:trade_id>', api.receipt_by_trade_id, name='receipt_by_trade_id'),
     path('api/sellers', api.sellers, name='api_sellers'),
     path('api/modify_listing', api.modify_listing, name='modify_listing'),
     path('api/active_traders', api.active_traders, name='active_traders'),

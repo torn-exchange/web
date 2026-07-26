@@ -3,12 +3,13 @@ import json
 import os
 import time
 from functools import wraps
+from html import escape
 from typing import List
 
 from django.core.cache import cache
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import OuterRef, Q, Subquery
@@ -115,8 +116,8 @@ def js(data, meta=None):
     return JsonResponse({"status": "success", "data": data})
 
 
-def je(message):
-    return JsonResponse({"status": "error", "message": message}, status=400)
+def je(message, status=400):
+    return JsonResponse({"status": "error", "message": message}, status=status)
 
 
 def require_api_key(view_func):
@@ -509,6 +510,7 @@ def receipt(request, receipt_id=None):
         items_trades = receipt.items_trades.select_related('item').all()
         meta = {
             "receipt_id": receipt.receipt_url_string,
+            "trade_id": receipt.trade_id,
             "created_at": receipt.created_at,
             "seller": receipt.seller,
             "total": receipt.total,
@@ -526,6 +528,62 @@ def receipt(request, receipt_id=None):
         return js(data, meta)
     except Exception as E:
         return je('Page not found, wrong Receipt ID in the URL')
+
+
+# This is an internal API endpoint that is used to get a receipt by trade_id. 
+# It is not meant to be used by external users.
+@ce
+@rate_limit_exponential
+@require_api_key
+def receipt_by_trade_id(request, trade_id=None):
+    try:
+        receipt = get_object_or_404(TradeReceipt, trade_id=trade_id)
+    except Http404:
+        return je('No trade receipt found for the given Trade ID', status=404)
+
+    try:
+        items_trades = receipt.items_trades.select_related('item').all()
+
+        owner_profile = receipt.owner
+        listings_count = TradeReceipt.objects.filter(
+            owner=owner_profile, seller=receipt.seller
+        ).count()
+
+        trade_paste_text = owner_profile.settings.receipt_paste_text
+        trade_paste_text = '' if trade_paste_text is None else trade_paste_text
+
+        trade_paste_text = trade_paste_text.replace(
+            '[[seller_name]]', receipt.seller)
+        trade_paste_text = trade_paste_text.replace(
+            '[[total]]', "${:,.0f}".format(receipt.total))
+        trade_paste_text = trade_paste_text.replace(
+            '[[receipt_link]]', f'https://tornexchange.com/receipt/{receipt.receipt_url_string}')
+        trade_paste_text = trade_paste_text.replace(
+            '[[trade_number]]', str(listings_count))
+        trade_paste_text = trade_paste_text.replace(
+            '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
+        trade_paste_text = trade_paste_text.replace(
+            '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
+
+        meta = {
+            "receipt_id": receipt.receipt_url_string,
+            "trade_id": receipt.trade_id,
+            "created_at": receipt.created_at,
+            "seller": receipt.seller,
+            "total": receipt.total,
+            "profit": receipt.profit,
+            "trade_message": escape(trade_paste_text),
+        }
+        data = {
+            "items": [item_trade.item.name for item_trade in items_trades],
+            "quantities": [item_trade.quantity for item_trade in items_trades],
+            "prices": [item_trade.price for item_trade in items_trades],
+            "market_prices": [item_trade.item.TE_value for item_trade in items_trades],
+            "image_url": [item_trade.item.image_url for item_trade in items_trades],
+        }
+        return js(data, meta)
+    except Exception as E:
+        return je('Page not found, wrong Trade ID in the URL')
 
 
 @ce
