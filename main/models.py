@@ -76,6 +76,17 @@ class Item(models.Model):
     bazaar_average = models.BigIntegerField(null=True, blank=True)
     bazaar_fetched_at = models.DateTimeField(null=True, blank=True)
 
+    # UniqueConstraint with condition: mirrors ItemVariation.unique_non_null_uid below.
+    # Only safe to apply once once_dedupe_items has removed pre-existing duplicates.
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['item_id'],
+                condition=models.Q(item_id__isnull=False),
+                name='unique_non_null_item_id',
+            )
+        ]
+
     def __str__(self):
         return self.name
 

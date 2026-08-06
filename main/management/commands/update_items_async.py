@@ -11,7 +11,6 @@ import numpy as np
 from django.db import connection, reset_queries
 from django.core.management.base import BaseCommand
 from django.conf import settings as project_settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 
 from main.models import Item
@@ -93,17 +92,10 @@ def process_item(row, key, bazaar_by_item_id=None):
             if TE_price == 0:
                 break
         
-        try:
-            item_in_our_db = Item.objects.get(item_id=item_id)
-        except ObjectDoesNotExist:
-            print("==> ObjectDoesNotExist", item_id)
-            item_in_our_db = None
-        except MultipleObjectsReturned:
-            print("==> MultipleObjectsReturned", item_id)
-            item_in_our_db = None
-        except Exception as e:
-            print("general exception", e)
-            item_in_our_db = None
+        # item_id (Torn's stable identifier) is the true identity here, not name --
+        # a Torn-side rename must update this row in place rather than create a
+        # phantom duplicate, so look up (and later upsert) by item_id.
+        item_in_our_db = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
 
         if (item_in_our_db != None):
             if item_in_our_db.TE_value != TE_price:
@@ -113,9 +105,9 @@ def process_item(row, key, bazaar_by_item_id=None):
                     TE_price = sanitize_numbers(TE_price)
 
                     Item.objects.update_or_create(
-                        name=row['name'],
+                        item_id=item_id,
                         defaults=dict(
-                            item_id=item_id,
+                            name=row['name'],
                             description=row['description'],
                             requirement=row['requirement'],
                             item_type=row['type'],
@@ -147,9 +139,9 @@ def process_item(row, key, bazaar_by_item_id=None):
                 TE_price = sanitize_numbers(TE_price)
                 
                 Item.objects.update_or_create(
-                    name=row['name'],
+                    item_id=item_id,
                     defaults=dict(
-                        item_id=item_id,
+                        name=row['name'],
                         description=row['description'],
                         requirement=row['requirement'],
                         item_type=row['type'],
