@@ -1,6 +1,31 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 
+from users.models import Profile
+
+
+class TraderPriceListSitemap(Sitemap):
+    changefreq = 'daily'
+    priority = 0.6
+
+    def items(self):
+        return Profile.objects.filter(on_vacation=False, listing__hidden=False).distinct().order_by('id')
+
+    def location(self, profile):
+        return reverse('price_list', args=[profile.name])
+
+
+class TraderServicesSitemap(Sitemap):
+    changefreq = 'daily'
+    priority = 0.5
+
+    def items(self):
+        return Profile.objects.filter(services__isnull=False).distinct().order_by('id')
+
+    def location(self, profile):
+        return reverse('services_list', args=[profile.name])
+
+
 class StaticViewSitemap(Sitemap):
     priority = 0.5
     changefreq = 'daily'
@@ -26,7 +51,7 @@ class StaticViewSitemap(Sitemap):
             'analytics',
             'settings',
             'api_home',
-            'how-to-use-torn-exchange',
+            'forum_tutorial',
             'about',
             'tos',
         ]

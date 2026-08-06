@@ -1,4 +1,10 @@
 {% extends "main/base.html" %}
+{% block page_description %}{{ description }}{% endblock %}
+{% block page_description_og %}{{ description }}{% endblock %}
+{% block page_description_twitter %}{{ description }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">{{ structured_data_json|safe }}</script>
+{% endblock %}
 {% block content %}
 {% load humanize %}
 {% load custom_tags %}

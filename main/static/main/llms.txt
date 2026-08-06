@@ -1,0 +1,17 @@
+# Torn Exchange
+
+> Torn Exchange (tornexchange.com) is a marketplace for the browser game Torn.
+> Players list items and custom services for trade, browse other traders'
+> price lists, and complete/track trades with each other.
+
+## Core content
+
+- Home: https://tornexchange.com/ — leaderboards and site overview.
+- Trader price lists: https://tornexchange.com/prices/<player-name-or-id> — a
+  trader's items for sale, priced against Torn's live market values.
+- Trader services: https://tornexchange.com/services/<player-name-or-id> —
+  a trader's custom (non-item) offerings, such as reviving or company perks.
+- Listings search: https://tornexchange.com/listings — find traders selling
+  a specific item.
+- About: https://tornexchange.com/about/
+- Sitemap: https://tornexchange.com/sitemap.xml

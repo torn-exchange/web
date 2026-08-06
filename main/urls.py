@@ -16,7 +16,7 @@ Including another URLconf
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.contrib.sitemaps.views import sitemap
-from main.sitemap import StaticViewSitemap
+from main.sitemap import StaticViewSitemap, TraderPriceListSitemap, TraderServicesSitemap
 from django.conf.urls.static import static
 
 from . import views
@@ -24,6 +24,8 @@ from . import api
 
 sitemaps = {
     'static': StaticViewSitemap,
+    'trader_price_lists': TraderPriceListSitemap,
+    'trader_services': TraderServicesSitemap,
 }
 
 urlpatterns = [
@@ -76,6 +78,7 @@ urlpatterns = [
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
     path('robots.txt', views.render_static, {'file': 'robots.txt'}, name='robots.txt'),
+    path('llms.txt', views.render_static, {'file': 'llms.txt'}, name='llms.txt'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 
     # API
