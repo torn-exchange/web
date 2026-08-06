@@ -73,6 +73,8 @@ class Item(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     TE_value = models.BigIntegerField(null=True)
     item_id = models.IntegerField(null=True)
+    bazaar_average = models.BigIntegerField(null=True, blank=True)
+    bazaar_fetched_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.name
