@@ -8,7 +8,7 @@ class Weav3rMarketplaceApiService:
     itemmarket-derived price when computing Item.TE_value.
     """
 
-    base_url = "https://weav3r.dev/api/marketplace"
+    base_url = "https://weav3r.dev/api/marketplace?comment=tornexchange"
 
     @classmethod
     def get(cls):
@@ -31,7 +31,7 @@ class Weav3rMarketplaceApiService:
             return {}
 
         averages = {}
-        for row in result["data"]:
+        for row in result["data"]["items"]:
             item_id = row.get("item_id")
             bazaar_average = row.get("bazaar_average")
             if item_id is not None and bazaar_average:
