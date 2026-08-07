@@ -1,4 +1,18 @@
 {% extends "main/base.html" %}
+{% block page_description %}Learn about Torn Exchange, the trusted item and service marketplace for the game Torn.{% endblock %}
+{% block page_description_og %}Learn about Torn Exchange, the trusted item and service marketplace for the game Torn.{% endblock %}
+{% block page_description_twitter %}Learn about Torn Exchange, the trusted item and service marketplace for the game Torn.{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Torn Exchange",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "description": "Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items"
+}
+</script>
+{% endblock %}
 {% block content %}
 {% load static %}
 <div class='container'>

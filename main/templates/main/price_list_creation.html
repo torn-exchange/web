@@ -126,11 +126,12 @@
             <select class="form-control multi-select" multiple="multiple">
                 <option value="1">Item</option>
                 <option value="2">Torn Market Value</option>
-                <option value="3">TE Market Value</option>
-                <option value="4">Your Fixed Price</option>
-                <option value="5">Profit Margin %</option>
-                <option value="6">Effective Price</option>
-                <option value="7">Delete</option>
+                <option value="3">Bazaar Average</option>
+                <option value="4">TE Market Value</option>
+                <option value="5">Your Fixed Price</option>
+                <option value="6">Profit Margin %</option>
+                <option value="7">Effective Price</option>
+                <option value="8">Delete</option>
             </select>
         </div>
     </div>
@@ -192,7 +193,13 @@
                                         <th scope="col" class='text-center d-none d-md-table-row'></th>
                                         <th scope="col" class='text-center'>Item</th>
                                         <th scope="col" class='text-center'>Torn Market Value</th>
-                                        <th scope="col" class='text-center'>TE Market Value</th>
+                                        <th scope="col" class='text-center'>Bazaar Average</th>
+                                        <th scope="col" class='text-center'
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            title="The lowest of: Torn Market Value, TE's own item market price, and Bazaar Average">
+                                            TE Market Value
+                                        </th>
                                         <th scope="col" class='text-center'>Your Fixed Price</th>
                                         <th scope="col" class='text-center'>Profit Margin %</th>
                                         <th scope="col" class='text-center'
@@ -214,10 +221,13 @@
                                             <td style='width:13%;' class='text-center link-blue item_name'>
                                               {{ item.name }}
                                             </td>
-                                            <td style='width:15%;' class='text-center torn_market_value'>
+                                            <td style='width:12%;' class='text-center torn_market_value'>
                                                 ${{ item.market_value|intcomma }}
                                             </td>
-                                            <td style='width:15%;' class='text-center market_value'>
+                                            <td style='width:12%;' class='text-center bazaar_average'>
+                                                {% if item.bazaar_average %}${{ item.bazaar_average|intcomma }}{% else %}&mdash;{% endif %}
+                                            </td>
+                                            <td style='width:12%;' class='text-center market_value'>
                                                 ${{ item.TE_value|intcomma }}
                                             </td>
                                             <td style='width:13%;' class='text-center'>
@@ -444,7 +454,7 @@
         let selectedValues = storedValues ? JSON.parse(storedValues) : null;
 
         if (selectedValues === null) {
-          selectedValues = ["1", "2", "3", "4", "5", "6", "7"];
+          selectedValues = ["1", "2", "3", "4", "5", "6", "7", "8"];
         }
         
         if (selectedValues.includes("1")) {

@@ -713,12 +713,34 @@ def price_list(request, identifier=None):
         description = owner_settings.trade_list_description
     else:
         description = 'Welcome to '+pricelist_profile.name+'\'s price list. Click Start Trade now to start a trade.'
-    
+
+    # JSON-LD for AI/answer-engine discoverability. Prices are in Torn's in-game
+    # currency, not a real-world one, so we deliberately omit Offer/price schema
+    # rather than emit a misleading priceCurrency.
+    structured_data = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'name': pricelist_profile.name+'\'s Price List - Torn Exchange',
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': i + 1,
+                'item': {
+                    '@type': 'Product',
+                    'name': listing.item.name,
+                },
+            }
+            for i, listing in enumerate(all_relevant_items)
+        ],
+    }
+
     context = {
         'page_type': 'trade',
         'page_title': pricelist_profile.name+'\'s Price List - Torn Exchange',
         'content_title': pricelist_profile.name+'\'s Trading List',
         'description': description,
+        # Escape '<' so a "</script>"-containing name can't break out of the <script> tag
+        'structured_data_json': json.dumps(structured_data).replace('<', '\\u003c'),
         'items': all_relevant_items,
         'item_types': item_types,
         'owner_profile': pricelist_profile,
@@ -890,12 +912,31 @@ def services_list(request, identifier=None):
         description = owner_settings.service_list_description
     else:
         description = 'Welcome to '+pricelist_profile.name+'\'s price list for custom services.'
-    
+
+    structured_data = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'name': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': i + 1,
+                'item': {
+                    '@type': 'Product',
+                    'name': service.service.name,
+                },
+            }
+            for i, service in enumerate(owner_services)
+        ],
+    }
+
     context = {
         'page_type': 'service',
         'page_title': pricelist_profile.name+'\'s Custom Services - Torn Exchange',
         'content_title': pricelist_profile.name+'\'s Custom Services',
         'description': description,
+        # Escape '<' so a "</script>"-containing name can't break out of the <script> tag
+        'structured_data_json': json.dumps(structured_data).replace('<', '\\u003c'),
         'services': owner_services,
         'distinct_categories': distinct_categories,
         'owner_profile': pricelist_profile,

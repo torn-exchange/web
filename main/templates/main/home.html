@@ -1,4 +1,15 @@
 {% extends "main/base.html" %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Torn Exchange",
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "description": "Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items"
+}
+</script>
+{% endblock %}
 {% block content %}
 {% load static %}
 <br />

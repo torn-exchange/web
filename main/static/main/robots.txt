@@ -3,3 +3,23 @@ Disallow: /admin/
 Disallow: /static/
 Disallow: /login/
 Disallow: /logout/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://tornexchange.com/sitemap.xml

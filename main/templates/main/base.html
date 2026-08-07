@@ -52,19 +52,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+  <!-- Meta description: override the page_description block per-view to give each page its own text -->
+  <meta name="description" content="{% block page_description %}Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items{% endblock %}">
+
+  <!-- Canonical URL: override the canonical_url block per-view if a page needs a different target -->
+  <link rel="canonical" href="{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+
   <!-- OpenGraph Meta Tags -->
   <meta property="og:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
-  <meta property="og:description" content="Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items">
+  <meta property="og:description" content="{% block page_description_og %}Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items{% endblock %}">
   <meta property="og:image" content="{% static '/main/images/mainlogo.png' %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta property="og:type" content="website">
-  
+
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
-  <meta name="twitter:description" content="Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items">
+  <meta name="twitter:description" content="{% block page_description_twitter %}Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items{% endblock %}">
   <meta name="twitter:image" content="{% static '/main/images/mainlogo.png' %}">
-  
+
+  {% block structured_data %}{% endblock %}
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-EDC812F6YJ" crossorigin="anonymous"></script>
   {% if not DEBUG %}

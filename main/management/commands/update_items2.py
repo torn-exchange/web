@@ -3,7 +3,7 @@ import requests
 import json
 from django.core.management.base import BaseCommand
 from django.conf import settings as project_settings
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.utils import timezone
 from main.models import Item
 import time
 from users.models import Profile
@@ -13,6 +13,7 @@ import os
 import sys
 from django.db import connection, reset_queries
 from main.models import Listing
+from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 
 
 class Command(BaseCommand):
@@ -36,34 +37,32 @@ class Command(BaseCommand):
         print('Updating items...')
         create_or_update_sets()
 
+        # Fetched once per run (not once per item) so a slow/rate-limited
+        # weav3r response doesn't multiply the hourly command's runtime.
+        bazaar_by_item_id = Weav3rMarketplaceApiService.get_bazaar_averages_by_item_id()
+
         for index, row in df.iterrows():
             if row['circulation'] < project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM:
                 continue
             item_id = row['image'].replace(
                 'https://www.torn.com/images/items/', '').replace('/large.png', '')
-            
+
+            bazaar_average = bazaar_by_item_id.get(int(item_id))
+
             TE_price = get_lowest_market_price(
-                item_id, get_random_key(), row['market_value'])
-            
+                item_id, get_random_key(), row['market_value'], bazaar_average)
+
             while bool(TE_price) is not True:
                 print("Repeating requst for item:", item_id)
                 TE_price = get_lowest_market_price(
-                    item_id, get_random_key(), row['market_value'])
+                    item_id, get_random_key(), row['market_value'], bazaar_average)
                 if TE_price == 0:
                     break
             
-            try:
-                item_in_our_db = Item.objects.get(item_id=item_id)
-            except ObjectDoesNotExist:
-                print("==> ObjectDoesNotExist", item_id)
-                item_in_our_db = None
-            except MultipleObjectsReturned:
-                print("==> MultipleObjectsReturned", item_id)
-                item_in_our_db = None
-                    
-            except Exception as e:
-                print("general exception", e)
-                item_in_our_db = None
+            # item_id (Torn's stable identifier) is the true identity here, not name --
+            # a Torn-side rename must update this row in place rather than create a
+            # phantom duplicate, so look up (and later upsert) by item_id.
+            item_in_our_db = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
 
             if (item_in_our_db != None):
                 if item_in_our_db.TE_value != TE_price:
@@ -73,9 +72,9 @@ class Command(BaseCommand):
                         TE_price = sanitize_numbers(TE_price)
 
                         item_obj, _ = Item.objects.update_or_create(
-                            name=row['name'],
+                            item_id=item_id,
                             defaults=dict(
-                                item_id=item_id,
+                                name=row['name'],
                                 description=row['description'],
                                 requirement=row['requirement'],
                                 item_type=row['type'],
@@ -85,7 +84,9 @@ class Command(BaseCommand):
                                 market_value=row['market_value'],
                                 circulation=row['circulation'],
                                 image_url=row['image'],
-                                TE_value=TE_price
+                                TE_value=TE_price,
+                                bazaar_average=bazaar_average,
+                                bazaar_fetched_at=timezone.now() if bazaar_average else None,
                             ),
                         )
                         recalculate_listings_for_item(item_obj)
@@ -107,9 +108,9 @@ class Command(BaseCommand):
                     TE_price = sanitize_numbers(TE_price)
                     
                     Item.objects.update_or_create(
-                        name=row['name'],
+                        item_id=item_id,
                         defaults=dict(
-                            item_id=item_id,
+                            name=row['name'],
                             description=row['description'],
                             requirement=row['requirement'],
                             item_type=row['type'],
@@ -119,7 +120,9 @@ class Command(BaseCommand):
                             market_value=row['market_value'],
                             circulation=row['circulation'],
                             image_url=row['image'],
-                            TE_value=TE_price
+                            TE_value=TE_price,
+                            bazaar_average=bazaar_average,
+                            bazaar_fetched_at=timezone.now() if bazaar_average else None,
                         )
                     )
                 except Exception as e:
@@ -152,10 +155,10 @@ def get_random_key():
     return choice(profiles_with_keys).api_key
 
 
-def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
+def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_average=None):
     if api_key == '':
         return None
-    
+
     time.sleep(0.05)
     comment = os.getenv("API_COMMENT")
     url = f'https://api.torn.com/v2/market/?selections=itemmarket&id={item_id}&key={api_key}{comment}'
@@ -164,7 +167,7 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
 
     if data.get('error'):
         print("update_items2 ERROR", data, item_id)
-        
+
         if "Too many requests" in data["error"].get("error", ""):
             print("Rate limit hit. Waiting 30 seconds before retrying...")
             time.sleep(30)  # wait before retry
@@ -182,14 +185,16 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan):
                 itemmarket_min = avg_market_price
         else:
             itemmarket_min = np.nan
-            
+
+        bazaar_average = bazaar_average or np.nan
+
         # error handling to avoid "cannot convert float NaN to integer" error
-        if all(x in [None, np.nan, 0] for x in [itemmarket_min, avg_market_price]):
+        if all(x in [None, np.nan, 0] for x in [itemmarket_min, avg_market_price, bazaar_average]):
             return 0
 
         try:
-            pricing_data = np.array([itemmarket_min, avg_market_price])
-            
+            pricing_data = np.array([itemmarket_min, avg_market_price, bazaar_average])
+
             TE_price = int(
                 round(np.nanmin(pricing_data[np.nonzero(pricing_data)])))
         except Exception as e:
