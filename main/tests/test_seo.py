@@ -1,10 +1,12 @@
 import json
 import re
+from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.utils import timezone
 
-from main.models import Item, Listing
+from main.models import Item, Listing, Service, Services, ServiceCategories
 from users.models import Profile
 
 
@@ -40,6 +42,15 @@ def make_item(name='Test Item', te_value=100_000, item_id=1):
 
 def make_listing(profile, item, price=100):
     return Listing.objects.create(owner=profile, item=item, price=price)
+
+
+def make_service_offer(profile, name='Reviving', last_updated=None):
+    service = Service.objects.create(name=name, description='', category=ServiceCategories.Other)
+    offer = Services.objects.create(owner=profile, service=service, money_price=100, barter_price='', offer_description='')
+    if last_updated is not None:
+        Services.objects.filter(pk=offer.pk).update(last_updated=last_updated)
+        offer.refresh_from_db()
+    return offer
 
 
 def extract_ld_json(html):
@@ -156,3 +167,29 @@ class CrawlerFilesTests(TestCase):
         response = self.client.get('/sitemap.xml')
         content = response.content.decode()
         self.assertNotIn('/prices/notrader', content)
+
+    def test_sitemap_excludes_login_gated_pages(self):
+        response = self.client.get('/sitemap.xml')
+        content = response.content.decode()
+        for path in ('/edit_price_list', '/manage_price_list', '/edit_services/',
+                     '/calculator', '/analytics/', '/settings/'):
+            self.assertNotIn(path, content)
+        # the bare (no-identifier) routes redirect anonymous visitors to login
+        self.assertNotIn('/prices/</loc>', content)
+        self.assertNotIn('/services/</loc>', content)
+
+    def test_sitemap_includes_recently_updated_service(self):
+        profile = make_user('freshservicetrader')
+        make_service_offer(profile, last_updated=timezone.now() - timedelta(days=30))
+
+        response = self.client.get('/sitemap.xml')
+        content = response.content.decode()
+        self.assertIn(f'/services/{profile.name}', content)
+
+    def test_sitemap_excludes_stale_service(self):
+        profile = make_user('staleservicetrader')
+        make_service_offer(profile, last_updated=timezone.now() - timedelta(days=200))
+
+        response = self.client.get('/sitemap.xml')
+        content = response.content.decode()
+        self.assertNotIn(f'/services/{profile.name}', content)

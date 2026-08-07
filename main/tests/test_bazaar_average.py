@@ -59,10 +59,12 @@ class Weav3rMarketplaceApiServiceTests(TestCase):
     @patch('main.services.api.weav3r.marketplace_api_service.requests.get')
     def test_successful_response_is_indexed_by_item_id(self, mock_get):
         mock_response = Mock()
-        mock_response.json.return_value = [
-            {"item_id": 206, "item_name": "Xanax", "bazaar_average": 824411},
-            {"item_id": 207, "item_name": "Other", "bazaar_average": None},
-        ]
+        mock_response.json.return_value = {
+            "items": [
+                {"item_id": 206, "item_name": "Xanax", "bazaar_average": 824411},
+                {"item_id": 207, "item_name": "Other", "bazaar_average": None},
+            ]
+        }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 

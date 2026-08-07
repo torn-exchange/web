@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from django.utils import timezone
 
 from users.models import Profile
 
@@ -20,7 +23,12 @@ class TraderServicesSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Profile.objects.filter(services__isnull=False).distinct().order_by('id')
+        six_months_ago = timezone.now() - timedelta(days=180)
+        return (
+            Profile.objects.filter(services__last_updated__gte=six_months_ago)
+            .distinct()
+            .order_by('id')
+        )
 
     def location(self, profile):
         return reverse('services_list', args=[profile.name])
@@ -31,7 +39,12 @@ class StaticViewSitemap(Sitemap):
     changefreq = 'daily'
 
     def items(self):
-        # List of URL names from your navbar
+        # List of URL names from your navbar. Login-gated pages (edit_price_list,
+        # manage_price_list, edit_services, calculator, analytics, settings) are
+        # excluded, as are the bare 'price_list'/'services_list' routes (no
+        # identifier), which redirect to login for anonymous visitors -- the
+        # real per-trader pages are covered by TraderPriceListSitemap/
+        # TraderServicesSitemap above.
         return [
             'home',
             'listings',
@@ -42,14 +55,6 @@ class StaticViewSitemap(Sitemap):
             'company_listings',
             'companies_hiring',
             'museum_helper',
-            'price_list',
-            'edit_price_list',
-            'manage_price_list',
-            'services_list',
-            'edit_services',
-            'calculator',
-            'analytics',
-            'settings',
             'api_home',
             'forum_tutorial',
             'about',
