@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from main.management.commands.update_items2 import rebalance_discounts_to_preserve_effective_price
+from main.management.commands.once_rebalance_discounts_for_bazaar_mv import (
+    rebalance_discounts_to_preserve_effective_price,
+)
 from main.models import Item, Listing
 
 
@@ -161,3 +163,96 @@ class RebalanceDiscountsTests(TestCase):
         listing.refresh_from_db()
         self.assertIsNone(listing.discount)
         self.assertIsNone(listing.effective_price)
+
+    def test_dry_run_leaves_listing_unchanged(self):
+        item = make_item(te_value=100_000)
+        listing = make_listing(self.profile, item, price=None, discount=10.0)
+        original_discount = listing.discount
+        original_effective_price = listing.effective_price
+
+        item = drop_te_value(item, 50_000)
+        rebalance_discounts_to_preserve_effective_price(item, dry_run=True)
+
+        listing.refresh_from_db()
+        self.assertEqual(listing.discount, original_discount)
+        self.assertEqual(listing.effective_price, original_effective_price)
+
+
+# ---------------------------------------------------------------------------
+# once_rebalance_discounts_for_bazaar_mv (the deploy-time command)
+# ---------------------------------------------------------------------------
+
+from unittest.mock import patch
+
+from main.management.commands.once_rebalance_discounts_for_bazaar_mv import Command
+
+
+class RebalanceCommandTests(TestCase):
+
+    def setUp(self):
+        self.profile = make_user('trader1')
+        self.profile.settings.trade_global_fee = 0
+        self.profile.settings.save()
+
+    @patch(
+        'main.management.commands.once_rebalance_discounts_for_bazaar_mv'
+        '.Weav3rMarketplaceApiService.get_bazaar_averages_by_item_id'
+    )
+    def test_command_updates_te_value_and_rebalances(self, mock_get_averages):
+        item = make_item(te_value=100_000, item_id=206)
+        listing = make_listing(self.profile, item, price=None, discount=10.0)
+        old_effective_price = listing.effective_price  # 90_000
+        mock_get_averages.return_value = {206: 50_000}
+
+        Command().handle(dry_run=False)
+
+        item.refresh_from_db()
+        listing.refresh_from_db()
+        self.assertEqual(item.TE_value, 50_000)
+        self.assertEqual(item.bazaar_average, 50_000)
+        self.assertIsNotNone(item.bazaar_fetched_at)
+        self.assertEqual(listing.effective_price, old_effective_price)
+
+    @patch(
+        'main.management.commands.once_rebalance_discounts_for_bazaar_mv'
+        '.Weav3rMarketplaceApiService.get_bazaar_averages_by_item_id'
+    )
+    def test_command_skips_item_when_bazaar_average_not_lower(self, mock_get_averages):
+        item = make_item(te_value=100_000, item_id=206)
+        mock_get_averages.return_value = {206: 150_000}
+
+        Command().handle(dry_run=False)
+
+        item.refresh_from_db()
+        self.assertEqual(item.TE_value, 100_000)
+        self.assertIsNone(item.bazaar_average)
+
+    @patch(
+        'main.management.commands.once_rebalance_discounts_for_bazaar_mv'
+        '.Weav3rMarketplaceApiService.get_bazaar_averages_by_item_id'
+    )
+    def test_command_skips_item_with_no_bazaar_coverage(self, mock_get_averages):
+        item = make_item(te_value=100_000, item_id=206)
+        mock_get_averages.return_value = {}
+
+        Command().handle(dry_run=False)
+
+        item.refresh_from_db()
+        self.assertEqual(item.TE_value, 100_000)
+
+    @patch(
+        'main.management.commands.once_rebalance_discounts_for_bazaar_mv'
+        '.Weav3rMarketplaceApiService.get_bazaar_averages_by_item_id'
+    )
+    def test_command_dry_run_leaves_db_unchanged(self, mock_get_averages):
+        item = make_item(te_value=100_000, item_id=206)
+        listing = make_listing(self.profile, item, price=None, discount=10.0)
+        mock_get_averages.return_value = {206: 50_000}
+
+        Command().handle(dry_run=True)
+
+        item.refresh_from_db()
+        listing.refresh_from_db()
+        self.assertEqual(item.TE_value, 100_000)
+        self.assertIsNone(item.bazaar_average)
+        self.assertEqual(listing.discount, 10.0)
