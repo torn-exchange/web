@@ -48,7 +48,16 @@ class Command(BaseCommand):
         # Cheap, DB-side aggregation to find only the (owner, seller) pairs that
         # could possibly contain a duplicate -- the vast majority of pairs have
         # exactly one receipt and can be skipped without ever being loaded.
-        candidate_groups = (
+        # Materialized as a plain list (not .iterator()): these rows are just
+        # (owner_id, seller, count) tuples, tiny compared to the actual
+        # TradeReceipt/ItemTrade data that motivated avoiding a single big
+        # query in the first place. .iterator() opens a server-side cursor
+        # pinned to one physical connection, which breaks in production here
+        # since the DB sits behind PgBouncer in transaction-pooling mode --
+        # each of the per-group queries inside this loop can get handed a
+        # different pooled connection, orphaning that cursor ("cursor ...
+        # does not exist").
+        candidate_groups = list(
             TradeReceipt.objects.order_by()
             .values('owner_id', 'seller')
             .annotate(cnt=Count('id'))
@@ -59,7 +68,7 @@ class Command(BaseCommand):
         receipts_removed = 0
         groups_scanned = 0
 
-        for group in candidate_groups.iterator():
+        for group in candidate_groups:
             groups_scanned += 1
             receipts = list(
                 TradeReceipt.objects.filter(
