@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% block content %}
+{% load static %}
 <div class='container' id='main-container'>
     {% if user_settings.tutorial == True%}
     <div class="card small mt-3">
@@ -50,17 +51,11 @@
             <p>You can do calculations on Chrome, Firefox or Torn PDA!</p>
             <p>Don't forget to set custom trading message in <a href="{% url 'settings' %}">Settings</a>.</p>
             <a class='btn btn-primary'
-                href="https://chromewebstore.google.com/detail/torn-exchange/iggcinpeofcbplffobefiojjgfeoblll"
+                href="https://greasyfork.org/en/scripts/588688-torn-exchange-helper"
                 target="_blank">
-                <img src="https://icons.iconarchive.com/icons/dtafalonso/android-lollipop/48/Chrome-icon.png"
+                <img src="{% static '/main/images/favicon.png'%}"
                     style="width: 16px; height: 16px;" />
-                Chrome extension
-            </a>
-            <a class='btn btn-primary' href="https://addons.mozilla.org/en-GB/firefox/addon/torn-exchange-2-0/"
-                target="_blank">
-                <img src="https://icons.iconarchive.com/icons/morcha/browsers/48/Firefox-icon.png"
-                    style="width: 16px; height: 16px;" />
-                Firefox extension
+                TE Trading Helper
             </a>
             <a class='btn btn-primary' href="https://github.com/Manuito83/torn-pda" target="_blank">
                 <img src="https://raw.githubusercontent.com/Manuito83/torn-pda/refs/heads/master/images/icons/pda_icon.png"
