@@ -1,7 +1,8 @@
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
+from django.db.models import Count
 
 from main.models import TradeReceipt
 
@@ -28,7 +29,10 @@ class Command(BaseCommand):
         'Duplicates are receipts with the same owner, same seller, an '
         'identical multiset of (item, quantity) across their ItemTrades, '
         'and created_at within 2 minutes of each other. The earliest '
-        'receipt in each such cluster is kept; the rest are deleted.'
+        'receipt in each such cluster is kept; the rest are deleted. '
+        'Processes one (owner, seller) group at a time rather than loading '
+        'the whole table into memory, since TradeReceipt/ItemTrade can run '
+        'into the millions of rows in production.'
     )
 
     def add_arguments(self, parser):
@@ -41,20 +45,35 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dry_run = options['dry_run']
 
-        groups = defaultdict(list)
-        for receipt in (
-            TradeReceipt.objects.select_related('owner')
-            .prefetch_related('items_trades')
-            .order_by('created_at')
-        ):
-            groups[(receipt.owner_id, receipt.seller)].append(receipt)
+        # Cheap, DB-side aggregation to find only the (owner, seller) pairs that
+        # could possibly contain a duplicate -- the vast majority of pairs have
+        # exactly one receipt and can be skipped without ever being loaded.
+        candidate_groups = (
+            TradeReceipt.objects.order_by()
+            .values('owner_id', 'seller')
+            .annotate(cnt=Count('id'))
+            .filter(cnt__gt=1)
+        )
 
-        # Clustering is done first, in full, using each receipt's original id --
-        # deleting a receipt sets its .id to None, so deletions must not happen
-        # until after every group has finished being scanned for clusters.
-        clusters = []
-        for receipts in groups.values():
+        clusters_found = 0
+        receipts_removed = 0
+        groups_scanned = 0
+
+        for group in candidate_groups.iterator():
+            groups_scanned += 1
+            receipts = list(
+                TradeReceipt.objects.filter(
+                    owner_id=group['owner_id'], seller=group['seller']
+                )
+                .prefetch_related('items_trades')
+                .order_by('created_at')
+            )
+
+            # Clustering is done first, in full, using each receipt's original id --
+            # deleting a receipt sets its .id to None, so deletions must not happen
+            # until after this group has finished being scanned for clusters.
             used_ids = set()
+            group_clusters = []
             for i, first in enumerate(receipts):
                 if first.id in used_ids:
                     continue
@@ -72,24 +91,27 @@ class Command(BaseCommand):
                         used_ids.add(other.id)
 
                 if len(cluster) > 1:
-                    clusters.append(cluster)
+                    group_clusters.append(cluster)
 
-        clusters_found = len(clusters)
-        receipts_removed = 0
-        for cluster in clusters:
-            canonical, duplicates = cluster[0], cluster[1:]
-            self.stdout.write(
-                f'Keeping TradeReceipt(id={canonical.id}, created_at={canonical.created_at}) as canonical; '
-                f'{"would remove" if dry_run else "removing"} {len(duplicates)} duplicate(s): '
-                f'{[dup.id for dup in duplicates]}'
-            )
-            for dup in duplicates:
-                if not dry_run:
-                    dup.items_trades.all().delete()
-                    dup.delete()
-                receipts_removed += 1
+            for cluster in group_clusters:
+                clusters_found += 1
+                canonical, duplicates = cluster[0], cluster[1:]
+                self.stdout.write(
+                    f'Keeping TradeReceipt(id={canonical.id}, created_at={canonical.created_at}) as canonical; '
+                    f'{"would remove" if dry_run else "removing"} {len(duplicates)} duplicate(s): '
+                    f'{[dup.id for dup in duplicates]}'
+                )
+                for dup in duplicates:
+                    if not dry_run:
+                        dup.items_trades.all().delete()
+                        dup.delete()
+                    receipts_removed += 1
+
+            if groups_scanned % 5000 == 0:
+                self.stdout.write(f'... scanned {groups_scanned} candidate groups so far')
 
         self.stdout.write(self.style.SUCCESS(
-            f'{"Would remove" if dry_run else "Removed"} {receipts_removed} duplicate receipt(s) '
+            f'Scanned {groups_scanned} candidate (owner, seller) group(s); '
+            f'{"would remove" if dry_run else "removed"} {receipts_removed} duplicate receipt(s) '
             f'across {clusters_found} cluster(s)'
         ))
