@@ -1583,6 +1583,12 @@ def dismiss_inactive_banner(request):
     return JsonResponse({'ok': True})
 
 
+@require_POST
+def dismiss_bazaar_mv_banner(request):
+    request.session['bazaar_mv_banner_dismissed'] = True
+    return JsonResponse({'ok': True})
+
+
 def custom_csrf_failure_view(request, reason=""):
     """
     Handles CSRF failures and returns an appropriate JSON response for APIs.
