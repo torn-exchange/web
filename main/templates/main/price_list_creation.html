@@ -4,6 +4,20 @@
     {% load custom_tags %}
 
     <div class='container'>
+    {% if not request.session.bazaar_mv_banner_dismissed %}
+    <div class="alert alert-info alert-dismissible fade show mt-3" role="alert" id="bazaar-mv-banner">
+        TE Market Value now also factors in bazaar averages, giving a more accurate lowest-of-three
+        estimate alongside Torn's market value and our own item-market price. Your existing discount-based
+        prices were automatically rebalanced so your effective price didn't change, but since bazaar
+        averages are usually the lowest of the three, it's worth reviewing your profit margins below.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" id="dismiss-bazaar-mv-banner"></button>
+    </div>
+    <script>
+        document.getElementById('dismiss-bazaar-mv-banner').addEventListener('click', function() {
+            fetch('{% url "dismiss_bazaar_mv_banner" %}', {method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}});
+        });
+    </script>
+    {% endif %}
     <script src="https://unpkg.com/slim-select@3.0.3/dist/slimselect.js"></script>
     <link href="https://unpkg.com/slim-select@latest/dist/slimselect.css" rel="stylesheet"></link>
     {% if user_settings.tutorial == True %}
