@@ -67,6 +67,18 @@ class Command(BaseCommand):
             if (item_in_our_db != None):
                 if item_in_our_db.TE_value != TE_price:
                     try:
+                        # First time bazaar_average becomes available for this item: it's
+                        # usually the lowest of the three TE_value sources, so folding it
+                        # in for the first time can drop TE_value (and every discount-based
+                        # listing's effective_price) in one step. Rebalance discounts to
+                        # preserve traders' existing effective_price instead of letting the
+                        # rollout silently move it -- a one-time transitional accommodation,
+                        # not a permanent freeze; ordinary TE_value changes afterwards
+                        # continue to move effective_price as they always have.
+                        is_first_bazaar_average = (
+                            item_in_our_db.bazaar_average is None and bazaar_average is not None
+                        )
+
                         for key in ['buy_price', 'sell_price', 'market_value']:
                             row[key] = sanitize_numbers(row[key])
                         TE_price = sanitize_numbers(TE_price)
@@ -89,7 +101,10 @@ class Command(BaseCommand):
                                 bazaar_fetched_at=timezone.now() if bazaar_average else None,
                             ),
                         )
-                        recalculate_listings_for_item(item_obj)
+                        if is_first_bazaar_average:
+                            rebalance_discounts_to_preserve_effective_price(item_obj)
+                        else:
+                            recalculate_listings_for_item(item_obj)
                     except Exception as e:
                         print(e)
                         print(f'Did NOT save item: {row["name"]} [{item_id}]', row)
@@ -254,6 +269,65 @@ def create_or_update_sets():
 def recalculate_listings_for_item(item):
     for listing in Listing.objects.filter(item=item).select_related('owner__settings', 'item'):
         listing.save(update_fields=['effective_price'])
+
+
+# Discount must stay within the range accepted elsewhere (main/api.py's
+# modify_listing), so a rebalance target outside it can't be represented.
+MIN_DISCOUNT = -100
+MAX_DISCOUNT = 100
+
+
+def rebalance_discounts_to_preserve_effective_price(item):
+    """
+    Recalculates the `discount` on every discount-based Listing for `item` so
+    that `effective_price` stays exactly where it was before `item.TE_value`
+    just changed, instead of drifting down with it. Fixed-price-only listings
+    (discount is None) are untouched, since they were never driven by
+    TE_value in the first place.
+
+    This must be called with `item` already saved with its NEW TE_value, and
+    relies on each Listing's `effective_price` still holding the value that
+    was computed under the OLD TE_value (true as long as nothing else has
+    saved these Listings in between).
+
+    Works for all three listing shapes uniformly: discount-only (effective_price
+    is the discount price, which gets recalculated to match itself); discount+price
+    where discount was binding (same as discount-only); and discount+price where
+    the fixed price was binding (the new discount price is set to exactly equal
+    price, so `min(discount_price, price)` still resolves to `price`).
+    """
+    for listing in Listing.objects.filter(item=item, discount__isnull=False).select_related('owner__settings'):
+        old_effective_price = listing.effective_price
+        if old_effective_price is None or not item.TE_value:
+            # Nothing to preserve, or TE_value is 0/None so no discount can hit
+            # a nonzero target -- leave the listing for normal recalculation.
+            continue
+
+        global_fee = listing.owner.settings.trade_global_fee or 0
+        if item.item_id > 9000:
+            global_fee = 0
+
+        new_discount = 100.0 - global_fee - (old_effective_price / item.TE_value * 100.0)
+
+        if new_discount < MIN_DISCOUNT or new_discount > MAX_DISCOUNT:
+            print(
+                f'Skipping discount rebalance for Listing {listing.id}: required discount '
+                f'{new_discount:.2f}% is outside the [{MIN_DISCOUNT}, {MAX_DISCOUNT}] range'
+            )
+            continue
+
+        listing.discount = round(new_discount, 4)
+        listing.save(update_fields=['discount', 'effective_price'])
+
+        # Up to ~0.1% rounding drift is expected/accepted; anything more suggests a bug.
+        new_effective_price = listing.effective_price or 0
+        drift = abs(new_effective_price - old_effective_price)
+        tolerance = max(1, abs(old_effective_price) * 0.001)
+        if drift > tolerance:
+            print(
+                f'WARNING: Listing {listing.id} drifted by {drift} after discount rebalance '
+                f'(old effective_price={old_effective_price}, new={new_effective_price})'
+            )
 
 
 def sanitize_numbers(number):
