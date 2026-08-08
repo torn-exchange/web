@@ -1560,12 +1560,14 @@ def receipt_view(request, receipt_id=None):
         return render(request, 'main/error.html', context)
 
 
+@login_required
+@require_POST
 def delete_receipt_from_profile(request, receipt_id):
-    if request.method == 'POST':
-        trade_receipt = TradeReceipt.objects.filter(id=receipt_id).get()
-        trade_items = trade_receipt.items_trades.all()
-        [a.delete() for a in trade_items]
-        trade_receipt.delete()
+    profile = Profile.objects.filter(user=request.user).get()
+    trade_receipt = get_object_or_404(TradeReceipt, id=receipt_id, owner=profile)
+    trade_items = trade_receipt.items_trades.all()
+    [a.delete() for a in trade_items]
+    trade_receipt.delete()
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', 'analytics'))
 
 

@@ -243,6 +243,12 @@ class ItemTrade(models.Model):
             (self.price * self.quantity)
         return profit
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['owner'], name='itemtrade_owner_idx'),
+            models.Index(fields=['item'], name='itemtrade_item_idx'),
+        ]
+
 class TradeReceipt(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     seller = models.CharField(null=True, max_length=250)
@@ -254,6 +260,14 @@ class TradeReceipt(models.Model):
 
     def __str__(self):
         return f"{self.owner}- {self.seller} - ${self.total} | {self.created_at}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['owner', 'seller'], name='tradereceipt_owner_seller_idx'),
+            models.Index(fields=['seller'], name='tradereceipt_seller_idx'),
+            models.Index(fields=['created_at'], name='tradereceipt_created_at_idx'),
+            models.Index(fields=['trade_id'], name='tradereceipt_trade_id_idx'),
+        ]
 
     @property
     def total(self):
