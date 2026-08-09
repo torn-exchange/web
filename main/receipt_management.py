@@ -70,6 +70,11 @@ def receipt_management(request):
         page_receipts = [receipts_by_pk[pk] for pk in page_pks]
         for r in page_receipts:
             r.role = 'buyer' if r.owner_id == profile.id else 'seller'
+            # `seller` on the model is always the seller's name, which is the
+            # logged-in trader's own name on seller-role rows (that's how
+            # those rows were matched in the first place) - the counterparty
+            # to show is whoever isn't them: the other party in the trade.
+            r.counterparty = r.seller if r.role == 'buyer' else r.owner.name
         page_obj.object_list = page_receipts
 
         histogram_data = _build_histogram(matched_qs)

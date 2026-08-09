@@ -196,6 +196,22 @@ class ReceiptManagementViewTests(TestCase):
         self.assertFalse(response.context['has_search'])
         self.assertNotContains(response, 'Glasnost')
 
+    def test_counterparty_shows_other_party_not_self(self):
+        # trader1 is the buyer on self.receipt (seller='Glasnost') - counterparty is Glasnost.
+        # Also give trader1 a receipt where they're the seller (someone else's purchase) -
+        # counterparty there should be the *buyer*, not trader1's own name.
+        _, other_profile = make_user('Buyer2')
+        sale_trade = make_item_trade(other_profile, self.item, seller='trader1', price=100, quantity=1)
+        make_trade_receipt(other_profile, 'trader1', [sale_trade], self.now)
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('receipt_management'), {'seller': ''})
+
+        counterparties = {r.pk: r.counterparty for r in response.context['receipts']}
+        self.assertEqual(counterparties[self.receipt.pk], 'Glasnost')
+        sale_receipt_pk = [pk for pk, cp in counterparties.items() if pk != self.receipt.pk][0]
+        self.assertEqual(counterparties[sale_receipt_pk], 'Buyer2')
+
     def test_lists_own_receipts_when_search_submitted(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('receipt_management'), {'seller': ''})

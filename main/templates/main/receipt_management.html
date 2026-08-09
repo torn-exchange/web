@@ -112,7 +112,7 @@
                       <span class="badge" style="background-color: var(--bs-gold); color:#000;">Seller</span>
                     {% endif %}
                   </td>
-                  <td>{{ receipt.seller }}</td>
+                  <td>{{ receipt.counterparty }}</td>
                   <td>{{ receipt.created_at }}</td>
                   <td>
                     {% for item_trade in receipt.items_trades.all %}
