@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 from . import views
 from . import api
+from . import receipt_management
 
 sitemaps = {
     'static': StaticViewSitemap,
@@ -58,6 +59,8 @@ urlpatterns = [
     path('analytics/mobile_all_trades/', views.mobile_all_trades, name='mobile_receipts'),
     path('delete_receipt/<str:receipt_id>/',
          views.delete_receipt_from_profile, name='delete_receipt'),
+    path('management/trades', receipt_management.receipt_management, name='receipt_management'),
+    path('management/trades/', receipt_management.receipt_management, name='receipt_management'),
     path('about/', views.about, name='about'),
     path('settings/', views.settings, name='settings'),
     path('revives_listings', views.revives_listings, name='revives_listings'),

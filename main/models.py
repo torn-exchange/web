@@ -1,5 +1,7 @@
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models import Sum, F, ExpressionWrapper, BigIntegerField
+from django.db.models.functions import Upper
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from users.models import Profile
 import numpy as np
@@ -243,6 +245,12 @@ class ItemTrade(models.Model):
             (self.price * self.quantity)
         return profit
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['owner'], name='itemtrade_owner_idx'),
+            models.Index(fields=['item'], name='itemtrade_item_idx'),
+        ]
+
 class TradeReceipt(models.Model):
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
     seller = models.CharField(null=True, max_length=250)
@@ -251,9 +259,29 @@ class TradeReceipt(models.Model):
     trade_id = models.CharField(null=True, max_length=20)
     receipt_url_string = models.CharField(
         max_length=10, null=False, default=generate_url_string, unique=True)
+    # Denormalized copy of `total` (see below), kept in sync by
+    # `sync_total_amount_on_items_trades_change` below whenever items_trades
+    # is set/added/removed/cleared. Exists so searches/filters on receipt
+    # amount (e.g. "trades over $500M") can run as an indexed SQL query
+    # instead of loading every one of a trader's receipts (with all their
+    # item trades prefetched) into Python just to sum and compare - for a
+    # heavy trader with tens of thousands of receipts that took minutes.
+    # Nullable because historical rows need a one-time backfill; NULL rows
+    # simply won't match amount_min/amount_max filters until backfilled.
+    total_amount = models.BigIntegerField(null=True)
 
     def __str__(self):
         return f"{self.owner}- {self.seller} - ${self.total} | {self.created_at}"
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['owner', 'seller'], name='tradereceipt_owner_seller_idx'),
+            models.Index(fields=['seller'], name='tradereceipt_seller_idx'),
+            models.Index(Upper('seller'), name='tradereceipt_seller_upper_idx'),
+            models.Index(fields=['created_at'], name='tradereceipt_created_at_idx'),
+            models.Index(fields=['trade_id'], name='tradereceipt_trade_id_idx'),
+            models.Index(fields=['total_amount'], name='tradereceipt_total_amount_idx'),
+        ]
 
     @property
     def total(self):
@@ -262,6 +290,12 @@ class TradeReceipt(models.Model):
     @property
     def profit(self):
         return sum([a.profit for a in self.items_trades.all()])
+
+    def recalculate_total_amount(self):
+        aggregate = self.items_trades.aggregate(
+            total=Sum(ExpressionWrapper(F('price') * F('quantity'), output_field=BigIntegerField()))
+        )
+        TradeReceipt.objects.filter(pk=self.pk).update(total_amount=aggregate['total'] or 0)
 
 
 class ItemBonus(models.Model):
@@ -378,3 +412,13 @@ class JobLog(models.Model):
 def recalculate_listings_on_settings_change(sender, instance, **kwargs):
     for listing in instance.owner.listing_set.select_related('owner__settings', 'item').all():
         listing.save(update_fields=['effective_price'])
+
+
+# Keep TradeReceipt.total_amount in sync whenever its items_trades M2M
+# changes (.set()/.add()/.remove()/.clear()), covering both the initial
+# create_receipt/new_create_receipt writes and new_create_receipt's
+# edit-in-place path.
+@receiver(m2m_changed, sender=TradeReceipt.items_trades.through)
+def recalculate_total_amount_on_items_trades_change(sender, instance, action, **kwargs):
+    if action in ('post_add', 'post_remove', 'post_clear'):
+        instance.recalculate_total_amount()

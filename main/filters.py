@@ -3,8 +3,8 @@ import django_filters
 
 from main.te_utils import service_names
 
-from .models import Listing, Company, Item, ItemVariation, ItemBonus
-from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter
+from .models import Listing, Company, Item, ItemVariation, ItemBonus, TradeReceipt
+from django_filters import CharFilter, TypedChoiceFilter, OrderingFilter, RangeFilter, NumberFilter, DateFilter, ChoiceFilter
 from django_filters.widgets import RangeWidget
 from django.utils.safestring import mark_safe
 
@@ -441,6 +441,94 @@ class ServicesFilter(django_filters.FilterSet):
     service = django_filters.MultipleChoiceFilter(
         label="Select multiple services",
         choices=services_choices,
-        field_name='service__name', 
+        field_name='service__name',
         widget=forms.CheckboxSelectMultiple
     )
+
+
+class ReceiptSearchFilter(django_filters.FilterSet):
+    """
+    Search across a trader's own receipts (as buyer) and receipts where
+    they're named as the seller. Every field is declared with a no-op
+    `method` so django_filters only uses them for form rendering/validation;
+    the actual filtering happens in `filter_queryset()` below. This is
+    necessary because `item_name`/`quantity_min`/`quantity_max` all target
+    the `items_trades` M2M relation - applying them as separate auto-filters
+    (django_filters' default behaviour) would create separate SQL joins and
+    could match "quantity > 100" against a *different* item trade than the
+    one matched by "item_name=Xanax". Combining them into one `.filter()`
+    call keeps both conditions on the same joined row.
+    """
+
+    ROLE_CHOICES = (
+        ('', 'Any'),
+        ('buyer', 'I was the buyer'),
+        ('seller', 'I was the seller'),
+    )
+
+    def _noop(self, queryset, name, value):
+        return queryset
+
+    seller = CharFilter(method='_noop', label=mark_safe('<i class="fa fa-search"></i> Seller Name'))
+    item_name = CharFilter(method='_noop', label='Item Name')
+    quantity_min = NumberFilter(method='_noop', label='Min Quantity')
+    quantity_max = NumberFilter(method='_noop', label='Max Quantity')
+    amount_min = NumberFilter(method='_noop', label='Min Amount ($)')
+    amount_max = NumberFilter(method='_noop', label='Max Amount ($)')
+    date_from = DateFilter(method='_noop', label='From Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    date_to = DateFilter(method='_noop', label='To Date', widget=forms.DateInput(attrs={'type': 'date'}))
+    role = ChoiceFilter(method='_noop', label='Role', choices=ROLE_CHOICES)
+
+    def __init__(self, data=None, *args, profile=None, **kwargs):
+        self.profile = profile
+        super().__init__(data, *args, **kwargs)
+
+    def filter_queryset(self, queryset):
+        data = self.data or {}
+
+        item_lookup = {}
+        item_name = data.get('item_name')
+        if item_name:
+            item_lookup['items_trades__item__name__icontains'] = item_name
+        quantity_min = data.get('quantity_min')
+        if quantity_min:
+            item_lookup['items_trades__quantity__gte'] = quantity_min
+        quantity_max = data.get('quantity_max')
+        if quantity_max:
+            item_lookup['items_trades__quantity__lte'] = quantity_max
+        if item_lookup:
+            queryset = queryset.filter(**item_lookup)
+
+        seller = data.get('seller')
+        if seller:
+            queryset = queryset.filter(seller__icontains=seller)
+
+        date_from = data.get('date_from')
+        if date_from:
+            queryset = queryset.filter(created_at__date__gte=date_from)
+        date_to = data.get('date_to')
+        if date_to:
+            queryset = queryset.filter(created_at__date__lte=date_to)
+
+        amount_min = data.get('amount_min')
+        if amount_min:
+            queryset = queryset.filter(total_amount__gte=amount_min)
+        amount_max = data.get('amount_max')
+        if amount_max:
+            queryset = queryset.filter(total_amount__lte=amount_max)
+
+        role = data.get('role')
+        if role == 'buyer' and self.profile is not None:
+            queryset = queryset.filter(owner=self.profile)
+        elif role == 'seller' and self.profile is not None:
+            queryset = queryset.filter(seller__iexact=self.profile.name)
+
+        return queryset.distinct()
+
+    @property
+    def qs(self):
+        return self.filter_queryset(super().qs)
+
+    class Meta:
+        model = TradeReceipt
+        fields = []

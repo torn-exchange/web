@@ -1,0 +1,209 @@
+{% extends "main/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+<script src="{% static 'main/js/apexcharts.min.js' %}" defer></script>
+<div class='container'>
+
+  <div class="row mt-3 mb-3">
+    <div class="col-12 text-center">
+      <h1 class="allerta-font">Receipt Management</h1>
+      <p class="text-white">
+        Search every receipt you've ever created, whether you were the buyer or the seller.
+      </p>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="text-center col-12">
+      <a class='btn btn-primary' href="{% url 'analytics' %}"><i class="fa-solid fa-circle-left"></i> Back to Summary</a>
+      <a class='btn btn-primary' href="{% url 'all_trades' %}"><i class="fa-solid fa-receipt"></i> Classic Receipt List</a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-3 col-md-4 col-sm-12 mb-3">
+      <div class="card">
+        <div class="card-header">
+          <i class="fa fa-search"></i> Search Receipts
+        </div>
+        <div class="card-body">
+          <form method="GET">
+            {{ filter.form|crispy }}
+            <button type="submit" class="btn btn-primary w-100 mt-2">Search</button>
+            {% if has_search %}
+              <a href="{% url 'receipt_management' %}" class="btn btn-outline-secondary w-100 mt-2">Clear filters</a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-9 col-md-8 col-sm-12">
+
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+              <div>
+                <strong>{{ result_count }}</strong> receipt{{ result_count|pluralize }} found
+              </div>
+              <div>
+                {% include 'main/includes/pagination.html' %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if result_count > 0 and searched_item_name %}
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              Quantity of "{{ searched_item_name }}" per receipt
+            </div>
+            <div class="card-body">
+              <div id="item_quantity_chart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if result_count > 0 %}
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              Receipts over time
+            </div>
+            <div class="card-body">
+              <div id="receipt_histogram_chart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table" id="receipt_management_table">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Trader</th>
+                  <th>Date</th>
+                  <th>Items</th>
+                  <th class="text-end">Total</th>
+                  <th class="text-end">Profit</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for receipt in receipts %}
+                <tr>
+                  <td>
+                    {% if receipt.role == 'buyer' %}
+                      <span class="badge bg-success">Buyer</span>
+                    {% else %}
+                      <span class="badge" style="background-color: var(--bs-gold); color:#000;">Seller</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ receipt.counterparty }}</td>
+                  <td>{{ receipt.created_at }}</td>
+                  <td>
+                    {% for item_trade in receipt.items_trades.all %}
+                      <span class="badge bg-secondary">{{ item_trade.item.name }} x{{ item_trade.quantity }}</span>
+                    {% endfor %}
+                  </td>
+                  <td class="text-end">${{ receipt.total|intcomma }}</td>
+                  <td class="text-end">${{ receipt.profit|intcomma }}</td>
+                  <td class="text-center">
+                    <a href="{% url 'receipt_view' receipt.receipt_url_string %}"
+                       class="btn btn-info" target="_blank" title="View Receipt">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    {% if receipt.role == 'buyer' %}
+                    <form action="{% url 'delete_receipt' receipt.id %}" method="POST" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-delete" title="Delete Receipt">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">
+                    {% if has_search %}
+                      No receipts match your search.
+                    {% else %}
+                      Use the filters on the left and click Search to look up your receipts.
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="text-center col-12">
+          {% include 'main/includes/pagination.html' %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {% include 'main/includes/footer.html' %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var itemQuantityData = {{ item_quantity_data|safe }};
+    if (itemQuantityData.length > 0) {
+      Apex.colors = ['#daa520'];
+      var itemQuantityOptions = {
+        chart: { type: 'bar', height: 220 },
+        series: [{ name: 'Quantity', data: itemQuantityData }],
+        xaxis: {
+          type: 'datetime',
+          labels: { style: { colors: '#888888' } }
+        },
+        yaxis: {
+          labels: { style: { colors: '#888888' } },
+          allowDecimals: false
+        }
+      };
+      var itemQuantityChart = new ApexCharts(document.querySelector("#item_quantity_chart"), itemQuantityOptions);
+      itemQuantityChart.render();
+    }
+
+    var histogramData = {{ histogram_data|safe }};
+    if (histogramData.length > 0) {
+      Apex.colors = ['#daa520'];
+      var options = {
+        chart: { type: 'bar', height: 220 },
+        series: [{ name: 'Receipts', data: histogramData }],
+        xaxis: {
+          type: 'datetime',
+          labels: { style: { colors: '#888888' } }
+        },
+        yaxis: {
+          labels: { style: { colors: '#888888' } },
+          allowDecimals: false
+        }
+      };
+      var chart = new ApexCharts(document.querySelector("#receipt_histogram_chart"), options);
+      chart.render();
+    }
+  });
+</script>
+{% endblock %}
