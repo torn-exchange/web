@@ -153,6 +153,16 @@ class ReceiptManagementViewTests(TestCase):
         self.assertTrue(response.context['has_search'])
         self.assertContains(response, 'Glasnost')
 
+    def test_item_quantity_series_only_built_when_item_name_searched(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('receipt_management'), {'seller': ''})
+        self.assertEqual(response.context['item_quantity_data'], '[]')
+
+        response = self.client.get(reverse('receipt_management'), {'item_name': 'Xanax'})
+        import json
+        data = json.loads(response.context['item_quantity_data'])
+        self.assertEqual(data, [[self.receipt.created_at.isoformat(), 50]])
+
     def test_amount_filter_applied_in_view(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('receipt_management'), {'amount_min': 100_000_000})

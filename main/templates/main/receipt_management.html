@@ -9,7 +9,7 @@
   <div class="row mt-3 mb-3">
     <div class="col-12 text-center">
       <h1 class="allerta-font">Receipt Management</h1>
-      <p class="text-secondary">
+      <p class="text-white">
         Search every receipt you've ever created, whether you were the buyer or the seller.
       </p>
     </div>
@@ -56,6 +56,21 @@
           </div>
         </div>
       </div>
+
+      {% if result_count > 0 and searched_item_name %}
+      <div class="row mb-3">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              Quantity of "{{ searched_item_name }}" per receipt
+            </div>
+            <div class="card-body">
+              <div id="item_quantity_chart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       {% if result_count > 0 %}
       <div class="row mb-3">
@@ -152,6 +167,25 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    var itemQuantityData = {{ item_quantity_data|safe }};
+    if (itemQuantityData.length > 0) {
+      Apex.colors = ['#daa520'];
+      var itemQuantityOptions = {
+        chart: { type: 'bar', height: 220 },
+        series: [{ name: 'Quantity', data: itemQuantityData }],
+        xaxis: {
+          type: 'datetime',
+          labels: { style: { colors: '#888888' } }
+        },
+        yaxis: {
+          labels: { style: { colors: '#888888' } },
+          allowDecimals: false
+        }
+      };
+      var itemQuantityChart = new ApexCharts(document.querySelector("#item_quantity_chart"), itemQuantityOptions);
+      itemQuantityChart.render();
+    }
+
     var histogramData = {{ histogram_data|safe }};
     if (histogramData.length > 0) {
       Apex.colors = ['#daa520'];

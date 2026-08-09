@@ -64,6 +64,9 @@ def receipt_management(request):
 
     histogram_data = _build_histogram(receipts)
 
+    item_name_query = request.GET.get('item_name', '').strip()
+    item_quantity_data = _build_item_quantity_series(receipts, item_name_query) if item_name_query else []
+
     paginator = Paginator(receipts, RESULTS_PER_PAGE)
     page = request.GET.get('page')
     results = paginator.get_page(page)
@@ -74,6 +77,8 @@ def receipt_management(request):
         'listings': results,  # for main/includes/pagination.html
         'result_count': len(receipts),
         'histogram_data': json.dumps(histogram_data),
+        'item_quantity_data': json.dumps(item_quantity_data),
+        'searched_item_name': item_name_query,
         'has_search': has_search,
     }
     return render(request, 'main/receipt_management.html', context)
@@ -94,3 +99,19 @@ def _build_histogram(receipts):
         day = r.created_at.date().isoformat()
         counts_by_day[day] += 1
     return [[day, count] for day, count in sorted(counts_by_day.items())]
+
+
+def _build_item_quantity_series(receipts, item_name_query):
+    """One point per receipt: how many units of the searched item it contains.
+    Relies on items_trades already being prefetched by the caller."""
+    needle = item_name_query.lower()
+    points = []
+    for r in receipts:
+        quantity = sum(
+            it.quantity for it in r.items_trades.all()
+            if needle in it.item.name.lower()
+        )
+        if quantity > 0:
+            points.append([r.created_at.isoformat(), quantity])
+    points.sort(key=lambda point: point[0])
+    return points
