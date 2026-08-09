@@ -510,6 +510,13 @@ class ReceiptSearchFilter(django_filters.FilterSet):
         if date_to:
             queryset = queryset.filter(created_at__date__lte=date_to)
 
+        amount_min = data.get('amount_min')
+        if amount_min:
+            queryset = queryset.filter(total_amount__gte=amount_min)
+        amount_max = data.get('amount_max')
+        if amount_max:
+            queryset = queryset.filter(total_amount__lte=amount_max)
+
         role = data.get('role')
         if role == 'buyer' and self.profile is not None:
             queryset = queryset.filter(owner=self.profile)

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -45,6 +46,45 @@ def make_trade_receipt(owner, seller, item_trades, created_at):
     TradeReceipt.objects.filter(pk=receipt.pk).update(created_at=created_at)
     receipt.refresh_from_db()
     return receipt
+
+
+class TotalAmountSyncTests(TestCase):
+    """TradeReceipt.total_amount is denormalized (see models.py) purely so
+    amount_min/amount_max can be an indexed SQL filter instead of loading
+    every one of a trader's receipts to sum in Python. These tests guard
+    that the m2m_changed signal actually keeps it in sync."""
+
+    def setUp(self):
+        self.now = timezone.now()
+        _, self.profile = make_user('trader1')
+        self.item = make_item()
+
+    def test_total_amount_set_on_items_trades_set(self):
+        trade = make_item_trade(self.profile, self.item, seller='Bob', price=100, quantity=3)
+        receipt = make_trade_receipt(self.profile, 'Bob', [trade], self.now)
+        self.assertEqual(receipt.total_amount, 300)
+
+    def test_total_amount_updates_on_add_and_remove(self):
+        trade1 = make_item_trade(self.profile, self.item, seller='Bob', price=100, quantity=1)
+        receipt = make_trade_receipt(self.profile, 'Bob', [trade1], self.now)
+        self.assertEqual(receipt.total_amount, 100)
+
+        trade2 = make_item_trade(self.profile, self.item, seller='Bob', price=50, quantity=2)
+        receipt.items_trades.add(trade2)
+        receipt.refresh_from_db()
+        self.assertEqual(receipt.total_amount, 200)
+
+        receipt.items_trades.remove(trade1)
+        receipt.refresh_from_db()
+        self.assertEqual(receipt.total_amount, 100)
+
+    def test_total_amount_zero_when_cleared(self):
+        trade = make_item_trade(self.profile, self.item, seller='Bob', price=100, quantity=1)
+        receipt = make_trade_receipt(self.profile, 'Bob', [trade], self.now)
+
+        receipt.items_trades.clear()
+        receipt.refresh_from_db()
+        self.assertEqual(receipt.total_amount, 0)
 
 
 class ReceiptSearchFilterTests(TestCase):
@@ -100,6 +140,16 @@ class ReceiptSearchFilterTests(TestCase):
             {'item_name': 'Plushie', 'quantity_min': 100},
             queryset=self.base_queryset(), profile=self.profile)
         self.assertEqual(f.qs.count(), 0)
+
+    def test_filter_by_amount_range(self):
+        # purchase_receipt = $40,000,000; sale_receipt = $170,000,000; plushie_receipt = $500
+        f = ReceiptSearchFilter({'amount_min': 1_000_000}, queryset=self.base_queryset(), profile=self.profile)
+        pks = set(f.qs.values_list('pk', flat=True))
+        self.assertEqual(pks, {self.purchase_receipt.pk, self.sale_receipt.pk})
+
+        f = ReceiptSearchFilter({'amount_max': 1_000_000}, queryset=self.base_queryset(), profile=self.profile)
+        pks = set(f.qs.values_list('pk', flat=True))
+        self.assertEqual(pks, {self.plushie_receipt.pk})
 
     def test_filter_by_date_range(self):
         date_from = (self.now - timedelta(days=3)).date().isoformat()
@@ -199,3 +249,32 @@ class DeleteReceiptOwnershipTests(TestCase):
         response = self.client.post(reverse('delete_receipt', args=[self.receipt.id]))
         self.assertIn(response.status_code, (301, 302))
         self.assertFalse(TradeReceipt.objects.filter(pk=self.receipt.pk).exists())
+
+
+class BackfillReceiptTotalAmountCommandTests(TestCase):
+
+    def setUp(self):
+        self.now = timezone.now()
+        _, self.profile = make_user('trader1')
+        self.item = make_item()
+
+    def test_backfills_null_rows_and_leaves_populated_rows_alone(self):
+        trade = make_item_trade(self.profile, self.item, seller='Bob', price=100, quantity=3)
+        receipt = make_trade_receipt(self.profile, 'Bob', [trade], self.now)
+        # simulate a pre-existing row from before the field was backfilled
+        TradeReceipt.objects.filter(pk=receipt.pk).update(total_amount=None)
+
+        call_command('once_backfill_receipt_total_amount')
+
+        receipt.refresh_from_db()
+        self.assertEqual(receipt.total_amount, 300)
+
+    def test_dry_run_leaves_total_amount_null(self):
+        trade = make_item_trade(self.profile, self.item, seller='Bob', price=100, quantity=3)
+        receipt = make_trade_receipt(self.profile, 'Bob', [trade], self.now)
+        TradeReceipt.objects.filter(pk=receipt.pk).update(total_amount=None)
+
+        call_command('once_backfill_receipt_total_amount', '--dry-run')
+
+        receipt.refresh_from_db()
+        self.assertIsNone(receipt.total_amount)
