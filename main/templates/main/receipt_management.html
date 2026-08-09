@@ -123,7 +123,13 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="7" class="text-center">No receipts match your search.</td>
+                  <td colspan="7" class="text-center">
+                    {% if has_search %}
+                      No receipts match your search.
+                    {% else %}
+                      Use the filters on the left and click Search to look up your receipts.
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>

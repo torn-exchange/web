@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Upper
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from users.models import Profile
@@ -265,6 +266,7 @@ class TradeReceipt(models.Model):
         indexes = [
             models.Index(fields=['owner', 'seller'], name='tradereceipt_owner_seller_idx'),
             models.Index(fields=['seller'], name='tradereceipt_seller_idx'),
+            models.Index(Upper('seller'), name='tradereceipt_seller_upper_idx'),
             models.Index(fields=['created_at'], name='tradereceipt_created_at_idx'),
             models.Index(fields=['trade_id'], name='tradereceipt_trade_id_idx'),
         ]

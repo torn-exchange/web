@@ -138,10 +138,19 @@ class ReceiptManagementViewTests(TestCase):
         response = self.client.get(reverse('receipt_management'))
         self.assertNotEqual(response.status_code, 200)
 
-    def test_lists_own_receipts_when_logged_in(self):
+    def test_bare_page_load_runs_no_search(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('receipt_management'))
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['result_count'], 0)
+        self.assertFalse(response.context['has_search'])
+        self.assertNotContains(response, 'Glasnost')
+
+    def test_lists_own_receipts_when_search_submitted(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('receipt_management'), {'seller': ''})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['has_search'])
         self.assertContains(response, 'Glasnost')
 
     def test_amount_filter_applied_in_view(self):
