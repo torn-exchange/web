@@ -111,7 +111,7 @@
                             <br>
                             <div class="collapse" id="collapse_{{ type|replace_spaces }}">
                                 <div class="row">
-                                    <div class="col-4">
+                                    <div class="col-12 col-md-4 mb-2 mb-md-0">
                                         <label for="auto-fill-category">Auto-fill profit margin for category (%)</label>
                                         <div class='input-group m-1'>
                                             <input type="text" class="form-control price-edit auto-fill-category"
@@ -132,13 +132,13 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="col-3 text-center">
+                                    <div class="col-12 col-md-3 mb-2 mb-md-0 text-center">
                                         {% if type == 'Plushie' or type == 'Flower' %}
                                             Check {{ type|item_plurals }} price history with <br/>
                                             <a href='{% url "museum_helper" %}' target="_blank">Museum Helper</a>!
                                         {% endif %}
                                     </div>
-                                    <div class="col-4 text-center justify-content-center">
+                                    <div class="col-12 col-md-4 mb-2 mb-md-0 text-center justify-content-center">
                                         Tick to remove all items from category
                                         <div class="mt-1">
                                             <i class="fas fa-trash-alt m-2"></i> <input type="checkbox"
