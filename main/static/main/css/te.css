@@ -1217,13 +1217,14 @@ th {
             "price price margin margin"
             "eff  eff  eff  eff";
         column-gap: 0.6rem;
-        row-gap: 0.35rem;
+        row-gap: 0.4rem;
         align-items: center;
-        margin: 0 0 0.85rem;
-        padding: 0.65rem 0.75rem 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 0.6rem;
-        background: rgba(255, 255, 255, 0.03);
+        margin: 0 0 1.25rem;
+        padding: 0.75rem 0.85rem 0.85rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 0.65rem;
+        background: #141414;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
     }
 
     .edit_table td {
@@ -1347,6 +1348,15 @@ th {
         letter-spacing: 0.03em;
         color: rgba(255, 255, 255, 0.6);
         margin-bottom: 0.15rem;
+    }
+
+    /* keep the card's own drop shadow when a dirty/delete accent is added */
+    .edit_table tr.row-dirty {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 3px 0 0 var(--bs-warning, #daa520);
+    }
+
+    .edit_table tr.marked-for-delete {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 3px 0 0 var(--bs-danger, #dc3545);
     }
 }
 
