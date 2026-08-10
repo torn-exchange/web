@@ -57,8 +57,6 @@ class RebalanceDiscountsTests(TestCase):
 
     def setUp(self):
         self.profile = make_user('trader1')
-        self.profile.settings.trade_global_fee = 0
-        self.profile.settings.save()
 
     def test_fixed_price_only_listing_untouched(self):
         item = make_item(te_value=100_000)
@@ -100,34 +98,6 @@ class RebalanceDiscountsTests(TestCase):
         listing.refresh_from_db()
         self.assertEqual(listing.effective_price, 50_000)
         self.assertEqual(listing.price, 50_000)
-
-    def test_global_fee_accounted_for(self):
-        self.profile.settings.trade_global_fee = 5
-        self.profile.settings.save()
-        item = make_item(te_value=100_000)
-        listing = make_listing(self.profile, item, price=None, discount=10.0)
-        old_effective_price = listing.effective_price  # 15% total off -> 85_000
-        self.assertEqual(old_effective_price, 85_000)
-
-        item = drop_te_value(item, 50_000)
-        rebalance_discounts_to_preserve_effective_price(item)
-
-        listing.refresh_from_db()
-        self.assertEqual(listing.effective_price, old_effective_price)
-
-    def test_global_fee_not_applied_to_custom_item(self):
-        self.profile.settings.trade_global_fee = 10
-        self.profile.settings.save()
-        custom_item = make_item(name='Plushie Set', item_id=9998, te_value=100_000)
-        listing = make_listing(self.profile, custom_item, price=None, discount=10.0)
-        old_effective_price = listing.effective_price  # fee ignored -> 90_000
-        self.assertEqual(old_effective_price, 90_000)
-
-        custom_item = drop_te_value(custom_item, 50_000)
-        rebalance_discounts_to_preserve_effective_price(custom_item)
-
-        listing.refresh_from_db()
-        self.assertEqual(listing.effective_price, old_effective_price)
 
     def test_out_of_range_discount_is_skipped(self):
         # Preserving a high effective_price against a near-zero new TE_value would
@@ -191,8 +161,6 @@ class RebalanceCommandTests(TestCase):
 
     def setUp(self):
         self.profile = make_user('trader1')
-        self.profile.settings.trade_global_fee = 0
-        self.profile.settings.save()
 
     @patch(
         'main.management.commands.once_rebalance_discounts_for_bazaar_mv'

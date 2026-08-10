@@ -36,11 +36,7 @@ def rebalance_discounts_to_preserve_effective_price(item, dry_run=False):
             # a nonzero target -- leave the listing for normal recalculation.
             continue
 
-        global_fee = listing.owner.settings.trade_global_fee or 0
-        if item.item_id > 9000:
-            global_fee = 0
-
-        new_discount = 100.0 - global_fee - (old_effective_price / item.TE_value * 100.0)
+        new_discount = 100.0 - (old_effective_price / item.TE_value * 100.0)
 
         if new_discount < MIN_DISCOUNT or new_discount > MAX_DISCOUNT:
             print(

@@ -33,6 +33,7 @@ from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, 
                               get_most_trades, get_active_traders_count)
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses, set_listing_hidden_reason
 from main.profile_stats import return_profile_stats
+from main.templatetags.custom_tags import item_name_plural
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
 from users.forms import SettingsForm
@@ -476,7 +477,10 @@ def edit_price_list(request):
         "item_types": cats,
         "owner_profile": profile,
         "user_settings": user_settings,
-        "category_dict": dictionary_of_categories(),
+        "category_dict": {
+            group: sorted(subcats, key=item_name_plural)
+            for group, subcats in dictionary_of_categories().items()
+        },
         "data_dict": data_dict,
     }
 
@@ -1661,13 +1665,6 @@ def manage_price_list(request):
         .order_by('-created_at')
         .first()
     )
-    
-    if request.method == 'POST':
-        if 'trade_global_fee' in request.POST:
-            profile.settings.trade_global_fee = request.POST.get('trade_global_fee')
-            profile.settings.save()
-            messages.success(request, 'Settings updated!')
-            return redirect('manage_price_list')
     
     cats = categories()
 

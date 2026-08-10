@@ -143,15 +143,7 @@ class Listing(models.Model):
         if (self.discount is None) and (self.price is not None):
             return round(self.price)
 
-        # Get global fee from owner's settings
-        global_fee = self.owner.settings.trade_global_fee or 0
-
-        # for custom items like Sets and Properties, global fee should not be applied
-        if self.item.item_id > 9000:
-            global_fee = 0
-
-        total_discount = (self.discount or 0) + global_fee
-        discount_fraction = (100.0 - total_discount) / 100.0
+        discount_fraction = (100.0 - (self.discount or 0)) / 100.0
         discount_price = discount_fraction * round(self.item.TE_value or 0)
 
         if self.price is None:
@@ -167,7 +159,7 @@ class Listing(models.Model):
         unique_together = (("owner", "item"),)
 
     def __str__(self):
-        return f"{self.item} - ${self.effective_price} | {self.owner.name} | FEE: {self.owner.settings.trade_global_fee}%"
+        return f"{self.item} - ${self.effective_price} | {self.owner.name}"
 
     @property
     def profit_per_item(self):
@@ -405,13 +397,6 @@ class JobLog(models.Model):
     message = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-
-# When a trader's global fee changes, recalculate effective_price for all their listings
-@receiver(post_save, sender='users.Settings')
-def recalculate_listings_on_settings_change(sender, instance, **kwargs):
-    for listing in instance.owner.listing_set.select_related('owner__settings', 'item').all():
-        listing.save(update_fields=['effective_price'])
 
 
 # Keep TradeReceipt.total_amount in sync whenever its items_trades M2M

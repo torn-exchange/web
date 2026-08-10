@@ -18,8 +18,6 @@
         });
     </script>
     {% endif %}
-    <script src="https://unpkg.com/slim-select@3.0.3/dist/slimselect.js"></script>
-    <link href="https://unpkg.com/slim-select@latest/dist/slimselect.css" rel="stylesheet"></link>
     {% if user_settings.tutorial == True %}
         <div class="card small mt-3">
             <div class="card-header p-0 m-0">
@@ -44,9 +42,9 @@
                         lower of the two prices.
                     </li>
                     <li>
-                        If you want to save time filling in all of your buy prices, you can simply enter a profit margin
-                        value in the Auto-fill profit margins box (NOTE: This will override all of your previous profit
-                        margin values).
+                        If you want to save time filling in buy prices for a category, you can simply enter a profit
+                        margin value in that category's Auto-fill profit margin box (NOTE: This will override the
+                        previous profit margin values for items in that category).
                     </li>
                     <li>
                         If you wish to remove item buy prices from your price list, you can either tick individual items
@@ -66,10 +64,6 @@
                         <b>TE Market Value</b> - Torn Exchange's own MV. It is calculated once an hour by taking
                         into account Torn MV, 3 lowest bazaar prices and 3 lowest item market prices.
                     </li>
-                    <li>
-                      Choose which colums to show or hide, especially if you're mobile with limited horizontal space.
-                      Click on "x" next to the column name to hide it. This is purely a visual help, it has no effect on prices! 
-                    </li>
                 </ul>
             </div>
             <div class="card-footer p-1 m-0">
@@ -82,43 +76,12 @@
 
     <div class="offset-1 col-10">
         <div class="row">
-            <div class="col-6">
-                <label for="auto-fill-all">Auto-fill profit margin % </label>
-                <div class='input-group M-1'>
-                    <div class="popup" onclick="popup_text()">
-                        <input type="text" class="form-control price-edit" id="auto-fill-all" placeholder="0%"
-                               name="auto_fill"
-                               oninput="validateNumber(this);"/>
-                        <span class="popuptext" id="myPopup">NOTE: Please be extremely careful if you choose to
-                            auto-fill your entire price list! Make sure you only list items you can afford to buy from
-                            sellers. Each category has its own separate auto-fill option which we recommend.</span>
-                    </div>
-                    <button type="button" class="btn btn-success auto_fill_button">Fill</button>
-
-                </div>
-                <br>
-                <label for="auto-fill-all-enabled">Auto-fill enabled profit margins % </label>
-                <div class='input-group M-1'>
-                    <div class="popup">
-                        <input type="text" class="form-control price-edit" id="auto-fill-all-enabled" placeholder="0%"
-                               name="auto_fill"
-                               oninput="validateNumber(this);"/>
-                    </div>
-                    <button type="button" class="btn btn-success auto_fill__enabled_button">Fill</button>
-
-                </div>
-            </div>
-            <div class="offset-2 col-4 text-center justify-content-center">
+            <div class="col-12 text-center justify-content-center">
                 <p>
                     Tick to remove all items from pricelist
                 <div class="mt-1">
                     <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
                 </div>
-                </p>
-                <hr/>
-                <p>
-                    Item Market Fee is set at: <b>{{ owner_profile.settings.trade_global_fee }}%</b>.
-                    Set it on your <a href="{% url 'manage_price_list' %}" target="_blank">Management Page</a>.
                 </p>
             </div>
         </div>
@@ -131,24 +94,6 @@
             </button>
     </div>
     {% csrf_token %}
-    <div class="row">
-        <div class="col-12 p-0">
-            <label><small>
-              Show/Hide columns <i class="fa fa-circle-info" data-bs-toggle="tooltip" data-bs-placement="top"
-                                   title="Choose which columns to show or hide, especially if you're mobile with limited horizontal space. Click on 'x' next to the column name to hide it. This is purely a visual help, it has no effect on prices!"></i>
-            </small></label>
-            <select class="form-control multi-select" multiple="multiple">
-                <option value="1">Item</option>
-                <option value="2">Torn Market Value</option>
-                <option value="3">Bazaar Average</option>
-                <option value="4">TE Market Value</option>
-                <option value="5">Your Fixed Price</option>
-                <option value="6">Profit Margin %</option>
-                <option value="7">Effective Price</option>
-                <option value="8">Delete</option>
-            </select>
-        </div>
-    </div>
     <div class="row">
         {% for item_category_name, item_category_list in category_dict.items %}
             <div class='card col-12 p-0 '>
@@ -201,10 +146,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <table class="table table-hover edit_table table-sm table-responsive-sm text-responsive">
+                                <table class="table table-hover edit_table table-sm text-responsive">
                                     <thead>
                                     <tr>
-                                        <th scope="col" class='text-center d-none d-md-table-row'></th>
+                                        <th scope="col" class='text-center edit_table_image'></th>
                                         <th scope="col" class='text-center'>Item</th>
                                         <th scope="col" class='text-center'>Torn Market Value</th>
                                         <th scope="col" class='text-center'>Bazaar Average</th>
@@ -219,32 +164,31 @@
                                         <th scope="col" class='text-center'
                                             data-bs-toggle="tooltip"
                                             data-bs-placement="top"
-                                            title="The price that shows on the Price List (TE Market Value - Profit Margin - Global Fee)">
+                                            title="The price that shows on the Price List (TE Market Value - Profit Margin)">
                                             Effective Price
                                         </th>
-                                        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i></th>
+                                        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i> Delete</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {% get_dict_entry data_dict type as items %}
                                     {% for item in items %}
-                                        <tr class="m-0 p-0"
-                                            data-global-fee="{{ owner_profile.settings.trade_global_fee }}">
-                                            <td style='width:9%;' class='text-center d-none d-md-table-cell'><img
-                                                    src="{{ item.image_url }}" style="width:50%;"></td>
-                                            <td style='width:13%;' class='text-center link-blue item_name'>
+                                        <tr class="m-0 p-0">
+                                            <td style='width:8%;' class='text-center edit_table_image' data-label="">
+                                                <img src="{{ item.image_url }}" style="width:50%;"></td>
+                                            <td style='width:15%;' class='text-center link-blue item_name' data-label="Item">
                                               {{ item.name }}
                                             </td>
-                                            <td style='width:12%;' class='text-center torn_market_value'>
+                                            <td style='width:12%;' class='text-center torn_market_value' data-label="Torn Market Value">
                                                 ${{ item.market_value|intcomma }}
                                             </td>
-                                            <td style='width:12%;' class='text-center bazaar_average'>
+                                            <td style='width:12%;' class='text-center bazaar_average' data-label="Bazaar Average">
                                                 {% if item.bazaar_average %}${{ item.bazaar_average|intcomma }}{% else %}&mdash;{% endif %}
                                             </td>
-                                            <td style='width:12%;' class='text-center market_value'>
+                                            <td style='width:12%;' class='text-center market_value' data-label="TE Market Value">
                                                 ${{ item.TE_value|intcomma }}
                                             </td>
-                                            <td style='width:13%;' class='text-center'>
+                                            <td style='width:13%;' class='text-center' data-label="Your Fixed Price">
                                                 <div class='input-group  mb-1'>
                                                     <input type="text"
                                                            class="form-control price-edit listing_price text-responsive"
@@ -254,7 +198,7 @@
                                                            onpaste="return true;"/>
                                                 </div>
                                             </td>
-                                            <td style='width:13%;' class='text-center'>
+                                            <td style='width:13%;' class='text-center' data-label="Profit Margin %">
                                                 <div class='input-group  mb-1'>
 
                                                     <input type="text"
@@ -265,9 +209,9 @@
                                                            onpaste="return true;"/>
                                                 </div>
                                             </td>
-                                            <td style='width:13%;' class='text-center effective_price'>
+                                            <td style='width:13%;' class='text-center effective_price' data-label="Effective Price">
                                                 ${{ item.effective_price|intcomma }}</td>
-                                            <td style='width:1%;' class='text-center'>
+                                            <td style='width:1%;' class='text-center' data-label="Delete">
                                                 <div class="form-check d-flex justify-content-center align-items-center">
                                                     <input type="checkbox"
                                                            class="form-check-input"
@@ -319,21 +263,6 @@
         return true
       });
 
-      $(".auto_fill_button").click(function (event) {
-        event.preventDefault();
-        var val = $('#auto-fill-all').val();
-        $("input[name*='discount']").val(val);
-        $("input[name*='discount']").val(val).change();
-      });
-
-    
-    $(".auto_fill__enabled_button").click(function(event) {
-        event.preventDefault();
-        var val = $('#auto-fill-all-enabled').val();
-        $("input[name*='discount']").not('[value=""]').val(val);
-        $("input[name*='discount']").not('[value=""]').change();
-    });
-
       $('#mark_all_delete').click(function () {
         if ($(this).is(':checked')) {
           $('input[name*="_checkbox"').prop("checked", true);
@@ -378,16 +307,6 @@
       }
 
       function effective_price(price, discount, market_value, item_name) {
-        // Get global fee from the closest row
-        let globalFee = parseFloat($('.listing_price, .listing_discount').closest('tr').data('global-fee')) || 0;
-
-        if(item_name == 'Plushie Set' || item_name == 'Flower Set') {
-          globalFee = 0;
-        }
-        
-        // Add global fee to discount
-        const totalDiscount = parseFloat(discount) + globalFee;
-
         if ((isNaN(discount)) && (isNaN(price))) {
           return '';
         }
@@ -395,12 +314,12 @@
           return Math.round(price);
         }
         if ((!isNaN(discount)) && (isNaN(price))) {
-          var discount_fraction = (100.0 - totalDiscount) / 100;
+          var discount_fraction = (100.0 - parseFloat(discount)) / 100;
           var discount_price = Math.round(discount_fraction * market_value);
           return Math.round(discount_price);
         }
         if ((!isNaN(discount)) && (!isNaN(price))) {
-          var discount_fraction = (100.0 - totalDiscount) / 100;
+          var discount_fraction = (100.0 - parseFloat(discount)) / 100;
           var discount_price = discount_fraction * Math.round(market_value);
           return Math.min.apply(null, [price, Math.round(discount_price)]);
         }
@@ -450,99 +369,6 @@
         // Selecting the input element and get its value
         var inputVal = document.getElementById("onlyNumbers").value;
       }
-
-      function popup_text() {
-        var popup = document.getElementById("myPopup");
-        popup.classList.toggle("show");
-      }
-
-      function storeColumnOptionsInLocalStorage(selectedColumnValues) {
-        if (selectedColumnValues.includes("1")) {
-          selectedColumnValues.push("0");
-        }
-        localStorage.setItem('edit_price_list_columns', JSON.stringify(selectedColumnValues));
-      }
-
-      function restoreColumnOptionsFromLocalStorage() {
-        let storedValues = localStorage.getItem('edit_price_list_columns');
-        let selectedValues = storedValues ? JSON.parse(storedValues) : null;
-
-        if (selectedValues === null) {
-          selectedValues = ["1", "2", "3", "4", "5", "6", "7", "8"];
-        }
-        
-        if (selectedValues.includes("1")) {
-          selectedValues.push("0");
-        }
-
-        let tables = document.querySelectorAll('table');
-        if (!tables) return;
-
-        tables.forEach(table => {
-          let rows = table.querySelectorAll('tr');
-
-          let headers = table.querySelectorAll('th');
-          headers.forEach((cell, index) => {
-            cell.style.display = !selectedValues || selectedValues.includes(index.toString())
-              ? 'table-cell'
-              : 'none';
-          });
-
-          rows.forEach(row => {
-            let cells = row.querySelectorAll('td');
-            cells.forEach((cell, index) => {
-              cell.style.display = !selectedValues || selectedValues.includes(index.toString())
-                ? 'table-cell'
-                : 'none';
-            });
-          });
-        });
-
-        // Restore SlimSelect values
-        let slimSelectInstance = document.querySelector('.multi-select');
-        if (slimSelectInstance) {
-          let select = new SlimSelect({
-            select: '.multi-select',
-            events: {
-              afterChange: (newVal) => {
-                console.log(newVal);
-                let selectedValues = newVal.map(option => option.value);
-
-                let tables = document.querySelectorAll('table');
-                if (!tables) return;
-
-                storeColumnOptionsInLocalStorage(selectedValues);
-                tables.forEach(table => {
-
-                  let rows = table.querySelectorAll('tr');
-
-                  let cells = table.querySelectorAll('th');
-                  cells.forEach((cell, index) => {
-                    cell.style.display = selectedValues.includes((index).toString())
-                      ? 'table-cell'
-                      : 'none';
-                  });
-
-                  rows.forEach((row) => {
-                    let cells = row.querySelectorAll('td');
-                    cells.forEach((cell, index) => {
-                      cell.style.display = selectedValues.includes((index).toString())
-                        ? 'table-cell'
-                        : 'none';
-                    });
-                  });
-                });
-              }
-            }
-          });
-          select.setSelected(selectedValues);
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', function () {
-        restoreColumnOptionsFromLocalStorage();
-      });
-
 
     </script>
 
