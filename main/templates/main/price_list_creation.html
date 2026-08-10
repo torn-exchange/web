@@ -47,11 +47,9 @@
                         previous profit margin values for items in that category).
                     </li>
                     <li>
-                        If you wish to remove item buy prices from your price list, you can either tick individual items
-                        you
-                        wish to remove, or simply tick the checkbox at the top of the page to remove every single item
-                        value
-                        (Use this at your own caution).
+                        If you wish to remove item buy prices from your price list, you can either tick individual
+                        items you wish to remove, or tick the checkbox at the top of a category to remove every item
+                        in that category.
                     </li>
                     <li>
                         Once you have made all of your changes, click Submit and voila, your price list has been
@@ -74,26 +72,14 @@
 
     <h2 class="text-center mt-3 allerta-font p-2">Change your item buy prices below</h2>
 
-    <div class="offset-1 col-10">
-        <div class="row">
-            <div class="col-12 text-center justify-content-center">
-                <p>
-                    Tick to remove all items from pricelist
-                <div class="mt-1">
-                    <i class="fas fa-trash-alt m-2"></i> <input type="checkbox" id='mark_all_delete'>
-                </div>
-                </p>
-            </div>
-        </div>
-    </div>
+    <div id="save-status" class="alert d-none mt-3" role="alert"></div>
+
     <hr>
     <div class="d-flex flex-wrap justify-content-center m-1 p-1 pt-0 mt-0">
-        <form id='test_form' method="post">
-            <button class='btn btn-primary float-right m-2 ml-4 d-lg-block' type="submit"
-                    style="margin-top: 20px;" id="submit-prices"> Submit
-            </button>
+        <button class='btn btn-primary float-right m-2 ml-4 d-lg-block' type="button"
+                style="margin-top: 20px;" id="submit-prices"> Submit
+        </button>
     </div>
-    {% csrf_token %}
     <div class="row">
         {% for item_category_name, item_category_list in category_dict.items %}
             <div class='card col-12 p-0 '>
@@ -109,7 +95,7 @@
                                 {{ type|item_plurals }}
                             </a>
                             <br>
-                            <div class="collapse" id="collapse_{{ type|replace_spaces }}">
+                            <div class="collapse" id="collapse_{{ type|replace_spaces }}" data-category="{{ type }}">
                                 <div class="row">
                                     <div class="col-12 col-md-4 mb-2 mb-md-0">
                                         <label for="auto-fill-category">Auto-fill profit margin for category (%)</label>
@@ -146,83 +132,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                <table class="table table-hover edit_table table-sm text-responsive">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col" class='text-center edit_table_image'></th>
-                                        <th scope="col" class='text-center'>Item</th>
-                                        <th scope="col" class='text-center'>Torn Market Value</th>
-                                        <th scope="col" class='text-center'>Bazaar Average</th>
-                                        <th scope="col" class='text-center'
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="The lowest of: Torn Market Value, TE's own item market price, and Bazaar Average">
-                                            TE Market Value
-                                        </th>
-                                        <th scope="col" class='text-center'>Your Fixed Price</th>
-                                        <th scope="col" class='text-center'>Profit Margin %</th>
-                                        <th scope="col" class='text-center'
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="top"
-                                            title="The price that shows on the Price List (TE Market Value - Profit Margin)">
-                                            Effective Price
-                                        </th>
-                                        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i> Delete</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% get_dict_entry data_dict type as items %}
-                                    {% for item in items %}
-                                        <tr class="m-0 p-0">
-                                            <td style='width:8%;' class='text-center edit_table_image' data-label="">
-                                                <img src="{{ item.image_url }}" style="width:50%;"></td>
-                                            <td style='width:15%;' class='text-center link-blue item_name' data-label="Item">
-                                              {{ item.name }}
-                                            </td>
-                                            <td style='width:12%;' class='text-center torn_market_value' data-label="Torn Market Value">
-                                                ${{ item.market_value|intcomma }}
-                                            </td>
-                                            <td style='width:12%;' class='text-center bazaar_average' data-label="Bazaar Average">
-                                                {% if item.bazaar_average %}${{ item.bazaar_average|intcomma }}{% else %}&mdash;{% endif %}
-                                            </td>
-                                            <td style='width:12%;' class='text-center market_value' data-label="TE Market Value">
-                                                ${{ item.TE_value|intcomma }}
-                                            </td>
-                                            <td style='width:13%;' class='text-center' data-label="Your Fixed Price">
-                                                <div class='input-group  mb-1'>
-                                                    <input type="text"
-                                                           class="form-control price-edit listing_price text-responsive"
-                                                           value="{{ item.price }}" id="onlyNumbers"
-                                                           name="{{ item.name }}_max_price"
-                                                           onkeypress="return isNumber(event)"
-                                                           onpaste="return true;"/>
-                                                </div>
-                                            </td>
-                                            <td style='width:13%;' class='text-center' data-label="Profit Margin %">
-                                                <div class='input-group  mb-1'>
-
-                                                    <input type="text"
-                                                           class="form-control price-edit listing_discount text-responsive"
-                                                           value="{{ item.discount }}" id="onlyNumbers"
-                                                           name="{{ item.name }}_discount"
-                                                           oninput="validateNumber(this);"
-                                                           onpaste="return true;"/>
-                                                </div>
-                                            </td>
-                                            <td style='width:13%;' class='text-center effective_price' data-label="Effective Price">
-                                                ${{ item.effective_price|intcomma }}</td>
-                                            <td style='width:1%;' class='text-center' data-label="Delete">
-                                                <div class="form-check d-flex justify-content-center align-items-center">
-                                                    <input type="checkbox"
-                                                           class="form-check-input"
-                                                           name="{{ item.name }}_checkbox"
-                                                           id="{{ item.name }}_checkbox">
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+                                <div class="category-table-container" data-loaded="false">
+                                    <div class="text-center p-4 category-loading">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <div class="mt-2">Loading items&hellip;</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -231,67 +148,170 @@
         {% endfor %}
         <br>
     </div>
-    </form>
 
     <br>
 
     <script type="text/javascript">
+      var loadedCategories = new Set();
+      var dirtyItemIds = new Set();
+      var rowsById = new Map();
+
+      function initTooltips(root) {
+        var tooltipTriggerList = root.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltipTriggerList].forEach(el => new bootstrap.Tooltip(el));
+      }
+
+      function registerRows(container) {
+        container.querySelectorAll('tr[data-item-id]').forEach(function (tr) {
+          rowsById.set(tr.getAttribute('data-item-id'), tr);
+        });
+      }
+
       $(document).ready(function () {
-        // Initialize all tooltips
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        initTooltips(document);
+
+        $('.collapse[data-category]').on('show.bs.collapse', function () {
+          var collapseEl = this;
+          var category = collapseEl.getAttribute('data-category');
+          if (loadedCategories.has(category)) {
+            return;
+          }
+          loadedCategories.add(category);
+
+          var container = collapseEl.querySelector('.category-table-container');
+          fetch('{% url "edit_price_list_category_fragment" %}?type=' + encodeURIComponent(category))
+            .then(function (resp) {
+              if (!resp.ok) {
+                throw new Error('Failed to load category');
+              }
+              return resp.text();
+            })
+            .then(function (html) {
+              container.innerHTML = html;
+              container.dataset.loaded = 'true';
+              registerRows(container);
+              initTooltips(container);
+            })
+            .catch(function () {
+              container.innerHTML = '<div class="text-center p-3 text-danger">Failed to load items. Try reopening this category.</div>';
+              loadedCategories.delete(category);
+            });
+        });
       });
+
+      function markDirty($row) {
+        dirtyItemIds.add($row.data('itemId') + '');
+        $row.addClass('row-dirty');
+      }
+
       $('body').on('change', '.listing_price', function () {
         var parent = $(this).closest('tr');
-        var item_name = parent.find('.item_name').text().trim();
+        markDirty(parent);
         var listing_price = numberWOCommas($(this).val());
         var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
         var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
       });
       $('body').on('change', '.listing_discount', function () {
         var parent = $(this).closest('tr');
-        var item_name = parent.find('.item_name').text().trim();
+        markDirty(parent);
         var listing_price = numberWOCommas(parent.find('.listing_price').val());
         var profit_margin = numberWOCommas($(this).val());
         var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, item_name)))
+        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+      });
+      $('body').on('change', '.listing_delete', function () {
+        var parent = $(this).closest('tr');
+        markDirty(parent);
+        parent.toggleClass('marked-for-delete', $(this).is(':checked'));
       });
 
-      $('#submit-prices').click(function () {
-        document.body.style.cursor = 'wait';
-        return true
-      });
-
-      $('#mark_all_delete').click(function () {
-        if ($(this).is(':checked')) {
-          $('input[name*="_checkbox"').prop("checked", true);
-        } else {
-          $('input[name*="_checkbox"').prop("checked", false);
-        }
+      $('#submit-prices').click(function (e) {
+        e.preventDefault();
+        submitChanges();
       });
 
       $('.mark_category_delete').click(function () {
         var parent = $(this).closest('.collapse');
-        if ($(this).is(':checked')) {
-          parent.find('input[name*="_checkbox"').prop("checked", true);
-        } else {
-          parent.find('input[name*="_checkbox"').prop("checked", false);
-        }
+        var checked = $(this).is(':checked');
+        parent.find('.listing_delete').prop("checked", checked).trigger('change');
       });
       $(".auto_fill_category_button").click(function () {
         var parent = $(this).closest('.collapse');
         var val = parent.find('.auto-fill-category').val();
-        parent.find("input[name*='discount']").val(val);
-        parent.find("input[name*='discount']").change();
+        parent.find(".listing_discount").val(val);
+        parent.find(".listing_discount").change();
       });
 
       $(".auto_fill_enabled_category_button").click(function () {
         var parent = $(this).closest('.collapse');
         var val = parent.find('.auto-fill-enabled-category').val();
-        parent.find("input[name*='discount']").not('[value=""]').val(val);
-        parent.find("input[name*='discount']").not('[value=""]').change();
+        parent.find(".listing_discount").not('[value=""]').val(val);
+        parent.find(".listing_discount").not('[value=""]').change();
       });
+
+      function showSaveStatus(message, isError) {
+        var el = document.getElementById('save-status');
+        el.textContent = message;
+        el.classList.remove('d-none', 'alert-success', 'alert-danger');
+        el.classList.add(isError ? 'alert-danger' : 'alert-success');
+      }
+
+      function submitChanges() {
+        if (dirtyItemIds.size === 0) {
+          showSaveStatus('No changes to save.', false);
+          return;
+        }
+
+        var items = [];
+        dirtyItemIds.forEach(function (itemId) {
+          var row = rowsById.get(itemId);
+          if (!row) {
+            return;
+          }
+          var $row = $(row);
+          var isDelete = $row.find('.listing_delete').is(':checked');
+          items.push({
+            item_id: itemId,
+            price: isDelete ? null : $row.find('.listing_price').val(),
+            discount: isDelete ? null : $row.find('.listing_discount').val(),
+            delete: isDelete
+          });
+        });
+
+        document.body.style.cursor = 'wait';
+        var submitBtn = document.getElementById('submit-prices');
+        submitBtn.disabled = true;
+
+        fetch('{% url "edit_price_list_save_items" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({items: items})
+        })
+          .then(function (resp) { return resp.json(); })
+          .then(function (data) {
+            if (data.failed && data.failed.length > 0) {
+              showSaveStatus('Saved, but ' + data.failed.length + ' item(s) failed to update.', true);
+            } else {
+              showSaveStatus('Your price list has been updated!', false);
+            }
+            dirtyItemIds.forEach(function (itemId) {
+              var row = rowsById.get(itemId);
+              if (row) { $(row).removeClass('marked-for-delete row-dirty'); }
+            });
+            dirtyItemIds.clear();
+          })
+          .catch(function () {
+            showSaveStatus('Something went wrong saving your changes. Please try again.', true);
+          })
+          .finally(function () {
+            document.body.style.cursor = 'default';
+            submitBtn.disabled = false;
+          });
+      }
 
       function isNumber(evt) {
         evt = (evt) ? evt : window.event;
@@ -306,7 +326,7 @@
         return (!str || /^\s*$/.test(str));
       }
 
-      function effective_price(price, discount, market_value, item_name) {
+      function effective_price(price, discount, market_value) {
         if ((isNaN(discount)) && (isNaN(price))) {
           return '';
         }
@@ -354,22 +374,11 @@
       }
 
       $(document).on("keypress", function (e) {
-
-        if (e.which == 13) {
-
-          var inputVal = $(this).val();
-
-          $('#test_form').submit();
-          event.preventDefault();
-          console.log("form submitted!")  // sanity check
+        if (e.which == 13 && $(e.target).is('.listing_price, .listing_discount')) {
+          e.preventDefault();
+          submitChanges();
         }
       });
-
-      function getInputValue() {
-        // Selecting the input element and get its value
-        var inputVal = document.getElementById("onlyNumbers").value;
-      }
-
     </script>
 
 

@@ -1350,4 +1350,14 @@ th {
     }
 }
 
+/* EDIT PRICE LIST — unsaved-change indicators, any viewport. */
+.edit_table tr.row-dirty {
+    box-shadow: inset 3px 0 0 var(--bs-warning, #daa520);
+}
+
+.edit_table tr.marked-for-delete {
+    box-shadow: inset 3px 0 0 var(--bs-danger, #dc3545);
+    opacity: 0.6;
+}
+
 /* END APEX CHARTS */

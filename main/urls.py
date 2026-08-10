@@ -33,6 +33,8 @@ urlpatterns = [
     # REGULAR SITE
     path('', views.homepage, name='home'),
     path('edit_price_list', views.edit_price_list, name='edit_price_list'),
+    path('edit_price_list/category', views.edit_price_list_category_fragment, name='edit_price_list_category_fragment'),
+    path('edit_price_list/save', views.edit_price_list_save_items, name='edit_price_list_save_items'),
     path('manage_price_list', views.manage_price_list, name='manage_price_list'),
     path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
     path('toggle_vacation_mode', views.toggle_vacation_mode, name='toggle_vacation_mode'),

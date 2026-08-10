@@ -1,0 +1,73 @@
+{% load humanize %}
+<table class="table table-hover edit_table table-sm text-responsive">
+    <thead>
+    <tr>
+        <th scope="col" class='text-center edit_table_image'></th>
+        <th scope="col" class='text-center'>Item</th>
+        <th scope="col" class='text-center'>Torn Market Value</th>
+        <th scope="col" class='text-center'>Bazaar Average</th>
+        <th scope="col" class='text-center'
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="The lowest of: Torn Market Value, TE's own item market price, and Bazaar Average">
+            TE Market Value
+        </th>
+        <th scope="col" class='text-center'>Your Fixed Price</th>
+        <th scope="col" class='text-center'>Profit Margin %</th>
+        <th scope="col" class='text-center'
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="The price that shows on the Price List (TE Market Value - Profit Margin)">
+            Effective Price
+        </th>
+        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i> Delete</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+        <tr class="m-0 p-0" data-item-id="{{ item.item_id }}">
+            <td style='width:8%;' class='text-center edit_table_image' data-label="">
+                <img src="{{ item.image_url }}" style="width:50%;"></td>
+            <td style='width:15%;' class='text-center link-blue item_name' data-label="Item">
+              {{ item.name }}
+            </td>
+            <td style='width:12%;' class='text-center torn_market_value' data-label="Torn Market Value">
+                ${{ item.market_value|intcomma }}
+            </td>
+            <td style='width:12%;' class='text-center bazaar_average' data-label="Bazaar Average">
+                {% if item.bazaar_average %}${{ item.bazaar_average|intcomma }}{% else %}&mdash;{% endif %}
+            </td>
+            <td style='width:12%;' class='text-center market_value' data-label="TE Market Value">
+                ${{ item.TE_value|intcomma }}
+            </td>
+            <td style='width:13%;' class='text-center' data-label="Your Fixed Price">
+                <div class='input-group  mb-1'>
+                    <input type="text"
+                           class="form-control price-edit listing_price text-responsive"
+                           value="{{ item.price }}"
+                           onkeypress="return isNumber(event)"
+                           onpaste="return true;"/>
+                </div>
+            </td>
+            <td style='width:13%;' class='text-center' data-label="Profit Margin %">
+                <div class='input-group  mb-1'>
+
+                    <input type="text"
+                           class="form-control price-edit listing_discount text-responsive"
+                           value="{{ item.discount }}"
+                           oninput="validateNumber(this);"
+                           onpaste="return true;"/>
+                </div>
+            </td>
+            <td style='width:13%;' class='text-center effective_price' data-label="Effective Price">
+                ${{ item.effective_price|intcomma }}</td>
+            <td style='width:1%;' class='text-center' data-label="Delete">
+                <div class="form-check d-flex justify-content-center align-items-center">
+                    <input type="checkbox"
+                           class="form-check-input listing_delete">
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
