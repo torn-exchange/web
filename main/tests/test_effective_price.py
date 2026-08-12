@@ -59,10 +59,6 @@ class EffectivePriceCalculationTests(TestCase):
 
     def setUp(self):
         self.user, self.profile = make_user('trader1')
-        # ensure global fee starts at 0
-        self.profile.settings.trade_global_fee = 0
-        self.profile.settings.save()
-
         self.item = make_item(name='Sword', te_value=100_000, item_id=1)
 
     # --- both null → None ---------------------------------------------------
@@ -83,24 +79,14 @@ class EffectivePriceCalculationTests(TestCase):
 
     # --- discount only (no fixed price) -------------------------------------
 
-    def test_discount_only_no_global_fee(self):
+    def test_discount_only(self):
         # 10% discount on 100_000 → 90_000
         listing = make_listing(self.profile, self.item, price=None, discount=10.0)
         self.assertEqual(listing.effective_price, 90_000)
 
-    def test_discount_only_with_global_fee(self):
-        # 10% user discount + 5% global fee = 15% total → 85_000
-        self.profile.settings.trade_global_fee = 5
-        self.profile.settings.save()
-        listing = make_listing(self.profile, self.item, price=None, discount=10.0)
-        self.assertEqual(listing.effective_price, 85_000)
-
-    def test_discount_zero_with_global_fee(self):
-        # discount=0, global_fee=10 → 90_000
-        self.profile.settings.trade_global_fee = 10
-        self.profile.settings.save()
+    def test_discount_zero(self):
         listing = make_listing(self.profile, self.item, price=None, discount=0.0)
-        self.assertEqual(listing.effective_price, 90_000)
+        self.assertEqual(listing.effective_price, 100_000)
 
     # --- both discount and price set → take the minimum ---------------------
 
@@ -118,24 +104,6 @@ class EffectivePriceCalculationTests(TestCase):
         # 10% off 100_000 = 90_000, fixed = 90_000 → 90_000
         listing = make_listing(self.profile, self.item, price=90_000, discount=10.0)
         self.assertEqual(listing.effective_price, 90_000)
-
-    # --- global fee should NOT apply to custom items (item_id > 9000) -------
-
-    def test_global_fee_not_applied_to_custom_item(self):
-        custom_item = make_item(name='Plushie Set', te_value=100_000, item_id=9998)
-        self.profile.settings.trade_global_fee = 10
-        self.profile.settings.save()
-        # Only user discount of 10% → 90_000  (global fee ignored)
-        listing = make_listing(self.profile, custom_item, price=None, discount=10.0)
-        self.assertEqual(listing.effective_price, 90_000)
-
-    def test_global_fee_not_applied_to_another_custom_item(self):
-        custom_item = make_item(name='Flower Set', te_value=200_000, item_id=9999)
-        self.profile.settings.trade_global_fee = 5
-        self.profile.settings.save()
-        # Only user discount 20% → 160_000  (global fee ignored)
-        listing = make_listing(self.profile, custom_item, price=None, discount=20.0)
-        self.assertEqual(listing.effective_price, 160_000)
 
     # --- TE_value = 0 -------------------------------------------------------
 
@@ -158,22 +126,20 @@ class EffectivePriceCalculationTests(TestCase):
 
     # --- staleness tests: document expected behaviour after migration --------
 
-    def test_effective_price_reflects_updated_global_fee(self):
+    def test_effective_price_unaffected_by_settings_changes(self):
         """
-        Currently (property-based): effective_price is always recalculated live,
-        so changing trade_global_fee immediately affects the result.
-        After migration to a stored field, updating Settings must trigger
-        a re-save of all related Listings (via signal or explicit update).
+        Global fee has been removed: effective_price is now driven purely by
+        the listing's own price/discount and the item's TE_value, so changing
+        unrelated Settings fields must not alter it.
         """
         listing = make_listing(self.profile, self.item, price=None, discount=10.0)
-        self.assertEqual(listing.effective_price, 90_000)  # fee=0: 10% off
+        self.assertEqual(listing.effective_price, 90_000)
 
-        self.profile.settings.trade_global_fee = 10
+        self.profile.settings.trade_enable_sets = False
         self.profile.settings.save()
         listing.refresh_from_db()
 
-        # 10% user + 10% global = 20% total → 80_000
-        self.assertEqual(listing.effective_price, 80_000)
+        self.assertEqual(listing.effective_price, 90_000)
 
     def test_effective_price_reflects_updated_te_value(self):
         """

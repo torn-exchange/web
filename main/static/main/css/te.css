@@ -1192,4 +1192,185 @@ th {
     color: black !important;
   }
 
+/* EDIT PRICE LIST — mobile card layout.
+   Below md, each item row becomes a self-contained card (image, name,
+   values, inputs, effective price) laid out with CSS grid, instead of a
+   9-column table that either hides data or scrolls sideways. */
+@media (max-width: 767.98px) {
+    .edit_table thead {
+        display: none;
+    }
+
+    .edit_table,
+    .edit_table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .edit_table tr {
+        display: grid;
+        grid-template-columns: 44px 1fr 1fr 1fr;
+        grid-template-areas:
+            "img  name name del"
+            "img  te   te   te"
+            "img  torn torn bazaar"
+            "price price margin margin"
+            "eff  eff  eff  eff";
+        column-gap: 0.6rem;
+        row-gap: 0.4rem;
+        align-items: center;
+        /* the tr also carries Bootstrap's .m-0/.p-0 utility classes (from the
+           desktop table markup), whose margin/padding are !important — must
+           match or lose the cascade */
+        margin: 0 0 1.25rem !important;
+        padding: 0.75rem 0.85rem 0.85rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 0.65rem;
+        background: rgba(255, 255, 255, 0.03);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .edit_table td {
+        display: block;
+        width: auto !important;
+        padding: 0 !important;
+        border: none !important;
+        text-align: left;
+    }
+
+    .edit_table td.edit_table_image {
+        grid-area: img;
+        align-self: start;
+    }
+
+    .edit_table td.edit_table_image img {
+        width: 100% !important;
+        max-width: 44px;
+        border-radius: 0.3rem;
+    }
+
+    .edit_table td.item_name {
+        grid-area: name;
+        font-weight: 700;
+        font-size: 1rem;
+        line-height: 1.2;
+    }
+
+    .edit_table td[data-label="Delete"] {
+        grid-area: del;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .edit_table td[data-label="Delete"]::before {
+        content: "Remove";
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-right: 0.4rem;
+    }
+
+    .edit_table td.market_value {
+        grid-area: te;
+        font-size: 0.95rem;
+    }
+
+    .edit_table td.market_value::before {
+        content: "TE Value  ";
+        color: rgba(255, 255, 255, 0.55);
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .edit_table td.torn_market_value {
+        grid-area: torn;
+    }
+
+    .edit_table td.bazaar_average {
+        grid-area: bazaar;
+        text-align: right;
+    }
+
+    .edit_table td.torn_market_value,
+    .edit_table td.bazaar_average {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    .edit_table td.torn_market_value::before,
+    .edit_table td.bazaar_average::before {
+        content: attr(data-label) ": ";
+    }
+
+    .edit_table td[data-label="Your Fixed Price"] {
+        grid-area: price;
+    }
+
+    .edit_table td[data-label="Profit Margin %"] {
+        grid-area: margin;
+    }
+
+    .edit_table td[data-label="Your Fixed Price"]::before,
+    .edit_table td[data-label="Profit Margin %"]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 0.2rem;
+    }
+
+    .edit_table td .input-group {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .edit_table td.effective_price {
+        grid-area: eff;
+        margin-top: 0.25rem;
+        padding: 0.45rem 0.6rem !important;
+        border-radius: 0.4rem;
+        background: rgba(64, 150, 26, 0.15);
+        border: 1px solid rgba(64, 150, 26, 0.4) !important;
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-align: center;
+    }
+
+    .edit_table td.effective_price::before {
+        content: "Effective Price";
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 0.15rem;
+    }
+
+    /* keep the card's own drop shadow when a dirty/delete accent is added */
+    .edit_table tr.row-dirty {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 3px 0 0 var(--bs-warning, #daa520);
+    }
+
+    .edit_table tr.marked-for-delete {
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 3px 0 0 var(--bs-danger, #dc3545);
+    }
+}
+
+/* EDIT PRICE LIST — unsaved-change indicators, any viewport. */
+.edit_table tr.row-dirty {
+    box-shadow: inset 3px 0 0 var(--bs-warning, #daa520);
+}
+
+.edit_table tr.marked-for-delete {
+    box-shadow: inset 3px 0 0 var(--bs-danger, #dc3545);
+    opacity: 0.6;
+}
+
 /* END APEX CHARTS */

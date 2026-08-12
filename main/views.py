@@ -33,6 +33,7 @@ from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, 
                               get_most_trades, get_active_traders_count)
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses, set_listing_hidden_reason
 from main.profile_stats import return_profile_stats
+from main.templatetags.custom_tags import item_name_plural
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
                            merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
 from users.forms import SettingsForm
@@ -435,9 +436,8 @@ def settings(request, option=None):
     return render(request, 'main/settings.html', context)
 
 
-@login_required
-def edit_price_list(request):
-    profile = (
+def _get_price_list_profile(request):
+    return (
         Profile.objects
         .select_related("settings")
         .filter(user=request.user)
@@ -445,118 +445,123 @@ def edit_price_list(request):
         .first()
     )
 
-    all_traders_prices = (
-        Listing.objects.filter(owner=profile)
-        .select_related("owner", "item", "owner__settings")
-        .order_by("-item__TE_value")
-    )
 
-    cats = categories()
-    items = (
-        Item.objects.filter(
-            item_type__in=cats,
-            circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM,
-            TE_value__gt=10,
-        )
-        .order_by("-TE_value")
-    )
-
-    # Merge once per category
-    data_dict = {
-        cat: merge_items(
-            [item for item in items if item.item_type == cat],
-            all_traders_prices,
-        )
-        for cat in cats
-    }
-
+@login_required
+def edit_price_list(request):
+    profile = _get_price_list_profile(request)
     user_settings = profile.settings
     context = {
         "page_title": "Edit Prices - Torn Exchange",
-        "item_types": cats,
+        "item_types": categories(),
         "owner_profile": profile,
         "user_settings": user_settings,
-        "category_dict": dictionary_of_categories(),
-        "data_dict": data_dict,
+        "category_dict": {
+            group: sorted(subcats, key=item_name_plural)
+            for group, subcats in dictionary_of_categories().items()
+        },
+    }
+    return render(request, 'main/price_list_creation.html', context)
+
+
+@login_required
+def edit_price_list_category_fragment(request):
+    """Renders just one category's item table, fetched on demand when the
+    trader expands that category on the Edit Price List page (instead of
+    every category's items being rendered/merged on every page load)."""
+    category = request.GET.get('type')
+    if category not in categories():
+        return HttpResponse(status=404)
+
+    profile = _get_price_list_profile(request)
+
+    items = Item.objects.filter(
+        item_type=category,
+        circulation__gt=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM,
+        TE_value__gt=10,
+    ).order_by("-TE_value")
+
+    traders_prices = (
+        Listing.objects.filter(owner=profile, item__item_type=category)
+        .select_related("item")
+    )
+
+    merged_items = merge_items(items, traders_prices)
+
+    return render(request, 'main/_price_list_category_table.html', {'items': merged_items})
+
+
+@login_required
+@require_POST
+def edit_price_list_save_items(request):
+    """Saves only the items the trader actually touched, addressed by
+    item_id, instead of assuming the whole catalog was submitted. An item
+    missing from the payload is simply left alone."""
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    entries = payload.get('items', [])
+    profile = _get_price_list_profile(request)
+
+    item_ids = [e.get('item_id') for e in entries if e.get('item_id')]
+    items_by_id = {
+        str(item.item_id): item
+        for item in Item.objects.filter(item_id__in=item_ids)
+    }
+    current_listings = {
+        listing.item_id: listing
+        for listing in Listing.objects.filter(owner=profile, item__in=items_by_id.values())
     }
 
-    if request.method == 'POST':
-        updated_items = {}
-        to_delete = []
-        
-        # first go through all categories
-        for items in data_dict:
-            all_relevant_items = data_dict[items]
-            
-            for item in all_relevant_items:
-                checkbox_output = request.POST.get(f'{item}_checkbox')
-                if checkbox_output == 'on':
-                    to_delete.append(item)
-                
-                price = _get_price(request, item)
-                    
-                discount = _get_discount(request, item)
-                    
-                if type(discount) == float:
-                    if discount > 100.0:
-                        # prevent message alert from fading away
-                        storage = messages.get_messages(request)
-                        storage.used = False
+    new_listings = []
+    listings_to_update = []
+    to_delete = []
+    updated = []
+    deleted = []
+    failed = []
 
-                        messages.error(
-                            request, 'Make sure your discount value is less than 100')
-                        return redirect('edit_price_list')
-                
-                # join price and discount together
-                # if price != '' or discount != '':
-                entry = updated_items.setdefault(item, {})
-                entry['price'] = price
-                entry['discount'] = discount
+    for entry in entries:
+        item = items_by_id.get(str(entry.get('item_id')))
+        if not item:
+            failed.append(entry.get('item_id'))
+            continue
 
-        # Get all current listings for user in one query
-        current_listings = {
-            l.item: l for l in Listing.objects.filter(owner=profile).select_related('owner__settings', 'item')
-        }
-        
-        new_listings = []
-        listings_to_update = []
-        
-        to_delete = _get_deleted(current_listings, updated_items, to_delete)
+        listing = current_listings.get(item.id)
 
-        # Build new/updated objects
-        for item, vals in updated_items.items():
-            listing = current_listings.get(item)
-
-            new_price = safe_int(vals['price'])
-            new_discount = safe_float(vals['discount'])
-
+        if entry.get('delete'):
             if listing:
-                if 'price' in vals:
-                    listing.price = new_price
-                if 'discount' in vals:
-                    listing.discount = new_discount
-                listing.effective_price = listing.calculate_effective_price()
-                listings_to_update.append(listing)
-            else:
-                kwargs = {}
-                if 'price' in vals:
-                    kwargs['price'] = new_price
-                if 'discount' in vals:
-                    kwargs['discount'] = new_discount
+                to_delete.append(item)
+                deleted.append(item.item_id)
+            continue
 
-                obj = Listing(owner=profile, item=item, **kwargs)
-                obj.effective_price = obj.calculate_effective_price()
-                new_listings.append(obj)
-                
-        # atomic function that will roll back if any error occurs
-        _update_listings(profile, new_listings, listings_to_update, to_delete)
-                    
-        cache.delete(f'price_list_{profile.torn_id}')
+        discount = safe_float(entry.get('discount'))
+        if discount is not None and discount > 100.0:
+            failed.append(item.item_id)
+            continue
 
-        messages.success(request, f'Your price list has been updated!')
-        return redirect('edit_price_list')
-    else:
-        return render(request, 'main/price_list_creation.html', context)
+        raw_price = entry.get('price')
+        if isinstance(raw_price, str):
+            raw_price = re.sub(r'[$,]', '', raw_price)
+        price = safe_int(raw_price)
+
+        if listing:
+            listing.price = price
+            listing.discount = discount
+            listing.effective_price = listing.calculate_effective_price()
+            listings_to_update.append(listing)
+        else:
+            obj = Listing(owner=profile, item=item, price=price, discount=discount)
+            obj.effective_price = obj.calculate_effective_price()
+            new_listings.append(obj)
+
+        updated.append(item.item_id)
+
+    _update_listings(profile, new_listings, listings_to_update, to_delete)
+
+    cache.delete(f'price_list_{profile.torn_id}')
+
+    return JsonResponse({"updated": updated, "deleted": deleted, "failed": failed})
 
 
 @transaction.atomic
@@ -573,47 +578,6 @@ def _update_listings(profile, new_listings, listings_to_update, to_delete):
     except Exception as e:
         log_error(e)
         raise e
-
-
-def _get_price(request, item):
-    price = request.POST.get(f'{item}_max_price')
-    try:
-        if price and price.strip():
-            price = re.sub(r'[$,]', '', price)
-        
-        if price and price != '':
-            price = int(price)
-    except Exception as e:
-        price = None
-        
-    return price
-
-
-def _get_discount(request, item):
-    discount = (request.POST.get(f'{item}_discount'))
-    try:
-        if discount == '' or discount is None or discount == 'None':
-            discount = None
-        else:
-            discount = float(discount)
-    except Exception as e:
-        discount = None
-        
-    return discount
-
-
-def _get_deleted(current_listings, updated_items, to_delete):
-    # If a listing exists but user provided neither price nor discount for it,
-    # mark it for deletion as well (in addition to checkbox deletions).
-    existing_item_map = {item.id: item for item in current_listings.keys()}
-    existing_ids = set(existing_item_map.keys())
-    updated_ids = set(item.id for item in updated_items.keys())
-    explicit_delete_ids = set(item.id for item in to_delete)
-    extra_delete_ids = existing_ids - updated_ids - explicit_delete_ids
-    for _id in extra_delete_ids:
-        to_delete.append(existing_item_map[_id])
-
-    return to_delete
 
 
 @cache_page_for_anonymous(600)
@@ -1661,13 +1625,6 @@ def manage_price_list(request):
         .order_by('-created_at')
         .first()
     )
-    
-    if request.method == 'POST':
-        if 'trade_global_fee' in request.POST:
-            profile.settings.trade_global_fee = request.POST.get('trade_global_fee')
-            profile.settings.save()
-            messages.success(request, 'Settings updated!')
-            return redirect('manage_price_list')
     
     cats = categories()
 
