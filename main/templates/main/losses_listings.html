@@ -38,11 +38,11 @@
                     <div class="d-flex align-items-center">
                         <div class="status-icon me-2">
                             {% if listing.activity_status == 'Online' %}
-                            <img src="{% static '/main/images/crown-online.png' %}" style="max-width:25%;">
+                            <img src="{% static 'main/images/crown-online.png' %}" style="max-width:25%;">
                             {% elif listing.activity_status == 'Idle' %}
-                            <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 25%;">
+                            <img src="{% static 'main/images/crown-idle.png' %}" style="max-width: 25%;">
                             {% elif listing.activity_status == 'Offline' %}
-                            <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 25%;">
+                            <img src="{% static 'main/images/crown-offline.png' %}" style="max-width: 25%;">
                             {% endif %}
                         </div>
                         <div class="col mt-2 text-left pl-3 m-auto ">

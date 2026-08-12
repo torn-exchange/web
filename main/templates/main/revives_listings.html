@@ -38,11 +38,11 @@
                     <div class="d-flex align-items-center">
                         <div class="status-icon me-2">
                             {% if listing.activity_status == 'Online' %}
-                            <img src="{% static '/main/images/crown-online.png' %}" style="max-width:5%;">
+                            <img src="{% static 'main/images/crown-online.png' %}" style="max-width:5%;">
                             {% elif listing.activity_status == 'Idle' %}
-                            <img src="{% static '/main/images/crown-idle.png' %}" style="max-width: 5%;">
+                            <img src="{% static 'main/images/crown-idle.png' %}" style="max-width: 5%;">
                             {% elif listing.activity_status == 'Offline' %}
-                            <img src="{% static '/main/images/crown-offline.png' %}" style="max-width: 5%;">
+                            <img src="{% static 'main/images/crown-offline.png' %}" style="max-width: 5%;">
                             {% endif %}
                             <a target="_blank" href="https://www.torn.com/profiles.php?XID={{listing.torn_id}}"
                                 class="text-white font-weight-bold text-center pr-3">

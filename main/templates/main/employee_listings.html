@@ -63,11 +63,11 @@
 
                                         <div class="pl-4 p-1 ml-2 col-2 text-center">
                                             {% if listing.activity_status == 'Online' %}
-                                            <img src="{% static '/main/images/crown-online.png' %}" style="width:20%;">
+                                            <img src="{% static 'main/images/crown-online.png' %}" style="width:20%;">
                                             {% elif listing.activity_status == 'Idle' %}
-                                            <img src="{% static '/main/images/crown-idle.png' %}" style="width: 20%;">
+                                            <img src="{% static 'main/images/crown-idle.png' %}" style="width: 20%;">
                                             {% elif listing.activity_status == 'Offline' %}
-                                            <img src="{% static '/main/images/crown-offline.png' %}"
+                                            <img src="{% static 'main/images/crown-offline.png' %}"
                                                 style="width: 20%;">
                                             {% endif %}
                                         </div>

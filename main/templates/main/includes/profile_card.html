@@ -33,13 +33,13 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;
                         <h3 class="text-center m-0 p-0 allerta-font">
                             {% if owner_profile.activity_status == 'Online' %}
-                            <img src="{% static '/main/images/crown-online.png' %}" class='mb-2'
+                            <img src="{% static 'main/images/crown-online.png' %}" class='mb-2'
                                 style="height:20px; width:auto;">
                             {% elif owner_profile.activity_status == 'Idle' %}
-                            <img src="{% static '/main/images/crown-idle.png' %}" class='mb-2'
+                            <img src="{% static 'main/images/crown-idle.png' %}" class='mb-2'
                                 style="height:20px; width:auto;">
                             {% elif owner_profile.activity_status == 'Offline' %}
-                            <img src="{% static '/main/images/crown-offline.png' %}" class='mb-2'
+                            <img src="{% static 'main/images/crown-offline.png' %}" class='mb-2'
                                 style="height:20px; width:auto;">
                             {% endif %}
                             {{content_title}}

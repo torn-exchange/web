@@ -61,7 +61,7 @@
   <!-- OpenGraph Meta Tags -->
   <meta property="og:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
   <meta property="og:description" content="{% block page_description_og %}Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items{% endblock %}">
-  <meta property="og:image" content="{% static '/main/images/mainlogo.png' %}">
+  <meta property="og:image" content="{% static 'main/images/mainlogo.png' %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta property="og:type" content="website">
 
@@ -69,7 +69,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{% if page_title %}{{ page_title }}{% else %}Torn Exchange{% endif %}">
   <meta name="twitter:description" content="{% block page_description_twitter %}Trade smarter with Torn Exchange - Your trusted marketplace for Torn City items{% endblock %}">
-  <meta name="twitter:image" content="{% static '/main/images/mainlogo.png' %}">
+  <meta name="twitter:image" content="{% static 'main/images/mainlogo.png' %}">
 
   {% block structured_data %}{% endblock %}
 

@@ -176,6 +176,20 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+# Content-hashes every static file's name at collectstatic time (e.g.
+# te.5f3c2a1b9d.css) and rewrites all {% static %} references to match, so
+# the URL itself changes whenever a file's contents change. That busts
+# browser/proxy caches automatically on every deploy with no manual
+# versioning needed.
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+    },
+}
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
