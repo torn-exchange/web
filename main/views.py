@@ -1049,7 +1049,7 @@ def mobile_all_trades(request):
 
 @csrf_protect
 def vote_view(request):
-    if request.is_ajax and request.method == "POST":
+    if request.method == "POST":
         if request.user.is_authenticated == False:
             return JsonResponse({
                 "error": "User not logged in",
@@ -1206,7 +1206,7 @@ def parse_trade_paste(request: HttpRequest):
 
 
 def extension_get_prices(request):
-    if request.is_ajax and request.method == "POST":
+    if request.method == "POST":
         try:
             userid = request.POST.get('user_id')
             seller_name = request.POST.get('seller_name')
