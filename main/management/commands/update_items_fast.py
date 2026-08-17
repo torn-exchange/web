@@ -220,6 +220,17 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
     if benchmark is not None:
         benchmark.note_item_done(item_id, time.perf_counter() - item_start)
 
+    if TE_price is None:
+        # Every attempt errored out (rate limit, bad key, network hiccup) --
+        # leave the existing TE_value alone rather than writing a price. Left
+        # unguarded, sanitize_numbers(None) below coerces this into 0, which
+        # then gets propagated to every trader's listings for this item via
+        # recalculate_listings_for_item, wiping out real prices until the
+        # next hourly run happens to succeed.
+        print(f'Skipping update for {row["name"]} [{item_id}]: no valid price after '
+              f'{MAX_RETRIES_PER_ITEM} retries')
+        return
+
     # DB writes (esp. recalculate_listings_for_item's N+1 per-listing saves)
     # get throttled to MAX_CONCURRENT_DB_WRITERS at a time, decoupled from
     # MAX_THREADS, so 40-way API-fetch parallelism doesn't translate into
@@ -233,7 +244,15 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
             item_in_our_db = Item.objects.filter(item_id=item_id).order_by('-last_updated').first()
 
         if item_in_our_db is not None:
-            if item_in_our_db.TE_value != TE_price:
+            if TE_price == 0 and item_in_our_db.TE_value:
+                # A fetch that comes back with a genuine "no price data
+                # anywhere" 0 is far more likely a bad/incomplete read than a
+                # real crash to literal $0 -- don't let it clobber a known
+                # good price. Leaves TE_value untouched; a later run with
+                # good data will update it normally.
+                print(f'Skipping update for {row["name"]} [{item_id}]: fetched price is 0 '
+                      f'but existing TE_value is {item_in_our_db.TE_value}')
+            elif item_in_our_db.TE_value != TE_price:
                 try:
                     for key in ['buy_price', 'sell_price', 'market_value']:
                         row[key] = sanitize_numbers(row[key])
