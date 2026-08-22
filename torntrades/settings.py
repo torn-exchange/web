@@ -76,7 +76,6 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'vote',
     'django_filters',
-    'django_crontab',
     'hitcount',
     'corsheaders',
     'debug_toolbar',
@@ -202,10 +201,6 @@ LOGIN_URL = 'login'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
-CRONJOBS = [
-    ('* * * * *', 'django.core.management.update_items'),
-]
-
 MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM = 50
 
 INTERNAL_IPS = [
@@ -298,6 +293,12 @@ if ERROR_LOG != "":
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
+        'formatters': {
+            'json': {
+                '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+                'format': '%(asctime)s %(levelname)s %(name)s %(message)s',
+            },
+        },
         'handlers': {
             'console': {
                 'class': 'logging.StreamHandler',
@@ -306,6 +307,13 @@ if ERROR_LOG != "":
                 'level': 'WARNING',
                 'class': 'logging.FileHandler',
                 'filename': ERROR_LOG,
+                'formatter': 'json',
+            },
+            'cron_file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': ERROR_LOG,
+                'formatter': 'json',
             },
         },
         'loggers': {
@@ -318,6 +326,11 @@ if ERROR_LOG != "":
                 'handlers': ['file'],
                 'level': 'WARNING',
                 'propagate': False,  # Avoid duplicating logs to the root logger
+            },
+            'cron': {
+                'handlers': ['cron_file'],
+                'level': 'INFO',
+                'propagate': False,
             },
         },
     }

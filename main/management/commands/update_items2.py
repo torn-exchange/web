@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 import json
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from django.conf import settings as project_settings
 from django.utils import timezone
 from main.models import Item
@@ -16,7 +16,7 @@ from main.models import Listing
 from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     help = 'Updates items in the database'
 
     # checks if item name was passed as an argument

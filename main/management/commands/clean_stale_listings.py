@@ -1,10 +1,10 @@
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from main.models import Listing, TradeReceipt, set_listing_hidden_reason
 from users.models import User, Profile
 import datetime
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
 
     def _clean(self):
         today = datetime.datetime.now(tz=datetime.timezone.utc)
