@@ -4,6 +4,7 @@ import time
 
 from django.core.management.base import BaseCommand
 from main.models import ItemBonus, Job
+from main.services.monitoring.cron_command import run_monitored
 
 
 class Command(BaseCommand):
@@ -20,7 +21,7 @@ class Command(BaseCommand):
 
         for queue_group in queue_groups:
             queue = queue_group['queue']
-            self.run_queue(queue)
+            run_monitored(f'run_job_queues.{queue}', self.run_queue, queue, verbose=False)
 
     def run_queue(self, queue: str):
         subprocess.Popen([sys.executable, "manage.py", "run_jobs", queue])

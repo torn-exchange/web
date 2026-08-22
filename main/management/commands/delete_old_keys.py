@@ -4,12 +4,12 @@ import requests
 import  concurrent.futures
 
 from django.db import connection, reset_queries
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 
 from users.models import Profile
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     def _prune(self):
         profiles = get_profiles_with_keys()
                 

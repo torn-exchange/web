@@ -1,9 +1,9 @@
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from main.models import Item
 from django.db import connection, reset_queries
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     help = 'Updates items in the database'
     
     def handle(self, *args, **options):

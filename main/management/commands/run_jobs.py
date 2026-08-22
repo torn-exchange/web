@@ -3,13 +3,13 @@ import subprocess
 import time
 import importlib
 
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from main.models import ItemBonus, Job
 from main.services.schedule.schedule_service import ScheduleService
 from django.utils import timezone
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     help = "Runs the job queue"
 
     def add_arguments(self, parser):
@@ -42,6 +42,7 @@ class Command(BaseCommand):
 
 
         for job_entry in jobs:
+            job = None
             try:
                 job_entry.reserved_at = timezone.now()
                 job_entry.available_at = None
@@ -50,9 +51,14 @@ class Command(BaseCommand):
 
                 job_class = self.get_job_class(job_entry)
                 job = job_class()
+                job.job = job_entry
+                job.log('started')
                 job.handle(job_entry, job_entry.payload)
+                job.log('success')
 
             except Exception as e:
+                if job is not None:
+                    job.log('failed', {'error': str(e)})
                 self.stderr.write(
                     self.style.ERROR(
                         f"Error running job {job_entry.id} - {job_entry.job}: {e}"

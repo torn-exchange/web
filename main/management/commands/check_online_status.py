@@ -3,7 +3,7 @@ import json
 import os
 import traceback
 
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from django.utils import timezone
 from users.models import Profile
 from main.models import Listing
@@ -14,7 +14,7 @@ from datetime import datetime
 Command that should be run every 10 minutes as a cron job.
 It checks player's online status.
 '''
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     def _update(self):
         print('Updating activity status of all profiles')
         active_traders = set(

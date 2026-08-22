@@ -1,8 +1,8 @@
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from main.models import TradeReceipt, ItemTrade
 
 
-class Command(BaseCommand):
+class Command(MonitoredCommand):
 
     def _clean(self):
 
