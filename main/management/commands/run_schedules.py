@@ -3,6 +3,7 @@ import time
 from django.core.management.base import BaseCommand
 from main.models import ItemBonus
 from main.services.schedule.schedule_service import ScheduleService
+from main.services.monitoring.cron_command import run_monitored
 
 
 class Command(BaseCommand):
@@ -20,7 +21,7 @@ class Command(BaseCommand):
 
     def run(self):
         try:
-            ScheduleService.handle()
+            run_monitored('run_schedules', ScheduleService.handle, verbose=False)
         except Exception as e:
             self.stdout.write(
                 self.style.ERROR(

@@ -5,7 +5,7 @@ import traceback
 
 import numpy as np
 
-from django.core.management.base import BaseCommand
+from main.services.monitoring.cron_command import MonitoredCommand
 from users.models import Profile, Settings
 from main.models import Listing, Company, TradeReceipt
 from django.db.models import Q
@@ -31,7 +31,7 @@ Command that should be run once a day as a cron job.
 It checks whether directors still own companies and 
 updates work stats for everyone that is actively looking for employment.
 '''
-class Command(BaseCommand):
+class Command(MonitoredCommand):
     def _update(self):
         print('Updating company data')
         update_companies()
