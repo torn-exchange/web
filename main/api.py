@@ -244,6 +244,7 @@ def profile(request):
                     "updated_at": p.updated_at,
                     "votes": p.vote_score,
                     "reviews": p.settings.link_to_forum_post,
+                    "active_trader": p.active_trader,
                 }
             }
             cache.set(cache_key, data, timeout=300)
