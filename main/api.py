@@ -17,7 +17,7 @@ from django.db.models import OuterRef, Q, Subquery
 from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
 from .models import Item, Listing, Profile, TradeReceipt
-from main.te_utils import (get_ordered_categories)
+from main.te_utils import (get_ordered_categories, format_forum_link)
 
 
 # This variable should make typing faster
@@ -564,7 +564,7 @@ def receipt_by_trade_id(request, trade_id=None):
         trade_paste_text = trade_paste_text.replace(
             '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
         trade_paste_text = trade_paste_text.replace(
-            '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
+            '[[forum_link]]', format_forum_link(owner_profile.settings.link_to_forum_post))
 
         meta = {
             "receipt_id": receipt.receipt_url_string,

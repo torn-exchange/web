@@ -2,9 +2,10 @@ from django import forms
 from .models import Settings
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, ButtonHolder, Submit, Field, HTML
-from crispy_forms.bootstrap import PrependedText, PrependedAppendedText
+from crispy_forms.bootstrap import PrependedAppendedText
 
 
 class UserRegisterForm(UserCreationForm):
@@ -23,11 +24,7 @@ class SettingsForm(forms.ModelForm):
             'revives_message',
             'selling_losses',
             'losses_message',
-            'trade_list_description',
-            'trade_enable_sets',
             'service_list_description',
-            'link_to_forum_post',
-            'receipt_paste_text',
             'tutorial',
             'job_seeking',
             'job_message',
@@ -41,10 +38,7 @@ class SettingsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.fields['receipt_paste_text'].label = "Receipt Paste Text"
         self.fields['tutorial'].label = "Show page tutorials"
-        self.fields['trade_list_description'].label = "Price list description"
-        self.fields['trade_enable_sets'].label = "Enable Plushies and Flowers sets"
         self.fields['service_list_description'].label = "Service list description"
         self.fields['job_seeking'].label = 'Looking for jobs'
         self.fields['selling_company_price_negotiable'].label = 'Price negotiable'
@@ -54,39 +48,15 @@ class SettingsForm(forms.ModelForm):
         self.fields['company_looking_to_hire_message'].label = 'Who are you looking for?'
         self.helper.layout = Layout(
             ###3 Traders Tab ####
-            HTML("""
+            HTML(f"""
                 <div class="tab-pane fade show active" id="traders" role="tabpanel" aria-labelledby="traders-tab">
-                """),
-            Field("trade_list_description",
-                  placeholder="Welcome to my price list. Click Start Trade now to start a trade. (Emojis are allowed 🤑) "),
-            Field(PrependedText('link_to_forum_post',
-                  'https//:www.torn.com/'), placeholder='To'),
-            Field('trade_enable_sets'),
-            Field('receipt_paste_text', placeholder='''Paste your receipt message here, you will be able to copy this to the clipboard later. 
-You can use the following variables in your message:
-[[seller_name]] - The name of the seller
-[[total]] - The total price of the items you are buying
-[[trade_number]] - The number of trades you have made with this seller.
-[[receipt_link]] - The link to the receipt of the trade.
-[[prices_link]] - The link to your price list.
-[[forum_link]] - The link to your forum thread.
-
-Example:
-Hi [[seller_name]], thank you for the trade, the total is $[[total]], here is your receipt [[receipt_link]]. This is our trade N[[trade_number]]. Don't forget to rate my price list [[prices_link]]. Have a nice day!'''),
-            HTML("""
-                <div>
-                Legend:</br>
-<code>
-[[seller_name]] - The name of the seller</br>
-[[total]] - The total price of the items you are buying</br>
-[[trade_number]] - The number of trades you have made with this seller.</br>
-[[receipt_link]] - The link to the receipt of the trade.</br>
-[[prices_link]] - The link to your price list.</br>
-[[forum_link]] - The link to your forum thread.</br></br>
-</code>
+                <p>Trading-related settings (price list description, trade message, forum thread link, sets)
+                have moved to Manage My Price List.</p>
+                <a class="btn btn-primary" href="{reverse('manage_price_list')}">
+                    <i class="fa-solid fa-list"></i> Go to Manage My Price List
+                </a>
                 </div>
                 """),
-            HTML("</div>"),
             #### Job Seeking Tab ####
             HTML("""
                 <div class="tab-pane fade " id="jobseekers" role="tabpanel" aria-labelledby="jobseekers-tab">"""),

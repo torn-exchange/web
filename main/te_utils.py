@@ -301,3 +301,23 @@ def safe_float(v):
         return float(v)
     except (ValueError, TypeError):
         return None
+
+
+TORN_FORUM_LINK_RE = re.compile(
+    r'^https?://(www\.)?torn\.com/forums\.php', re.IGNORECASE)
+
+
+def is_valid_torn_forum_link(url: str) -> bool:
+    if not url:
+        return False
+    return bool(TORN_FORUM_LINK_RE.match(url.strip()))
+
+
+def format_forum_link(value):
+    """Returns the stored forum link, or '' if unset.
+
+    Settings.link_to_forum_post is always stored as a full URL (see
+    users/migrations/0036_backfill_forum_link_full_url.py for the
+    one-time backfill of older relative-path values).
+    """
+    return value.strip() if value else ''

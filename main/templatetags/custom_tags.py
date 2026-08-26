@@ -9,7 +9,11 @@ from django import template
 from django.utils import timezone
 from django.utils.timesince import timesince
 
+from main.te_utils import format_forum_link
+
 register = template.Library()
+
+register.filter('format_forum_link', format_forum_link)
 
 @register.filter(name='jsonify')
 def jsonify(object):
