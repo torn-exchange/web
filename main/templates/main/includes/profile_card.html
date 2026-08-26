@@ -67,7 +67,7 @@
 
                             {% if page_type == "trade" and owner_settings.link_to_forum_post %}
                             <div class='m-1'>
-                                <a class='btn btn-info' target="_blank" href="https://www.torn.com/{{owner_settings.link_to_forum_post}}">
+                                <a class='btn btn-info' target="_blank" href="{{owner_settings.link_to_forum_post|format_forum_link}}">
                                     Reviews
                                 </a>
                             </div>

@@ -35,7 +35,8 @@ from main.models import Company, Item, ItemTrade, Listing, Service, Services, Tr
 from main.profile_stats import return_profile_stats
 from main.templatetags.custom_tags import item_name_plural
 from main.te_utils import (categories, dictionary_of_categories, get_ordered_categories, get_services_view,
-                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int)
+                           merge_items, parse_trade_text, return_item_sets, service_categories, log_error, safe_float, safe_int,
+                           is_valid_torn_forum_link, format_forum_link)
 from users.forms import SettingsForm
 from users.models import Profile, Settings
 from vote.models import Vote
@@ -418,11 +419,7 @@ def settings(request, option=None):
     profile = Profile.objects.filter(user=request.user).get()
     user_settings = Settings.objects.filter(owner=profile).get()
     instance = get_object_or_404(Settings, owner=profile)
-    form = SettingsForm(request.POST or None, instance=instance, initial={
-        'receipt_paste_text': instance.receipt_paste_text,
-        'trade_list_description': instance.trade_list_description,
-        'receipt_paste_text': instance.receipt_paste_text,
-    })
+    form = SettingsForm(request.POST or None, instance=instance)
 
     context = {
         'page_title': 'Settings - Torn Exchange',
@@ -1412,7 +1409,7 @@ def create_receipt(request):
     trade_paste_text = trade_paste_text.replace(
         '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
     trade_paste_text = trade_paste_text.replace(
-        '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
+        '[[forum_link]]', format_forum_link(owner_profile.settings.link_to_forum_post))
 
     return JsonResponse({
         'seller': seller_name,
@@ -1488,7 +1485,7 @@ def new_create_receipt(request):
             trade_paste_text = trade_paste_text.replace(
                 '[[prices_link]]', f'https://tornexchange.com/prices/{owner_profile.name}')
             trade_paste_text = trade_paste_text.replace(
-                '[[forum_link]]', f'https://torn.com/{owner_profile.settings.link_to_forum_post}')
+                '[[forum_link]]', format_forum_link(owner_profile.settings.link_to_forum_post))
             
             data = {'receipt_id': trade_receipt.receipt_url_string,
                     'trade_message': escape(trade_paste_text),
@@ -1713,14 +1710,20 @@ def save_price_list_general_settings(request):
 
     trade_list_description = (data.get('trade_list_description') or '').strip()
     receipt_paste_text = (data.get('receipt_paste_text') or '').strip()
+    link_to_forum_post = (data.get('link_to_forum_post') or '').strip()
 
     if len(trade_list_description) > 500:
         return JsonResponse({'success': False, 'error': 'Description must be 500 characters or fewer.'}, status=400)
     if len(receipt_paste_text) > 500:
         return JsonResponse({'success': False, 'error': 'Trade message must be 500 characters or fewer.'}, status=400)
+    if len(link_to_forum_post) > 250:
+        return JsonResponse({'success': False, 'error': 'Forum thread link must be 250 characters or fewer.'}, status=400)
+    if link_to_forum_post and not is_valid_torn_forum_link(link_to_forum_post):
+        return JsonResponse({'success': False, 'error': 'Please enter a valid link to a Torn forum thread (https://www.torn.com/forums.php...).'}, status=400)
 
     settings.trade_list_description = trade_list_description
     settings.receipt_paste_text = receipt_paste_text
+    settings.link_to_forum_post = link_to_forum_post
     settings.trade_enable_sets = bool(data.get('trade_enable_sets'))
     settings.save()
 
