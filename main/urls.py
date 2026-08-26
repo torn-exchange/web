@@ -39,6 +39,7 @@ urlpatterns = [
     path('toggle_category_visibility', views.toggle_category_visibility, name='toggle_category_visibility'),
     path('toggle_vacation_mode', views.toggle_vacation_mode, name='toggle_vacation_mode'),
     path('save_category_order', views.save_category_order, name='save_category_order'),
+    path('save_price_list_general_settings', views.save_price_list_general_settings, name='save_price_list_general_settings'),
     path('prices/<str:identifier>', views.price_list, name='price_list'),
     path('prices/<str:identifier>/', views.price_list, name='price_list'),
     path('prices/', views.price_list, name='price_list'),

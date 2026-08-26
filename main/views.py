@@ -1704,6 +1704,31 @@ def save_category_order(request):
     return JsonResponse({'success': True})
 
 
+@login_required
+@csrf_exempt
+@require_POST
+def save_price_list_general_settings(request):
+    data = json.loads(request.body)
+    settings = request.user.profile.settings
+
+    trade_list_description = (data.get('trade_list_description') or '').strip()
+    receipt_paste_text = (data.get('receipt_paste_text') or '').strip()
+
+    if len(trade_list_description) > 500:
+        return JsonResponse({'success': False, 'error': 'Description must be 500 characters or fewer.'}, status=400)
+    if len(receipt_paste_text) > 500:
+        return JsonResponse({'success': False, 'error': 'Trade message must be 500 characters or fewer.'}, status=400)
+
+    settings.trade_list_description = trade_list_description
+    settings.receipt_paste_text = receipt_paste_text
+    settings.trade_enable_sets = bool(data.get('trade_enable_sets'))
+    settings.save()
+
+    _bust_price_list_cache(request, request.user.profile)
+
+    return JsonResponse({'success': True})
+
+
 def sitemap(request):
     links = [
         {
