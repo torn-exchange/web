@@ -81,6 +81,7 @@ urlpatterns = [
     path('dismiss-inactive-banner', views.dismiss_inactive_banner, name='dismiss_inactive_banner'),
     path('dismiss-bazaar-mv-banner', views.dismiss_bazaar_mv_banner, name='dismiss_bazaar_mv_banner'),
     path('tos', views.tos, name='tos'),
+    path('price_check', views.price_check, name='price_check'),
 
     # STATIC FILES
     path('ads.txt', views.render_static, {'file': 'ads.txt'}, name='ads.txt'),
