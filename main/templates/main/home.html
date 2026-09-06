@@ -89,208 +89,120 @@
     </div>
 
     <div class='row'>
-        <div class='col-md-3 col-sm-12'>
+        <div class='col-lg-4 col-12 order-2 order-lg-1' id='first-column'>
             {%include 'main/includes/most_receipts.html'%}
             {%include 'main/includes/leaderboard.html'%}
-            <p class="p-4 small mr-3 text-center">
+            <p class="p-4 small text-center">
                 <strong>{{ created_today }}</strong> users registered in last 30 days
             </p>
-
         </div>
-        <div class='col-md-6 col-sm-12 align-content-center text-center'>
-            <div class="row">
-                <!-- FOR TRADERS -->
-                <div class="col-md-6 col-sm-12">
-                    <div class="card mt-3">
-                        <div class="card-header card-header-inv text-center">
-                            <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
-                        </div>
-                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
-                            <ul class="list-group list-group-flush">
-                                {% if profile %}
-                                <il class="list-group-item my-0">
-                                    <a href="{% url 'edit_price_list' %}">Edit price list</a>
-                                </il>
-                                <il class="list-group-item my-0 mt-0">
-                                    <a href="{% url 'edit_services' %}">Edit custom services</a>
-                                </il>
-                                {% else %}
-                                <il class="list-group-item my-0">
-                                    <a href="{% url 'edit_price_list' %}">Create a price list</a>
-                                </il>
-                                <il class="list-group-item my-0 m-0">
-                                    <a href="{% url 'edit_services' %}">Add custom services</a>
-                                </il>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- FOR SELLERS -->
-                <div class="col-md-6 col-sm-12">
-                    <div class="card mt-3">
-                        <div class="card-header card-header-inv">
-                            <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
-                        </div>
-                        <div class="card-body text-left pl-1 mt-0 pt-0 overflow-auto">
-                            <ul class="list-group list-group-flush">
-                                <il class="list-group-item my-0 mt-0">
-                                    <a href="{% url 'listings' %}">Search items and traders</a>
-                                </il>
-                                <il class="list-group-item my-0 mt-0">
-                                    <a href="{% url 'search_services' %}">Search custom service</a>
-                                </il>
-                            </ul>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- BREAKLINE -->
-            <div class="row mt-3">
-                <div class="col-12">
-                    <hr />
-                </div>
-            </div>
-
-            <div class="pt-3">
-                {% if not profile %}
-                <div class="mb-3">
-                    <div class="btn btn-primary">
-                        <a class="allerta-font h5 text-white" href="{% url 'login' %}"> Join Now </a>
-                    </div>
-                </div>                
-                {% endif %}
-
-                <!-- LATEST FEATURES -->
-                <div class="card">
-                    <div class="card-header card-header-inv">
-                        <i class="fa-solid fa-lightbulb"></i> <b>Latest new features</b>
-                    </div>
-                    <div class="card-body pl-1 mt-3 pt-0 overflow-auto text-start">
-                        <ul class="pl-3">
-                            <li class="mb-2">
-                                <a href="{% url 'rw_listings' %}" class="text-decoration-none">
-                                    List of all Ranked War Weapons from bazaars and Item Market.
-                                </a>
-                            </li>
-                            <li class="mb-2">
-                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">
-                                    Ability to toggle between dark and light theme
-                                </a>
-                            </li>
-                            <li class="mb-2">
-                                <a href="{% url 'manage_price_list' %}" class="text-decoration-none">Hiding and Re-arranging of categories</a>
-                            </li>
-                            <li class="mb-2">
-                                <a href="{% url 'api_home' %}" class="text-decoration-none">Torn Exchange API</a>
-                            </li>
-                            <li class="mb-2">
-                                <a href="{% url 'forum_tutorial' %}" class="text-decoration-none">Tutorial: How to Trade with TE</a></li>
-                            <li class="mb-2">Added TornPal button to price list and services</li>
-                        </ul>
-                    </div>
-                </div>
-
-            <!-- BREAKLINE -->
-            <div class="row mt-3">
-                <div class="col-12">
-                    <hr />
-                </div>
-            </div>
-            
-                <!-- WHAT IS TE -->
-                <div class="card mt-3">
-                    <div class="card-header card-header-inv">
-                        <i class="fa-solid fa-question-circle"></i> <b>What is Torn Exchange?</b>
-                    </div>
-                    <div class="card-body text-left pl-1 mt-3 pt-0 overflow-auto">
-                        <p>
-                            Torn Exchange is a platform for Torn players to trade items, services and in-game currency.
-                            It is a community driven project which aims to provide a safe and easy way to trade with
-                            other
-                            players.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- BREAKLINE -->
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <hr />
-                    </div>
-                </div>
-
-                <p>Want to know more about Torn Exchange?
-                    <br>
-                    Visit our <u>
-                        <a href="https://www.torn.com/forums.php#/p=threads&f=67&t=16383769&b=0&a=0">forum thread</a>
-                    </u>
-                    or join our <a href='https://discord.gg/8NstjM2fbb'><u>Discord server</u></a>.
-                </p>
-
-            </div>
-
-            <!-- PROMO TEXT -->
-            <div class="row mt-5 card-text">
-                <div class='col'>
-                    <i class="fas fa-user-group h3"></i>
-                    <p>
-                        At Torn Exchange we aim to provide a unique space for traders which not only facilitates trades,
-                        but also gives a greater sense of the trading community.
-                    </p>
-                </div>
-                <div class='col'>
-                    <i class="fas fa-star-half-alt h3"></i>
-                    <p>
-                        We wanted to take the forum ratings one step further, so if you become a top rated trader on
-                        Torn Exchange future clients can easily find you on the homepage.
-                    </p>
-
-                </div>
-                <div class='col'>
-                    <i class='fas fa-chart-simple h3'></i>
-                    <p>
-                        Keep track of your trades with a built in analytics dashboard which has all the statistics you
-                        need to maximise profits and visualise your progress.
-                    </p>
-                </div>
-
-            </div>
-
+        <div class='col-lg-8 col-12 order-1 order-lg-2' id='second-column'>
+            {%include 'main/includes/price_checker.html'%}
+            {%include 'main/includes/market_pulse.html'%}
         </div>
-
-        <div class="col-md-3 col-sm-12">
-            {%include 'main/includes/changelog.html'%}
-            <p class="p-4 small mr-3 text-center">
-                <strong>{{ number_of_changes_last_month }}</strong> changes in the last month.
-            </p>
-            <div class="container">
-                <div class="card mt-3" style="height:175px">
-                    <div class="card-header text-center text-white"">
-                        <i class="fas fa-puzzle-piece"></i> TE Trading Helper
-                    </div>
-                    <div class="card-body">
-                        <div class="row small">
-                            <div class="col-12 small pb-2 mb-2 text-center">
-                                <p>&nbsp;</p>
-                                <a class='btn btn-primary'
-                                    href="https://greasyfork.org/en/scripts/588688-torn-exchange-helper"
-                                    target="_blank">
-                                    <img src="{% static 'main/images/favicon.png'%}"
-                                        style="width: 16px; height: 16px;" />
-                                    Install the script
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
+
+    <hr class="my-4" />
+
+    <!-- GET STARTED -->
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header card-header-inv text-center">
+                    <i class="fa-solid fa-arrows-rotate"></i> <b>For Traders</b>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% if profile %}
+                    <li class="list-group-item"><a href="{% url 'edit_price_list' %}">Edit price list</a></li>
+                    <li class="list-group-item"><a href="{% url 'edit_services' %}">Edit custom services</a></li>
+                    {% else %}
+                    <li class="list-group-item"><a href="{% url 'edit_price_list' %}">Create a price list</a></li>
+                    <li class="list-group-item"><a href="{% url 'edit_services' %}">Add custom services</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header card-header-inv text-center">
+                    <i class="fa-solid fa-sack-dollar"></i> <b>For Sellers</b>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><a href="{% url 'listings' %}">Search items and traders</a></li>
+                    <li class="list-group-item"><a href="{% url 'search_services' %}">Search custom services</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header card-header-inv text-center">
+                    <i class="fa-solid fa-question-circle"></i> <b>What is Torn Exchange?</b>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        Torn Exchange is a platform for Torn players to trade items, services and in-game
+                        currency. It is a community driven project which aims to provide a safe and easy way
+                        to trade with other players.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header card-header-inv text-center">
+                    <i class="fas fa-puzzle-piece"></i> <b>TE Trading Helper</b>
+                </div>
+                <div class="card-body text-center d-flex flex-column">
+                    <p>Speed up trades with our browser userscript &mdash; adds TE prices right into Torn.</p>
+                    <a class='btn btn-primary mt-auto align-self-center'
+                        href="https://greasyfork.org/en/scripts/588688-torn-exchange-helper"
+                        target="_blank" rel="noopener">
+                        <img src="{% static 'main/images/favicon.png'%}" style="width:16px;height:16px;" />
+                        Install the script
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not profile %}
+    <div class="text-center mt-4">
+        <a class="btn btn-primary btn-lg allerta-font" href="{% url 'login' %}">Join Now</a>
+    </div>
+    {% endif %}
+
+    <!-- PROMO TEXT -->
+    <div class="row mt-4 text-center card-text">
+        <div class="col-md-4">
+            <i class="fas fa-user-group h3"></i>
+            <p>
+                At Torn Exchange we aim to provide a unique space for traders which not only facilitates
+                trades, but also gives a greater sense of the trading community.
+            </p>
+        </div>
+        <div class="col-md-4">
+            <i class="fas fa-star-half-alt h3"></i>
+            <p>
+                We wanted to take the forum ratings one step further, so if you become a top rated trader
+                on Torn Exchange future clients can easily find you on the homepage.
+            </p>
+        </div>
+        <div class="col-md-4">
+            <i class='fas fa-chart-simple h3'></i>
+            <p>
+                Keep track of your trades with a built in analytics dashboard which has all the statistics
+                you need to maximise profits and visualise your progress.
+            </p>
+        </div>
+    </div>
+
+    <p class="text-center small mt-3">
+        Want to know more about Torn Exchange? Visit our
+        <a href="https://www.torn.com/forums.php#/p=threads&f=67&t=16383769&b=0&a=0">forum thread</a>
+        or join our <a href="https://discord.gg/8NstjM2fbb">Discord server</a>.
+    </p>
 </div>
 {%endblock%}

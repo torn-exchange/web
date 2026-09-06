@@ -1,0 +1,159 @@
+{% load static %}
+<div class="container market-pulse" id="market-pulse">
+    <div class="card mt-3">
+        <div class="card-header card-header-inv">
+            <i class="fa-solid fa-wave-square"></i> <b>Torn Market Pulse</b>
+        </div>
+        <div class="card-body">
+
+            <div class="mp-periods">
+                {% for p in market_activity.periods %}
+                <div class="mp-period">
+                    <div class="mp-period-label">{{ p.label }}</div>
+                    <div class="mp-period-rows">
+                        <div><span class="mp-num">{{ p.trades_display }}</span> trades
+                            {% if p.trades_change is not None %}
+                            <span class="mp-delta {% if p.trades_change >= 0 %}mp-up{% else %}mp-down{% endif %}">
+                                {% if p.trades_change >= 0 %}&#9650;{% else %}&#9660;{% endif %}{{ p.trades_change|floatformat:0 }}%
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div><span class="mp-num">{{ p.items_display }}</span> items moved</div>
+                        <div><span class="mp-num">{{ p.value_display }}</span> traded
+                            {% if p.value_change is not None %}
+                            <span class="mp-delta {% if p.value_change >= 0 %}mp-up{% else %}mp-down{% endif %}">
+                                {% if p.value_change >= 0 %}&#9650;{% else %}&#9660;{% endif %}{{ p.value_change|floatformat:0 }}%
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if market_activity.biggest_today %}
+            <p class="mp-biggest small mt-2 mb-0">
+                <i class="fa-solid fa-trophy"></i>
+                Biggest trade today: <b>{{ market_activity.biggest_today.value_display }}</b>
+                across {{ market_activity.biggest_today.item_count }} item{{ market_activity.biggest_today.item_count|pluralize }}
+            </p>
+            {% endif %}
+
+            <hr>
+
+            <h6 class="mb-2"><i class="fa-solid fa-chart-column"></i> Trades per day &middot; last 14 days</h6>
+            <div class="mp-chart" role="img" aria-label="Daily trade counts for the last 14 days">
+                {% for d in market_activity.daily_trades %}
+                <div class="mp-bar-wrap" title="{{ d.label }}: {{ d.count }} trades">
+                    <div class="mp-bar" style="height: {{ d.height_pct }}%"></div>
+                    <div class="mp-bar-label">{{ d.label|slice:"-2:" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr>
+
+            <h6 class="mb-2">
+                <i class="fa-solid fa-circle mp-online-dot"></i> Traders online now
+                {% if not traders_online.stale %}<span class="mp-online-count">{{ traders_online.count }}</span>{% endif %}
+            </h6>
+            {% if traders_online.stale %}
+            <p class="small text-muted mb-0">Live status is temporarily unavailable &mdash; check the
+                <a href="{% url 'listings' %}">listings page</a> for who's around.</p>
+            {% elif traders_online.traders %}
+            <div class="mp-online-list">
+                {% for t in traders_online.traders %}
+                <a class="mp-online-chip" href="{% url 'price_list' t.name %}">
+                    {{ t.name }} <span class="mp-chip-score">{{ t.vote_score }}<i class="fas fa-star"></i></span>
+                </a>
+                {% endfor %}
+                {% if traders_online.overflow %}
+                <a class="mp-online-chip mp-online-more" href="{% url 'listings' %}?status=Online">
+                    +{{ traders_online.overflow }} more
+                </a>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="small text-muted mb-0">No rated traders marked online right now.</p>
+            {% endif %}
+
+            <p class="mp-asof small text-muted mt-2 mb-0" data-ts="{{ market_activity.generated_at }}"></p>
+        </div>
+    </div>
+</div>
+
+<style>
+.market-pulse .mp-periods {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .5rem;
+}
+@media (min-width: 768px) {
+    .market-pulse .mp-periods { grid-template-columns: repeat(3, 1fr); }
+}
+.market-pulse .mp-period {
+    border: 1px solid var(--bs-border-color, rgba(128,128,128,.3));
+    border-radius: var(--bs-border-radius, .375rem);
+    padding: .5rem .7rem;
+}
+.market-pulse .mp-period-label { font-size: .72rem; text-transform: uppercase; opacity: .7; margin-bottom: .25rem; }
+.market-pulse .mp-period-rows { font-size: .9rem; line-height: 1.6; }
+.market-pulse .mp-num { font-weight: 700; }
+.market-pulse .mp-delta { font-size: .72rem; }
+.market-pulse .mp-delta.mp-up { color: var(--bs-success, #40961a); }
+.market-pulse .mp-delta.mp-down { color: var(--bs-danger, #c33); }
+
+.market-pulse .mp-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 90px;
+}
+.market-pulse .mp-bar-wrap { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.market-pulse .mp-bar {
+    width: 100%;
+    min-height: 2px;
+    background: var(--bs-gold, #daa520);
+    border-radius: 2px 2px 0 0;
+}
+.market-pulse .mp-bar-label { font-size: .6rem; opacity: .55; margin-top: 2px; }
+
+.market-pulse .mp-online-dot { color: var(--bs-success, #40961a); font-size: .7rem; vertical-align: middle; }
+.market-pulse .mp-online-count {
+    background: var(--bs-success, #40961a); color: #fff;
+    border-radius: 999px; padding: 0 .5rem; font-size: .8rem; margin-left: .25rem;
+}
+.market-pulse .mp-online-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+.market-pulse .mp-online-chip {
+    border: 1px solid var(--bs-border-color, rgba(128,128,128,.35));
+    border-radius: 999px;
+    padding: .15rem .6rem;
+    font-size: .85rem;
+    text-decoration: none;
+    color: inherit;
+    white-space: nowrap;
+}
+.market-pulse .mp-online-chip:hover { background: rgba(128,128,128,.12); }
+.market-pulse .mp-chip-score { opacity: .6; font-size: .75rem; margin-left: .2rem; }
+.market-pulse .mp-online-more { opacity: .8; }
+</style>
+
+<script>
+(function () {
+    function relTime(iso) {
+        var then = new Date(iso).getTime();
+        if (isNaN(then)) return '';
+        var s = Math.max(0, (Date.now() - then) / 1000);
+        if (s < 90) return 'just now';
+        if (s < 3600) return Math.floor(s / 60) + ' min ago';
+        if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+        return Math.floor(s / 86400) + ' d ago';
+    }
+    var el = document.querySelector('#market-pulse .mp-asof');
+    if (el && el.getAttribute('data-ts')) {
+        var stamp = function () { el.textContent = 'Updated ' + relTime(el.getAttribute('data-ts')); };
+        stamp();
+        setInterval(stamp, 60000);
+    }
+})();
+</script>

@@ -1,0 +1,94 @@
+<div class="container price-checker" id="price-checker">
+    <div class="card mt-3">
+        <div class="card-header card-header-inv">
+            <i class="fa-solid fa-magnifying-glass-dollar"></i> <b>What's it worth in Torn?</b>
+        </div>
+        <div class="card-body">
+            <form id="pc-form" class="d-flex gap-2 flex-wrap" autocomplete="off">
+                <input class="form-control" style="min-width:0;flex:1 1 12rem" type="text"
+                       id="pc-input" list="pc-items" placeholder="Start typing an item name, e.g. Xanax"
+                       aria-label="Item name">
+                <datalist id="pc-items"></datalist>
+                <button class="btn btn-primary" type="submit">Check price</button>
+            </form>
+
+            <div id="pc-result" class="mt-3" hidden></div>
+            <div id="pc-error" class="mt-3 small text-danger" hidden></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.price-checker .pc-values { display: flex; flex-wrap: wrap; gap: .5rem; }
+.price-checker .pc-box {
+    flex: 1 1 8rem;
+    border: 1px solid var(--bs-border-color, rgba(128,128,128,.3));
+    border-radius: var(--bs-border-radius, .375rem);
+    padding: .5rem .6rem;
+    text-align: center;
+}
+.price-checker .pc-box .lbl { font-size: .72rem; text-transform: uppercase; opacity: .7; }
+.price-checker .pc-box .val { font-size: 1.15rem; font-weight: 700; }
+.price-checker .pc-links { margin-top: .6rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+</style>
+
+<script>
+(function () {
+    var ITEMS = {{ item_names_json|default:"[]" }};
+    var dl = document.getElementById('pc-items');
+    if (dl && ITEMS.length) {
+        dl.innerHTML = ITEMS.map(function (n) {
+            var o = document.createElement('option');
+            o.value = n;
+            return o.outerHTML;
+        }).join('');
+    }
+
+    var form = document.getElementById('pc-form');
+    var input = document.getElementById('pc-input');
+    var resultEl = document.getElementById('pc-result');
+    var errorEl = document.getElementById('pc-error');
+
+    function money(n) {
+        if (n == null) return '—';
+        return '$' + Number(n).toLocaleString();
+    }
+
+    function show(data) {
+        errorEl.hidden = true;
+        var best = data.best_listing;
+        var html =
+            '<h5 class="mb-2">' + data.item + '</h5>' +
+            '<div class="pc-values">' +
+                '<div class="pc-box"><div class="lbl">TE value</div><div class="val">' + money(data.te_value) + '</div></div>' +
+                '<div class="pc-box"><div class="lbl">Torn market</div><div class="val">' + money(data.torn_market_value) + '</div></div>' +
+                '<div class="pc-box"><div class="lbl">Best buyer</div><div class="val">' +
+                    (best ? money(best.price) : 'None listed') + '</div>' +
+                    (best ? '<div class="lbl">by ' + best.trader + '</div>' : '') +
+                '</div>' +
+            '</div>' +
+            '<div class="pc-links">' +
+                (best ? '<a href="' + best.price_list_url + '">View ' + best.trader + '’s price list</a>' : '') +
+                '<a href="' + data.listings_url + '">All buyers for this item</a>' +
+            '</div>';
+        resultEl.innerHTML = html;
+        resultEl.hidden = false;
+    }
+
+    function fail(msg) {
+        resultEl.hidden = true;
+        errorEl.textContent = msg;
+        errorEl.hidden = false;
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var q = input.value.trim();
+        if (!q) return;
+        fetch('{% url "price_check" %}?q=' + encodeURIComponent(q))
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) { res.ok ? show(res.d) : fail(res.d.error || 'Something went wrong'); })
+            .catch(function () { fail('Something went wrong'); });
+    });
+})();
+</script>

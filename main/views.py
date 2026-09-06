@@ -20,6 +20,7 @@ from django.http import HttpRequest, HttpResponseRedirect, JsonResponse, HttpRes
 from django.shortcuts import get_object_or_404, redirect, render
 from django.test import RequestFactory
 from django.utils.cache import get_cache_key
+from django.utils.http import urlencode
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -31,6 +32,7 @@ from hitcount.views import HitCountMixin
 from main.filters import CompanyListingFilter, EmployeeListingFilter, ListingFilter, ServicesFilter, ItemVariationFilter
 from main.model_utils import (get_all_time_leaderboard, get_top_active_traders, get_changelog,
                               get_most_trades, get_active_traders_count)
+from main.market_stats import get_activity, get_online
 from main.models import Company, Item, ItemTrade, Listing, Service, Services, TradeReceipt, ItemVariation, ItemVariationBonuses, set_listing_hidden_reason
 from main.profile_stats import return_profile_stats
 from main.templatetags.custom_tags import item_name_plural
@@ -95,9 +97,71 @@ def homepage(request):
         'created_today': created_today,
         'changelog': changes_this_week,
         'number_of_changes_last_month': changes_this_month.count(),
+        'market_activity': get_activity(),
+        'traders_online': get_online(),
+        'item_names_json': mark_safe(json.dumps(
+            list(
+                Item.objects
+                .filter(circulation__gte=project_settings.MINIMUM_CIRCULATION_REQUIRED_FOR_ITEM)
+                .order_by('name')
+                .values_list('name', flat=True)
+            )
+        )),
     }
-    
+
     return render(request, 'main/home.html', context)
+
+
+def price_check(request):
+    """Homepage "what's it worth?" lookup: TE value + best current buy offer for an item.
+
+    No auth required. Matches ``?q=`` against Item.name (exact first, then contains).
+    """
+    query = (request.GET.get('q') or '').strip()
+    if not query:
+        return JsonResponse({'error': 'Enter an item name'}, status=400)
+
+    cache_key = f'price_check_{query.lower()}'
+    cached = cache.get(cache_key)
+    if cached:
+        return JsonResponse(cached)
+
+    item = (
+        Item.objects.filter(name__iexact=query).order_by('-circulation').first()
+        or Item.objects.filter(name__icontains=query).order_by('-circulation').first()
+    )
+    if not item:
+        return JsonResponse({'error': f'No item found matching "{query}"'}, status=404)
+
+    candidates = (
+        Listing.objects
+        .filter(item=item, owner__active_trader=True)
+        .exclude(hidden=True)
+        .exclude(effective_price__isnull=True)
+        .exclude(effective_price=0)
+        .select_related('owner')
+        .order_by('-effective_price', '-last_updated')[:10]
+    )
+    best = next((l for l in candidates if l.owner.vote_score >= 0), None)
+
+    data = {
+        'item': item.name,
+        'item_id': item.item_id,
+        'te_value': item.TE_value,
+        'torn_market_value': item.market_value,
+        'best_listing': None,
+        'listings_url': f"{reverse('listings')}?{urlencode({'model_name_contains': item.name})}",
+    }
+    if best:
+        data['best_listing'] = {
+            'trader': best.owner.name,
+            'price': best.effective_price,
+            'vote_score': best.owner.vote_score,
+            'price_list_url': reverse('price_list', args=[best.owner.name]),
+        }
+
+    cache.set(cache_key, data, timeout=300)
+    return JsonResponse(data)
 
 
 def about(request):
