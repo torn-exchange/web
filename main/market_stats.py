@@ -15,7 +15,7 @@ cold cache each getter computes its value inline once and caches it.
 from datetime import timedelta
 
 from django.core.cache import caches
-from django.db.models import Count, Sum
+from django.db.models import BigIntegerField, Count, ExpressionWrapper, F, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
@@ -36,6 +36,11 @@ ONLINE_TRADERS_LIMIT = 24
 # If the newest Profile.updated_at (the online-status cron touches every checked
 # profile on each run) is older than this, treat the online list as unreliable.
 ONLINE_STALE_AFTER = timedelta(minutes=30)
+
+# Value moved is summed straight from the item trades (price * quantity) rather
+# than TradeReceipt.total_amount, which is a denormalised, nullable column that
+# is not reliably populated on recent receipts.
+_SUBTOTAL = ExpressionWrapper(F("price") * F("quantity"), output_field=BigIntegerField())
 
 
 def format_money(value):
@@ -59,10 +64,11 @@ def _window(start, end=None):
     if end is not None:
         receipts = receipts.filter(created_at__lt=end)
         trades_qs = trades_qs.filter(tradereceipt__created_at__lt=end)
+    agg = trades_qs.aggregate(items=Sum("quantity"), value=Sum(_SUBTOTAL))
     return {
         "trades": receipts.count(),
-        "items": trades_qs.aggregate(q=Sum("quantity"))["q"] or 0,
-        "value": receipts.aggregate(v=Sum("total_amount"))["v"] or 0,
+        "items": agg["items"] or 0,
+        "value": agg["value"] or 0,
     }
 
 
@@ -109,17 +115,18 @@ def _daily_trades():
 
 def _biggest_today():
     start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    receipt = (
-        TradeReceipt.objects.filter(created_at__gte=start, total_amount__isnull=False)
-        .order_by("-total_amount")
+    row = (
+        ItemTrade.objects.filter(tradereceipt__created_at__gte=start)
+        .values("tradereceipt")
+        .annotate(total=Sum(_SUBTOTAL), items=Count("id"))
+        .order_by("-total")
         .first()
     )
-    if not receipt or not receipt.total_amount:
+    if not row or not row["total"]:
         return None
-    item_count = receipt.items_trades.count()
     return {
-        "value_display": format_money(receipt.total_amount),
-        "item_count": item_count,
+        "value_display": format_money(row["total"]),
+        "item_count": row["items"],
     }
 
 
