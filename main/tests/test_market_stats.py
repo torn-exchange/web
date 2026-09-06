@@ -77,6 +77,17 @@ class ActivityStatsTests(TestCase):
         self.assertEqual(by_key['today']['items'], 10)
         self.assertEqual(by_key['today']['value'], 10_000)
 
+    def test_value_moved_ignores_null_total_amount(self):
+        # Recent receipts often have a NULL denormalised total_amount; value
+        # must still be summed from the item trades themselves.
+        r = make_receipt(self.profile, self.item, price=1000, quantity=50,
+                         created_at=self.now - timedelta(minutes=5))
+        TradeReceipt.objects.filter(pk=r.pk).update(total_amount=None)
+
+        by_key = {p['key']: p for p in market_stats.compute_activity()['periods']}
+        self.assertEqual(by_key['today']['value'], 50_000)
+        self.assertEqual(market_stats.compute_activity()['biggest_today']['value_display'], '$50.00k')
+
     def test_biggest_today_is_anonymous(self):
         make_receipt(self.profile, self.item, price=1000, quantity=100,
                      created_at=self.now - timedelta(minutes=5), count=3)
