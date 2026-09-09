@@ -13,52 +13,64 @@ from events.registry import active_events
 _CUSTOM_ITEM_CUTOFF = 9000
 
 
-def event_effective_price(listing, viewer_profile):
-    """Return ``(price, applied_pct, event_key)``.
+def team_price_fn(owner_profile, viewer_profile):
+    """Resolve the teammate-discount context for ``viewer_profile`` looking at
+    ``owner_profile``'s price list **once**, and return a cheap per-listing
+    pricing function ``fn(listing) -> (price, pct, event_key)``.
 
-    ``price`` is ``listing.effective_price`` with the owner's active-event
-    teammate discount applied, iff ``viewer_profile`` is a verified group-mate.
-    Falls back to ``(listing.effective_price, 0, None)``.
+    Returns ``None`` when no discount can apply (not logged in, not a group-mate,
+    no active group-pricing event) so the caller can skip the whole list.
+    All DB work (team lookups, trader-wide %) happens here, not per listing.
     """
-    base = listing.effective_price
-    if base is None or viewer_profile is None:
-        return base, 0, None
+    if owner_profile is None or viewer_profile is None:
+        return None
 
-    try:
-        item_id = int(listing.item.item_id)
-    except (TypeError, ValueError):
-        item_id = 0
-    if item_id > _CUSTOM_ITEM_CUTOFF:
-        return base, 0, None
-
-    owner_profile = listing.owner
     for event in active_events():
         if not event.has_group_pricing():
             continue
         if not event.same_group(owner_profile, viewer_profile):
             continue
 
-        pct = _discount_pct(listing, owner_profile, event)
-        if pct <= 0:
-            continue
-        pct = min(pct, 90)
-        discounted = round(base * (100 - pct) / 100.0)
-        return discounted, pct, event.key
+        from events.models import EventTraderSettings
 
-    return base, 0, None
+        row = EventTraderSettings.objects.filter(
+            profile=owner_profile, event_key=event.key, year=event.current_year()
+        ).first()
+        trader_pct = int(row.group_discount_pct) if row else 0
+        event_key = event.key
+
+        def _price(listing):
+            base = listing.effective_price
+            if base is None:
+                return base, 0, None
+            try:
+                item_id = int(listing.item.item_id)
+            except (TypeError, ValueError):
+                item_id = 0
+            if item_id > _CUSTOM_ITEM_CUTOFF:
+                return base, 0, None
+            override = getattr(listing, "event_discount_pct", None)
+            pct = int(override) if override is not None else trader_pct
+            if pct <= 0:
+                return base, 0, None
+            pct = min(pct, 90)
+            return round(base * (100 - pct) / 100.0), pct, event_key
+
+        return _price
+
+    return None
 
 
-def _discount_pct(listing, owner_profile, event) -> int:
-    override = getattr(listing, "event_discount_pct", None)
-    if override is not None:
-        return int(override)
+def event_effective_price(listing, viewer_profile):
+    """Single-listing convenience wrapper around :func:`team_price_fn`.
 
-    from events.models import EventTraderSettings
-
-    row = EventTraderSettings.objects.filter(
-        profile=owner_profile, event_key=event.key, year=event.current_year()
-    ).first()
-    return int(row.group_discount_pct) if row else 0
+    Returns ``(price, applied_pct, event_key)``; falls back to
+    ``(listing.effective_price, 0, None)``.
+    """
+    fn = team_price_fn(listing.owner, viewer_profile)
+    if fn is None:
+        return listing.effective_price, 0, None
+    return fn(listing)
 
 
 def save_trader_event_settings(profile, post_data):

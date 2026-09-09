@@ -734,11 +734,13 @@ def price_list(request, identifier=None):
     # `profile` and skip this).
     all_relevant_items = list(all_relevant_items)
     if profile and profile.pk != pricelist_profile.pk:
-        from events.pricing import event_effective_price
-        for _listing in all_relevant_items:
-            tp, pct, _ek = event_effective_price(_listing, profile)
-            _listing.team_price = tp if pct else None
-            _listing.team_discount_pct = pct
+        from events.pricing import team_price_fn
+        _price_fn = team_price_fn(pricelist_profile, profile)
+        if _price_fn is not None:
+            for _listing in all_relevant_items:
+                tp, pct, _ek = _price_fn(_listing)
+                _listing.team_price = tp if pct else None
+                _listing.team_discount_pct = pct
 
     # Elimination banner: cache-safe because anonymous visitors always get the
     # "login" variant and logged-in visitors bypass the anonymous page cache.
