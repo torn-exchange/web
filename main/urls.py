@@ -80,7 +80,6 @@ urlpatterns = [
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
     path('dismiss-inactive-banner', views.dismiss_inactive_banner, name='dismiss_inactive_banner'),
-    path('dismiss-bazaar-mv-banner', views.dismiss_bazaar_mv_banner, name='dismiss_bazaar_mv_banner'),
     path('tos', views.tos, name='tos'),
     path('price_check', views.price_check, name='price_check'),
 

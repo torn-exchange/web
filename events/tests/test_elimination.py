@@ -8,7 +8,9 @@ from main.models import Item, Listing
 from events import config
 from events.models import EventParticipation, EventTraderSettings
 from events.registry import get_event
-from events.pricing import event_effective_price, save_trader_event_settings
+from events.pricing import (
+    event_effective_price, save_trader_event_settings, price_list_team_banner,
+)
 
 
 YEAR = config.ELIMINATION_YEAR
@@ -116,6 +118,45 @@ class TeamPricingTests(TestCase):
         save_trader_event_settings(self.owner, {"event_elimination_discount": "15"})
         row = EventTraderSettings.objects.get(profile=self.owner, event_key="elimination", year=YEAR)
         self.assertEqual(row.group_discount_pct, 15)
+
+
+class PriceListBannerTests(TestCase):
+    def setUp(self):
+        self.owner = make_profile("bseller")
+        self.mate = make_profile("bmate")
+        self.rival = make_profile("brival")
+        self.nobody = make_profile("bnobody")
+
+    def test_teammate_banner(self):
+        put_on_team(self.owner, "Wolves")
+        put_on_team(self.mate, "Wolves")
+        b = price_list_team_banner(self.owner, self.mate)
+        self.assertEqual(b["state"], "teammate")
+        self.assertEqual(b["team"], "Wolves")
+
+    def test_anonymous_gets_login_banner_when_trader_in_event(self):
+        put_on_team(self.owner, "Wolves")
+        self.assertEqual(price_list_team_banner(self.owner, None)["state"], "login")
+
+    def test_nothing_when_trader_not_in_event(self):
+        self.assertIsNone(price_list_team_banner(self.owner, None))
+        self.assertIsNone(price_list_team_banner(self.owner, self.mate))
+
+    def test_nothing_for_different_team(self):
+        put_on_team(self.owner, "Wolves")
+        put_on_team(self.rival, "Bears")
+        self.assertIsNone(price_list_team_banner(self.owner, self.rival))
+
+    def test_nothing_when_viewer_not_in_event(self):
+        put_on_team(self.owner, "Wolves")
+        self.assertIsNone(price_list_team_banner(self.owner, self.nobody))
+
+    def test_view_renders_teammate_banner(self):
+        put_on_team(self.owner, "Wolves")
+        put_on_team(self.mate, "Wolves")
+        self.client.force_login(self.mate.user)
+        r = self.client.get(f"/prices/{self.owner.torn_id}")
+        self.assertContains(r, "is on your Elimination team")
 
 
 class ApiTests(TestCase):

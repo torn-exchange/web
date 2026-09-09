@@ -48,6 +48,26 @@
     <br>
 
     {%include 'main/includes/profile_card.html'%}
+
+    {% if elimination_banner.state == 'teammate' %}
+    <div class="alert alert-success d-flex align-items-center mt-3" role="alert">
+        <i class="fa-solid fa-trophy me-2"></i>
+        <div>
+            <strong>{{ owner_profile.name }} is on your {{ elimination_banner.event_label }} team ({{ elimination_banner.team }}).</strong>
+            You're seeing their teammate prices below &mdash;
+            <a href="/events/elimination/">see all your team's traders</a>.
+        </div>
+    </div>
+    {% elif elimination_banner.state == 'login' %}
+    <div class="alert alert-info d-flex align-items-center mt-3" role="alert">
+        <i class="fa-solid fa-trophy me-2"></i>
+        <div>
+            This trader is competing in {{ elimination_banner.event_label }}.
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in</a>
+            to check whether they're on your team &mdash; teammates get discounted prices.
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- PRICE LIST -->

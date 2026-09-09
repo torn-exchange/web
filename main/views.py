@@ -740,6 +740,13 @@ def price_list(request, identifier=None):
             _listing.team_price = tp if pct else None
             _listing.team_discount_pct = pct
 
+    # Elimination banner: cache-safe because anonymous visitors always get the
+    # "login" variant and logged-in visitors bypass the anonymous page cache.
+    elimination_banner = None
+    if not is_owner:
+        from events.pricing import price_list_team_banner
+        elimination_banner = price_list_team_banner(pricelist_profile, profile)
+
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
     
@@ -787,6 +794,7 @@ def price_list(request, identifier=None):
         'owner_settings': owner_settings,
         'last_updated': last_updated,
         'time_since_last_trade': time_since_last_trade,
+        'elimination_banner': elimination_banner,
     }
 
     return render(request, 'main/price_list.html', context)
@@ -1618,12 +1626,6 @@ def museum_helper(request):
 @require_POST
 def dismiss_inactive_banner(request):
     request.session['inactive_trader_banner_dismissed'] = True
-    return JsonResponse({'ok': True})
-
-
-@require_POST
-def dismiss_bazaar_mv_banner(request):
-    request.session['bazaar_mv_banner_dismissed'] = True
     return JsonResponse({'ok': True})
 
 

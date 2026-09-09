@@ -89,6 +89,38 @@ def save_trader_event_settings(profile, post_data):
     return saved
 
 
+def price_list_team_banner(owner_profile, viewer_profile):
+    """Decide which Elimination banner (if any) a price list should show.
+
+    Returns a dict or None:
+      {"state": "teammate", "team": "<name>", "event_label": "Elimination"}
+        -- viewer is logged in and on the SAME Elimination team as the trader
+      {"state": "login", "event_label": "Elimination"}
+        -- viewer is anonymous, trader is in an Elimination team
+    None in every other case (trader not in a team; logged-in viewer not on the
+    trader's team; event inactive).
+    """
+    from events.registry import get_event
+
+    event = get_event("elimination")
+    if event is None or not event.is_active():
+        return None
+
+    owner_part = event._participation(owner_profile)
+    owner_team = owner_part.group_name if owner_part else ""
+    if not owner_team:
+        return None
+
+    if viewer_profile is None:
+        return {"state": "login", "event_label": event.label}
+
+    viewer_part = event._participation(viewer_profile)
+    viewer_team = viewer_part.group_name if viewer_part else ""
+    if viewer_team and viewer_team == owner_team:
+        return {"state": "teammate", "team": owner_team, "event_label": event.label}
+    return None
+
+
 def trader_event_settings(profile):
     """Return ``{event_key: group_discount_pct}`` for active group-pricing events."""
     from events.models import EventTraderSettings
