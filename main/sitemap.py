@@ -45,7 +45,13 @@ class StaticViewSitemap(Sitemap):
         # identifier), which redirect to login for anonymous visitors -- the
         # real per-trader pages are covered by TraderPriceListSitemap/
         # TraderServicesSitemap above.
-        return [
+        try:
+            from events.registry import active_events
+            event_pages = ['event_index'] if active_events() else []
+        except Exception:
+            event_pages = []
+
+        return event_pages + [
             'home',
             'listings',
             'search_services',

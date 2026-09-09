@@ -145,6 +145,87 @@ paths:
                         type: string
                       active_trader:
                         type: boolean
+                      event:
+                        type: object
+                        description: >
+                          Present only during an active Torn event that this trader
+                          is participating in. Keyed by event slug.
+                        properties:
+                          elimination:
+                            type: object
+                            properties:
+                              team:
+                                type: string
+                                examples: ["Wolves"]
+                              position:
+                                type: integer
+                                nullable: true
+                              score:
+                                type: integer
+                                nullable: true
+                              status:
+                                type: string
+                                nullable: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/team_traders:
+    get:
+      summary: List active TE traders on your event team
+      description: >
+        Returns the active Torn Exchange traders on the same event team
+        (e.g. Elimination team) as the authenticated caller. Cached 5 minutes.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: event
+          in: query
+          required: false
+          description: Event slug. Defaults to "elimination".
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team traders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    examples: [success]
+                  data:
+                    type: object
+                    properties:
+                      event:
+                        type: string
+                      team:
+                        type: string
+                        nullable: true
+                      traders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            torn_id:
+                              type: integer
+                            name:
+                              type: string
+                            activity_status:
+                              type: string
+                            votes:
+                              type: integer
+                            team_discount:
+                              type: integer
+                            price_list_url:
+                              type: string
+                            last_trade:
+                              type: integer
+                              nullable: true
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':

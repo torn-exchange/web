@@ -1,0 +1,117 @@
+{% extends "main/base.html" %}
+{% block page_description %}Torn {{ event_label }} {{ event_year }} on Torn Exchange &mdash; live team standings and every TE trader competing, by team. Log in to see your team's traders and teammate discount prices.{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h1>{{ event_label }} {{ event_year }}</h1>
+  <p class="text-muted">
+    {{ event_label }} is Torn's yearly team competition. Torn Exchange helps teams
+    on the economy side: find the traders on your team, and get teammate discounts
+    while the event runs.
+  </p>
+
+  {# ---------------- logged-in: your team ---------------- #}
+  {% if is_authenticated %}
+    <div class="card m-0 mt-3 mb-4 border-primary">
+      <div class="card-header font-weight-bold"><i class="fa-solid fa-user-group"></i> Your team</div>
+      <div class="card-body">
+        {% if not in_event %}
+          <p class="mb-0">We haven't detected an {{ event_label }} team for you yet. TE reads your
+          team from the Torn API using the key you logged in with &mdash; once teams
+          are assigned (and after the next sync) your team will show here. Check your
+          API key on <a href="{% url 'settings' %}">Settings</a> if this persists.</p>
+        {% else %}
+          <p class="lead mb-2">
+            <strong>{{ viewer_team }}</strong>
+            {% if my_team_standing %}
+              &mdash; #{{ my_team_standing.position|default:"?" }},
+              {{ my_team_standing.score|default:0 }} pts,
+              {{ my_team_standing.lives|default:"?" }} lives
+            {% endif %}
+          </p>
+          {% if team_traders %}
+          <table class="table table-striped mb-0">
+            <thead><tr><th>Trader</th><th>Status</th><th>Votes</th><th>Team discount</th><th></th></tr></thead>
+            <tbody>
+              {% for t in team_traders %}
+              <tr>
+                <td>{{ t.name }}</td>
+                <td>{{ t.activity_status|default:"&mdash;" }}</td>
+                <td>{{ t.votes }}</td>
+                <td>{% if t.team_discount %}<span class="badge bg-success">-{{ t.team_discount }}%</span>{% else %}&mdash;{% endif %}</td>
+                <td><a href="{% url 'price_list' identifier=t.torn_id %}">Price list</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="mb-0">No active TE traders detected on your team yet. If you're a trader,
+            set your team discount on <a href="{% url 'manage_price_list' %}">Manage Price List</a>.</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info mt-3">
+      <a href="{% url 'login' %}">Log in</a> to see your team highlighted, your teammate
+      traders at the top, and discounted teammate prices across the site.
+    </div>
+  {% endif %}
+
+  {# ---------------- public: standings ---------------- #}
+  <h2 class="mt-4">Team standings</h2>
+  {% if standings %}
+  <table class="table table-sm">
+    <thead><tr><th>#</th><th>Team</th><th>Score</th><th>Lives</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for s in standings %}
+      <tr{% if s.group_name == viewer_team %} class="table-primary"{% endif %}>
+        <td>{{ s.position|default:"?" }}</td>
+        <td>{{ s.group_name }}</td>
+        <td>{{ s.score|default:0 }}</td>
+        <td>{{ s.lives|default:"?" }}</td>
+        <td>{{ s.status|default:"" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="text-muted">Live standings will appear here once the attacking period begins.</p>
+  {% endif %}
+
+  {# ---------------- public: traders by team ---------------- #}
+  <h2 class="mt-4">TE traders in {{ event_label }}</h2>
+  {% if totals.trader_count %}
+  <p class="text-muted">
+    {{ totals.trader_count }} active TE trader{{ totals.trader_count|pluralize }} across
+    {{ totals.team_count }} team{{ totals.team_count|pluralize }},
+    {{ totals.discount_count }} offering a teammate discount.
+  </p>
+  <div class="row">
+    {% for team in all_teams %}
+    <div class="col-12 col-lg-6 mb-3">
+      <div class="card h-100{% if team.team == viewer_team %} border-primary{% endif %}">
+        <div class="card-header d-flex justify-content-between">
+          <span class="font-weight-bold">{{ team.team }}</span>
+          <span class="text-muted">{{ team.trader_count }} trader{{ team.trader_count|pluralize }}</span>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for t in team.traders %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{% url 'price_list' identifier=t.torn_id %}">{{ t.name }}</a>
+            <span>
+              {% if t.team_discount %}<span class="badge bg-success">-{{ t.team_discount }}%</span>{% endif %}
+              <span class="text-muted small">{{ t.votes }} votes</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">No TE traders have been matched to a team yet. If you trade on TE and
+    joined {{ event_label }}, log in and your team will be detected automatically.</p>
+  {% endif %}
+</div>
+{% endblock %}

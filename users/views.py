@@ -63,6 +63,8 @@ def login_request(request):
                 user = User.objects.filter(profile=profile).first()
                 login(request, user)
 
+                _sync_event_participation(profile, api_key)
+
                 return redirect(request.GET.get('next') or 'home')
             else:  # register
 
@@ -85,6 +87,29 @@ def login_request(request):
     return render(request=request,
                   template_name="users/login.html",
                   context={})
+
+
+def _sync_event_participation(profile, api_key):
+    """Best-effort: refresh the user's event (Elimination) team right after
+    login so they don't wait for the next online-status poll."""
+    try:
+        from events.registry import active_events
+
+        events = active_events()
+        if not events:
+            return
+        comment = os.getenv("API_COMMENT") or ""
+        resp = requests.get(
+            f'https://api.torn.com/user/?selections=profile&key={api_key}{comment}',
+            timeout=8,
+        )
+        data = resp.json()
+        if 'error' in data:
+            return
+        for event in events:
+            event.sync_participant(profile, data)
+    except Exception:
+        pass
 
 
 def logout_request(request):

@@ -90,7 +90,14 @@
                                 </td>
                                 <td style="width: 20%;" class="px-2 m-0"><img src="{{item.item.image_url}}" style="width: 100%;"></td>
                                 <td style="width: 45%;" class="ps-2 m-0 item-name">{{item.item.name}}</td>
-                                <td style="width: 35%;;" class="p-0 m-0">${{item.effective_price|intcomma}}</td>
+                                <td style="width: 35%;;" class="p-0 m-0">
+                                    {% if item.team_price %}
+                                    <span class="text-muted text-decoration-line-through">${{item.effective_price|intcomma}}</span>
+                                    <span class="text-success fw-bold" title="Team price (-{{item.team_discount_pct}}%)">${{item.team_price|intcomma}}</span>
+                                    {% else %}
+                                    ${{item.effective_price|intcomma}}
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endif%}
                             {%endfor%}

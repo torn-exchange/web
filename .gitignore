@@ -13,6 +13,7 @@ newrelic.ini
 # specific folders
 /static/
 /crons
+/docs
 /venv
 # all folders named as
 __pycache__/

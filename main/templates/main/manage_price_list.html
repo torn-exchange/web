@@ -103,6 +103,28 @@
                 </div>
             </div>
 
+            {% if event_pricing %}
+            <div class='card m-2'>
+                <div class='card-header font-weight-bold'>
+                    <i class="fa-solid fa-trophy"></i> Events
+                </div>
+                <div class='card-body'>
+                    <p class="text-muted">Offer a discount to buyers verified as being on your team in a current Torn event. Teammates see the reduced price on your price list and in the TE userscript; everyone else sees your normal prices.</p>
+                    {% for ev in event_pricing %}
+                    <div class="mb-3">
+                        <label for="event_{{ ev.key }}_discount" class="form-label text-muted mb-1">{{ ev.label }} team discount (%)</label>
+                        <input type="number" min="0" max="90" step="1" class="form-control event-discount-input"
+                            id="event_{{ ev.key }}_discount" data-event-key="{{ ev.key }}" value="{{ ev.discount }}">
+                        <small class="text-muted">0 disables it. You can override this per item from the price list editor.</small>
+                    </div>
+                    {% endfor %}
+                    <button type="button" id="save-event-settings" class="btn btn-info">
+                        <i class="fa-solid fa-floppy-disk"></i> Save
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
 
         <!-- RIGHT COLUMN: category sorting / visibility -->
@@ -188,6 +210,29 @@
                     } else {
                         showToast(data.error || 'Failed to save.', true);
                     }
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON && xhr.responseJSON.error;
+                    showToast(error || 'Failed to save.', true);
+                }
+            });
+        });
+
+        $('#save-event-settings').click(function () {
+            toggleSpinner(true);
+            const payload = {};
+            $('.event-discount-input').each(function () {
+                payload['event_' + $(this).data('event-key') + '_discount'] = $(this).val();
+            });
+            $.ajax({
+                url: "{% url 'save_event_trader_settings' %}",
+                type: 'POST',
+                headers: { 'X-CSRFToken': csrfToken() },
+                contentType: 'application/json',
+                data: JSON.stringify(payload),
+                complete: function () { toggleSpinner(false); },
+                success: function (data) {
+                    showToast(data.success ? 'Event settings saved.' : (data.error || 'Failed to save.'), !data.success);
                 },
                 error: function (xhr) {
                     const error = xhr.responseJSON && xhr.responseJSON.error;
