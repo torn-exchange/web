@@ -728,7 +728,27 @@ def price_list(request, identifier=None):
     )
     
     item_types = get_ordered_categories(distinct_categories, pricelist_profile.hidden_categories, pricelist_profile.order_categories)
-    
+
+    # Event (e.g. Elimination) teammate pricing: viewer-dependent, so computed
+    # here and never served from the anonymous page cache (anon users have no
+    # `profile` and skip this).
+    all_relevant_items = list(all_relevant_items)
+    if profile and profile.pk != pricelist_profile.pk:
+        from events.pricing import team_price_fn
+        _price_fn = team_price_fn(pricelist_profile, profile)
+        if _price_fn is not None:
+            for _listing in all_relevant_items:
+                tp, pct, _ek = _price_fn(_listing)
+                _listing.team_price = tp if pct else None
+                _listing.team_discount_pct = pct
+
+    # Elimination banner: cache-safe because anonymous visitors always get the
+    # "login" variant and logged-in visitors bypass the anonymous page cache.
+    elimination_banner = None
+    if not is_owner:
+        from events.pricing import price_list_team_banner
+        elimination_banner = price_list_team_banner(pricelist_profile, profile)
+
     vote_score = pricelist_profile.vote_score
     vote_count = pricelist_profile.votes.count()
     
@@ -776,6 +796,7 @@ def price_list(request, identifier=None):
         'owner_settings': owner_settings,
         'last_updated': last_updated,
         'time_since_last_trade': time_since_last_trade,
+        'elimination_banner': elimination_banner,
     }
 
     return render(request, 'main/price_list.html', context)
@@ -1610,12 +1631,6 @@ def dismiss_inactive_banner(request):
     return JsonResponse({'ok': True})
 
 
-@require_POST
-def dismiss_bazaar_mv_banner(request):
-    request.session['bazaar_mv_banner_dismissed'] = True
-    return JsonResponse({'ok': True})
-
-
 def custom_csrf_failure_view(request, reason=""):
     """
     Handles CSRF failures and returns an appropriate JSON response for APIs.
@@ -1692,14 +1707,34 @@ def manage_price_list(request):
     if profile.order_categories:
         cats = profile.order_categories
     
+    from events.pricing import trader_event_settings
+    from events.registry import active_events
+
     context = {
         'page_title': 'Manage Price List - Torn Exchange',
         'hidden_categories': profile.hidden_categories,
         'categories': cats,
         'owner_profile': profile,
+        'event_pricing': [
+            {'key': e.key, 'label': e.label,
+             'discount': trader_event_settings(profile).get(e.key, 0)}
+            for e in active_events() if e.has_group_pricing()
+        ],
     }
-    
+
     return render(request, 'main/manage_price_list.html', context)
+
+
+@login_required
+@csrf_exempt
+@require_POST
+def save_event_trader_settings(request):
+    from events.pricing import save_trader_event_settings
+
+    data = json.loads(request.body)
+    saved = save_trader_event_settings(request.user.profile, data)
+    _bust_price_list_cache(request, request.user.profile)
+    return JsonResponse({'success': True, 'saved': saved})
 
 
 @login_required

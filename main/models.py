@@ -134,6 +134,10 @@ class Listing(models.Model):
     hidden_by_inactivity = models.BooleanField(default=False)
     hidden_by_vacation = models.BooleanField(default=False)
     effective_price = models.BigIntegerField(null=True)
+    # Optional per-listing override of the trader's event (e.g. Elimination
+    # teammate) discount percentage. Applied at display/API time only by
+    # events.pricing.event_effective_price -- never folded into effective_price.
+    event_discount_pct = models.IntegerField(null=True, blank=True)
 
     def calculate_effective_price(self):
         if (self.discount is None) and (self.price is None):

@@ -23,6 +23,28 @@
           <i class="fa-solid fa-moon" id="theme-icon"></i>
         </a>
       </li>
+      {% for ev in event_nav %}
+      {% if ev.has_role %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fa-solid fa-trophy"></i> {{ ev.label }}
+        </a>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/events/{{ ev.key }}/">Overview &amp; team traders</a>
+          <a class="dropdown-item" href="/events/{{ ev.key }}/treasury/">Treasury</a>
+          {% if ev.is_captain %}
+          <a class="dropdown-item" href="/events/{{ ev.key }}/captain/">Captain dashboard</a>
+          {% endif %}
+        </div>
+      </li>
+      {% else %}
+      <li class="nav-item float-right">
+        <a class="nav-link{% if request.path == '/events/'|add:ev.key|add:'/' %} active{% endif %}" href="/events/{{ ev.key }}/">
+          <i class="fa-solid fa-trophy"></i> {{ ev.label }}
+        </a>
+      </li>
+      {% endif %}
+      {% endfor %}
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="defaultDropdown" role="button" data-bs-toggle="dropdown"
           aria-haspopup="true" aria-expanded="false">

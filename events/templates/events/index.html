@@ -1,0 +1,15 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h1>Torn Events</h1>
+  <ul class="list-group mt-3">
+    {% for event in events %}
+    <li class="list-group-item">
+      <a href="{% url 'event_page' key=event.key %}">{{ event.label }}</a>
+    </li>
+    {% empty %}
+    <li class="list-group-item">No events are running right now.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -40,6 +40,7 @@ urlpatterns = [
     path('toggle_vacation_mode', views.toggle_vacation_mode, name='toggle_vacation_mode'),
     path('save_category_order', views.save_category_order, name='save_category_order'),
     path('save_price_list_general_settings', views.save_price_list_general_settings, name='save_price_list_general_settings'),
+    path('save_event_trader_settings', views.save_event_trader_settings, name='save_event_trader_settings'),
     path('prices/<str:identifier>', views.price_list, name='price_list'),
     path('prices/<str:identifier>/', views.price_list, name='price_list'),
     path('prices/', views.price_list, name='price_list'),
@@ -79,7 +80,6 @@ urlpatterns = [
     path("how-to-use-torn-exchange/", views.tutorial, name="forum_tutorial"),
     path('sitemap', views.sitemap, name='sitemap'),
     path('dismiss-inactive-banner', views.dismiss_inactive_banner, name='dismiss_inactive_banner'),
-    path('dismiss-bazaar-mv-banner', views.dismiss_bazaar_mv_banner, name='dismiss_bazaar_mv_banner'),
     path('tos', views.tos, name='tos'),
     path('price_check', views.price_check, name='price_check'),
 
@@ -105,6 +105,7 @@ urlpatterns = [
     path('api/sellers', api.sellers, name='api_sellers'),
     path('api/modify_listing', api.modify_listing, name='modify_listing'),
     path('api/active_traders', api.active_traders, name='active_traders'),
+    path('api/team_traders', api.team_traders, name='api_team_traders'),
     path('api/prices/<str:identifier>', api.price_list, name='api_price_list'),
     path('api/all_best_listings', api.all_best_listings, name='api_all_best_listings'),
     

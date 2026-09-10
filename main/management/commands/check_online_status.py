@@ -4,10 +4,12 @@ import os
 import traceback
 
 from main.services.monitoring.cron_command import MonitoredCommand
+from main.te_utils import log_error
 from django.utils import timezone
 from users.models import Profile
 from main.models import Listing
 from datetime import datetime
+from events.registry import active_events
 
 
 '''
@@ -27,6 +29,8 @@ class Command(MonitoredCommand):
                                  ])
         users_to_be_checked = active_traders.union(other_advertisers)
 
+        events = active_events()
+
         for profile in Profile.objects.filter(user__in=users_to_be_checked):
             if profile.api_key != '':
                 comment = os.getenv("API_COMMENT")
@@ -45,6 +49,15 @@ class Command(MonitoredCommand):
                     profile.last_active = aware_datetime
                     profile.save()
                     print(profile.name, status, date_time)
+
+                    # Piggyback: extract event (e.g. Elimination) participation
+                    # from the same selections=profile payload. Must never break
+                    # the online-status sync.
+                    for event in events:
+                        try:
+                            event.sync_participant(profile, data)
+                        except Exception as ev_err:
+                            log_error(ev_err)
                 except KeyError as e:
                     if data.get('error').get('error') == 'Incorrect key':
                         print(f'{profile.name} API key stale, cleaning from DB!')

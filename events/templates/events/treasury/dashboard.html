@@ -1,0 +1,181 @@
+{% extends "main/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h1>{{ team }} &mdash; Treasury</h1>
+    {% if is_treasurer %}
+    <a href="{% url 'treasury_import' %}" class="btn btn-outline-primary">
+      <i class="fa-solid fa-file-import"></i> Import Torn log
+    </a>
+    {% endif %}
+  </div>
+
+  {% if messages %}
+    {% for m in messages %}<div class="alert alert-{{ m.tags|default:'info' }}">{{ m }}</div>{% endfor %}
+  {% endif %}
+
+  {# ---------- inventory (everyone) ---------- #}
+  <h2 class="mt-4">In the treasury now</h2>
+  <table class="table table-sm">
+    <thead><tr><th>Item</th><th class="text-end">Quantity</th></tr></thead>
+    <tbody>
+      {% for row in stock %}
+      <tr>
+        <td>{{ row.item_name }}{% if row.needs_review %} <span class="badge bg-warning text-dark" title="A 'some' amount was guessed as 1 &mdash; verify">verify</span>{% endif %}</td>
+        <td class="text-end">{{ row.quantity|intcomma }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="text-muted">Nothing logged yet.</td></tr>
+      {% endfor %}
+      {% if cash %}<tr><td>Cash</td><td class="text-end">${{ cash|intcomma }}</td></tr>{% endif %}
+    </tbody>
+  </table>
+
+  {# ---------- member: request form ---------- #}
+  {% if not is_treasurer %}
+  <h2 class="mt-4">Request items</h2>
+  <p class="text-muted">Ask your treasurer for what you need. They'll trade with you in-game;
+    quantities may differ from what you request.</p>
+  <form method="post" action="{% url 'treasury_request_create' %}">
+    {% csrf_token %}
+    <div id="request-lines">
+      {% for line in my_open_request.lines.all %}
+      <div class="row g-2 mb-2 req-line">
+        <div class="col-8"><input class="form-control" name="item_name" value="{{ line.item_name }}" placeholder="Item name"></div>
+        <div class="col-4"><input class="form-control" name="quantity" type="number" min="1" value="{{ line.quantity_requested }}"></div>
+      </div>
+      {% empty %}
+      <div class="row g-2 mb-2 req-line">
+        <div class="col-8"><input class="form-control" name="item_name" placeholder="Item name (e.g. Xanax)"></div>
+        <div class="col-4"><input class="form-control" name="quantity" type="number" min="1" value="1"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addReqLine()">+ item</button>
+    <div class="mt-2"><textarea class="form-control" name="note" rows="2" placeholder="Optional note">{{ my_open_request.note }}</textarea></div>
+    <button class="btn btn-primary mt-2">{% if my_open_request %}Update request{% else %}Submit request{% endif %}</button>
+  </form>
+  <template id="req-line-tpl">
+    <div class="row g-2 mb-2 req-line">
+      <div class="col-8"><input class="form-control" name="item_name" placeholder="Item name"></div>
+      <div class="col-4"><input class="form-control" name="quantity" type="number" min="1" value="1"></div>
+    </div>
+  </template>
+  <script>
+    function addReqLine() {
+      const t = document.getElementById('req-line-tpl').content.cloneNode(true);
+      document.getElementById('request-lines').appendChild(t);
+    }
+  </script>
+
+  {% if my_requests %}
+  <h3 class="mt-4">Your requests</h3>
+  {% for req in my_requests %}
+  <div class="card mb-2">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <span>#{{ req.id }} &mdash; <strong>{{ req.get_status_display }}</strong></span>
+        {% if req.status in req.OPEN_STATUSES %}
+        <form method="post" action="{% url 'treasury_request_cancel' req.id %}">{% csrf_token %}
+          <button class="btn btn-sm btn-link text-danger p-0">cancel</button>
+        </form>
+        {% endif %}
+      </div>
+      <ul class="mb-0">
+        {% for line in req.lines.all %}
+        <li>{{ line.quantity_fulfilled }}/{{ line.quantity_requested }} {{ line.item_name }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endif %}
+
+  {# ---------- treasurer: ledger + requests ---------- #}
+  {% if is_treasurer %}
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <h2>Open requests</h2>
+      {% for req in open_requests %}
+      <div class="card mb-2">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <strong>{{ req.requester.name }}</strong>
+            <span>
+              <a class="btn btn-sm btn-success" target="_blank"
+                 href="https://www.torn.com/trade.php#step=start&userID={{ req.requester_torn_id }}">Create trade</a>
+              <form method="post" action="{% url 'treasury_decline_request' req.id %}" class="d-inline">{% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger">Decline</button>
+              </form>
+            </span>
+          </div>
+          {% if req.note %}<p class="text-muted small mb-1">{{ req.note }}</p>{% endif %}
+          {% for line in req.lines.all %}
+          <form method="post" action="{% url 'treasury_fulfil_line' line.id %}" class="row g-1 align-items-center mb-1">
+            {% csrf_token %}
+            <div class="col-6">{{ line.quantity_fulfilled }}/{{ line.quantity_requested }} {{ line.item_name }}</div>
+            <div class="col-4"><input class="form-control form-control-sm" name="quantity_traded" type="number" min="1" placeholder="traded"></div>
+            <div class="col-2"><button class="btn btn-sm btn-primary">log</button></div>
+          </form>
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">No open requests.</p>
+      {% endfor %}
+
+      <h2 class="mt-4">Top donors</h2>
+      <table class="table table-sm">
+        {% for name, value in donor_totals %}
+        <tr><td>{{ name }}</td><td class="text-end">${{ value|intcomma }}</td></tr>
+        {% endfor %}
+      </table>
+      <p class="text-muted small">Donated ${{ totals.donated|intcomma }} &middot; distributed ${{ totals.distributed|intcomma }}</p>
+    </div>
+
+    <div class="col-md-6">
+      <h2>Add entry</h2>
+      <form method="post" action="{% url 'treasury_add_entry' %}" class="row g-2">
+        {% csrf_token %}
+        <div class="col-4">
+          <select name="direction" class="form-select">
+            <option value="in">Donation in</option>
+            <option value="out">Payout out</option>
+          </select>
+        </div>
+        <div class="col-8"><input class="form-control" name="counterparty_name" placeholder="Player name"></div>
+        <div class="col-8"><input class="form-control" name="item_name" placeholder="Item name"></div>
+        <div class="col-4"><input class="form-control" name="quantity" type="number" min="1" value="1"></div>
+        <div class="col-12"><input class="form-control" name="message" placeholder="Note (optional)"></div>
+        <div class="col-12"><button class="btn btn-primary">Add</button></div>
+      </form>
+    </div>
+  </div>
+
+  <h2 class="mt-4">Ledger</h2>
+  <div class="table-responsive">
+  <table class="table table-sm table-striped">
+    <thead><tr><th>When</th><th>Dir</th><th>Player</th><th>Item</th><th class="text-end">Qty</th><th class="text-end">Value</th><th>Src</th><th></th></tr></thead>
+    <tbody>
+      {% for e in entries %}
+      <tr{% if e.needs_review %} class="table-warning"{% endif %}>
+        <td>{{ e.occurred_at|date:"d M H:i" }}</td>
+        <td>{{ e.direction }}</td>
+        <td>{{ e.counterparty_name }}</td>
+        <td>{% if e.is_cash %}Cash{% else %}{{ e.item_name }}{% endif %}</td>
+        <td class="text-end">{% if not e.is_cash %}{{ e.quantity|intcomma }}{% endif %}</td>
+        <td class="text-end">${{ e.total_value|default:0|intcomma }}</td>
+        <td>{{ e.source }}</td>
+        <td><form method="post" action="{% url 'treasury_delete_entry' e.id %}">{% csrf_token %}<button class="btn btn-sm btn-link text-danger p-0">×</button></form></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-muted">No entries yet. Import your Torn log to get started.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

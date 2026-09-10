@@ -1,0 +1,55 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h1>Import Torn log</h1>
+  <p class="text-muted">
+    Paste lines from your Torn item log (Events &rarr; Log, filter to item sends/receives).
+    Nothing is saved until you review the preview and confirm. Pasting the same lines
+    again is safe &mdash; duplicates are skipped.
+  </p>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags|default:'info' }}">{{ m }}</div>{% endfor %}{% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <textarea name="raw_text" class="form-control" rows="10"
+      placeholder="21:05:02 - 31/08/26 SirIcyDragon sent 3x Xanax to you">{{ raw_text }}</textarea>
+    <button name="action" value="preview" class="btn btn-primary mt-2">Preview</button>
+
+    {% if previewed %}
+      <h2 class="mt-4">Preview &mdash; {{ rows|length }} recognised{% if skipped %}, {{ skipped|length }} skipped{% endif %}</h2>
+      {% if rows %}
+      <table class="table table-sm table-striped">
+        <thead><tr><th>When</th><th>Dir</th><th>Player</th><th>Item</th><th>Qty</th><th>Message</th></tr></thead>
+        <tbody>
+          {% for r in rows %}
+          <tr{% if r.needs_review %} class="table-warning"{% endif %}>
+            <td>{{ r.occurred_at|date:"d M H:i" }}</td>
+            <td>{{ r.direction }}</td>
+            <td>{{ r.counterparty_name }}</td>
+            <td>{{ r.item_name }}{% if r.needs_review %} <span class="badge bg-warning text-dark">check</span>{% endif %}</td>
+            <td>{% if not r.is_cash %}{{ r.quantity }}{% else %}${{ r.total_value }}{% endif %}</td>
+            <td class="small text-muted">{{ r.message }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if skipped %}
+      <details class="mb-3"><summary>{{ skipped|length }} unrecognised line(s)</summary>
+        <pre class="small">{% for s in skipped %}{{ s }}
+{% endfor %}</pre>
+      </details>
+      {% endif %}
+      <p class="text-muted small">Rows marked <span class="badge bg-warning text-dark">check</span> were logged
+        as "some" (quantity guessed as 1) or the item name didn't match &mdash; fix the paste above and
+        re-preview, or correct them in the ledger after importing.</p>
+      {% if rows %}
+      <button name="action" value="confirm" class="btn btn-success">Confirm import</button>
+      {% endif %}
+    {% endif %}
+  </form>
+
+  <a href="{% url 'treasury_home' %}" class="d-inline-block mt-3">&larr; Back to treasury</a>
+</div>
+{% endblock %}

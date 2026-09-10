@@ -1,0 +1,67 @@
+{% extends "main/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container mt-4">
+  <h1>{{ team }} &mdash; Captain</h1>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags|default:'info' }}">{{ m }}</div>{% endfor %}{% endif %}
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-header">Team</div>
+        <div class="card-body">
+          {% if standing %}
+          <p class="mb-1">Position #{{ standing.position|default:"?" }}</p>
+          <p class="mb-1">{{ standing.score|default:0 }} pts &middot; {{ standing.lives|default:"?" }} lives</p>
+          {% else %}<p class="text-muted mb-0">Standings not available yet.</p>{% endif %}
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header">Treasury</div>
+        <div class="card-body">
+          <p class="mb-1">{{ stock_lines }} item type(s) on hand{% if cash %}, ${{ cash|intcomma }} cash{% endif %}</p>
+          <p class="mb-1 small text-muted">Top donors:</p>
+          <ul class="small mb-0">
+            {% for name, value in donor_totals %}<li>{{ name }} &mdash; ${{ value|intcomma }}</li>{% empty %}<li class="text-muted">none yet</li>{% endfor %}
+          </ul>
+          <a href="{% url 'treasury_home' %}" class="small">Open treasury &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <h2>Roster &amp; roles</h2>
+      <p class="text-muted small">Only players TE has detected on your team appear here.
+        Assign treasurer / trader / vice-captain roles below.</p>
+      <table class="table">
+        <thead><tr><th>Player</th><th>Roles</th><th>Assign</th></tr></thead>
+        <tbody>
+          {% for m in members %}
+          <tr>
+            <td><a href="{% url 'price_list' identifier=m.profile.torn_id %}">{{ m.profile.name }}</a></td>
+            <td>{% for r in m.roles %}<span class="badge bg-secondary">{{ r }}</span> {% endfor %}</td>
+            <td>
+              {% for role in assignable_roles %}
+              <form method="post" action="{% url 'captain_set_role' %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="torn_id" value="{{ m.profile.torn_id }}">
+                <input type="hidden" name="role" value="{{ role }}">
+                {% if role in m.roles %}
+                <button name="grant" value="0" class="btn btn-sm btn-outline-danger mb-1">&minus; {{ role }}</button>
+                {% else %}
+                <button name="grant" value="1" class="btn btn-sm btn-outline-primary mb-1">+ {{ role }}</button>
+                {% endif %}
+              </form>
+              {% endfor %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-muted">No team members detected yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

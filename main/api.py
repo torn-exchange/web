@@ -18,6 +18,8 @@ from main.filters import ListingFilter
 from main.profile_stats import return_profile_stats
 from .models import Item, Listing, Profile, TradeReceipt
 from main.te_utils import (get_ordered_categories, format_forum_link)
+from events.api import build_event_payload
+from events.registry import get_event
 
 
 # This variable should make typing faster
@@ -247,6 +249,10 @@ def profile(request):
                     "active_trader": p.active_trader,
                 }
             }
+
+            event_payload = build_event_payload(p)
+            if event_payload:
+                data["data"]["event"] = event_payload
             cache.set(cache_key, data, timeout=300)
             return JsonResponse(data)
         except Exception as E:
@@ -685,8 +691,17 @@ def modify_listing(request):
 
                         listing.price = fixed_price if fixed_price is not None else None
                         listing.discount = float(discount) if discount is not None else None
+
+                        update_fields = ['price', 'discount', 'effective_price']
+                        if 'event_discount_pct' in entry:
+                            edp = entry.get('event_discount_pct')
+                            listing.event_discount_pct = (
+                                max(0, min(90, int(edp))) if edp is not None and edp != '' else None
+                            )
+                            update_fields.append('event_discount_pct')
+
                         listing.effective_price = listing.calculate_effective_price()
-                        listing.save(update_fields=['price', 'discount', 'effective_price'])
+                        listing.save(update_fields=update_fields)
                         updated.append(item_id)
 
                     except Exception as e:
@@ -749,6 +764,49 @@ def active_traders(request):
     except Exception as e:
         print("Error fetching active traders:", e)
         return je("Error fetching active traders")
+
+
+@ce
+@rate_limit_exponential
+@require_api_key
+def team_traders(request):
+    """Active TE traders on the caller's event team.
+
+    Example: /api/team_traders?key=<KEY>[&event=elimination]
+    Consumed by the TE userscript to surface teammate traders inside Torn.
+    """
+    if request.method != 'GET':
+        return je("Invalid HTTP method")
+    try:
+        event_key = request.GET.get('event', 'elimination')
+        event = get_event(event_key)
+        if event is None or not event.is_active():
+            return je("Unknown or inactive event")
+
+        caller = request.api_profile
+        part = caller.event_participations.filter(
+            event_key=event_key, year=event.current_year()
+        ).first()
+        team = part.group_name if part else None
+        if not team:
+            return js({"event": event_key, "team": None, "traders": []})
+
+        cache_key = f'api_team_traders_{event_key}_{team}'
+        cached = cache.get(cache_key)
+        if cached:
+            return js(cached)
+
+        from events.elimination.team_traders import team_traders_for
+        data = {
+            "event": event_key,
+            "team": team,
+            "traders": team_traders_for(team, event.current_year()),
+        }
+        cache.set(cache_key, data, timeout=300)
+        return js(data)
+    except Exception as e:
+        print("Error fetching team traders:", e)
+        return je("Error fetching team traders")
 
 
 @ce
