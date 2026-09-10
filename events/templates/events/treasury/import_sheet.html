@@ -1,0 +1,64 @@
+{% extends "main/base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container mt-4">
+  <h1>Import spreadsheet</h1>
+  <p class="text-muted">
+    Paste your team supplier sheet (select the range in Google Sheets / Excel and
+    copy), or upload a CSV (<em>File &rarr; Download &rarr; CSV</em> in Sheets,
+    <em>Save As &rarr; CSV</em> in Excel). Expected columns:
+    <code>Item</code>, <code>Donated</code>, <code>Issued</code>
+    (a <code>Current Inventory</code> column is ignored).
+  </p>
+  <div class="alert alert-warning">
+    This is a <strong>baseline snapshot</strong> &mdash; it creates one donation and one
+    payout entry per item and <strong>replaces any previous spreadsheet import</strong> for
+    your team. Entries you added via Torn-log paste or manually are kept. Use this for your
+    existing backlog, then log new activity with <em>Import Torn log</em>.
+  </div>
+
+  {% if messages %}{% for m in messages %}<div class="alert alert-{{ m.tags|default:'info' }}">{{ m }}</div>{% endfor %}{% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <textarea name="raw_text" class="form-control" rows="10"
+      placeholder="Item&#9;Donated&#9;Issued&#10;Xanax&#9;1806&#9;414&#10;First Aid Kit&#9;1958&#9;0">{{ raw_text }}</textarea>
+    <div class="mt-2">
+      <input type="file" name="csv_file" accept=".csv,text/csv" class="form-control form-control-sm" style="max-width:320px;display:inline-block">
+    </div>
+    <button name="action" value="preview" class="btn btn-primary mt-2">Preview</button>
+
+    {% if previewed %}
+      <h2 class="mt-4">Preview &mdash; {{ rows|length }} item row(s){% if skipped %}, {{ skipped|length }} skipped{% endif %}</h2>
+      {% if rows %}
+      <table class="table table-sm table-striped">
+        <thead><tr><th>Item</th><th class="text-end">Donated</th><th class="text-end">Issued</th><th class="text-end">Current</th></tr></thead>
+        <tbody>
+          {% for r in rows %}
+          <tr{% if not r.matched %} class="table-warning"{% endif %}>
+            <td>{{ r.item_name }}{% if not r.matched %} <span class="badge bg-warning text-dark">no item match</span>{% endif %}</td>
+            <td class="text-end">{{ r.donated|intcomma }}</td>
+            <td class="text-end">{{ r.issued|intcomma }}</td>
+            <td class="text-end">{{ r.current|intcomma }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if skipped %}
+      <details class="mb-3"><summary>{{ skipped|length }} skipped row(s) (no item name or all zeros)</summary>
+        <pre class="small">{% for s in skipped %}{{ s|join:" | " }}
+{% endfor %}</pre>
+      </details>
+      {% endif %}
+      <p class="text-muted small">Rows with <span class="badge bg-warning text-dark">no item match</span> are still
+        imported &mdash; fix the item name in the sheet and re-import, or correct them in the ledger.</p>
+      {% if rows %}
+      <button name="action" value="confirm" class="btn btn-success">Confirm &amp; replace baseline</button>
+      {% endif %}
+    {% endif %}
+  </form>
+
+  <a href="{% url 'treasury_home' %}" class="d-inline-block mt-3">&larr; Back to treasury</a>
+</div>
+{% endblock %}

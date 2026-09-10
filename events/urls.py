@@ -10,6 +10,8 @@ urlpatterns = [
     # Elimination treasury (Phase 2)
     path("elimination/treasury/", treasury_views.treasury_home, name="treasury_home"),
     path("elimination/treasury/import", treasury_views.treasury_import, name="treasury_import"),
+    path("elimination/treasury/import-sheet", treasury_views.treasury_import_sheet, name="treasury_import_sheet"),
+    path("elimination/treasury/export.csv", treasury_views.treasury_export, name="treasury_export"),
     path("elimination/treasury/entry/add", treasury_views.treasury_add_entry, name="treasury_add_entry"),
     path("elimination/treasury/entry/<int:entry_id>/delete", treasury_views.treasury_delete_entry, name="treasury_delete_entry"),
     path("elimination/treasury/request", treasury_views.treasury_request_create, name="treasury_request_create"),
