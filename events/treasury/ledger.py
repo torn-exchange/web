@@ -141,6 +141,94 @@ def on_hand(team_name, event_key, year):
     return rows, (cash_in - cash_out)
 
 
+SHEET_SOURCE = "sheet_import"
+SHEET_COUNTERPARTY = "(spreadsheet import)"
+
+
+def item_summary(team_name, event_key, year):
+    """Per-item Donated / Issued / Current, matching a team supplier sheet.
+
+    Returns a list of dicts ordered by item name:
+    ``{"item_name", "donated", "issued", "current", "needs_review"}``.
+    """
+    entries = TreasuryLedgerEntry.objects.filter(
+        event_key=event_key, year=year, team_name=team_name, is_cash=False
+    )
+    donated = defaultdict(int)
+    issued = defaultdict(int)
+    flagged = set()
+    for e in entries:
+        key = e.item.name if e.item else e.item_name
+        if e.direction == TreasuryLedgerEntry.IN:
+            donated[key] += e.quantity or 0
+        else:
+            issued[key] += e.quantity or 0
+        if e.needs_review:
+            flagged.add(key)
+
+    names = sorted(set(donated) | set(issued))
+    return [
+        {
+            "item_name": n,
+            "donated": donated.get(n, 0),
+            "issued": issued.get(n, 0),
+            "current": donated.get(n, 0) - issued.get(n, 0),
+            "needs_review": n in flagged,
+        }
+        for n in names
+    ]
+
+
+@transaction.atomic
+def import_sheet_rows(rows, *, team_name, event_key, year, created_by, raw_text, as_of=None):
+    """Replace the team's spreadsheet baseline from summary rows.
+
+    Each row is ``{"item_name", "donated", "issued"}``. Any prior
+    ``source="sheet_import"`` entries for the team are deleted first, so a
+    treasurer can keep their sheet as the source of truth and re-sync. Manual /
+    Torn-log / trade entries are untouched.
+    """
+    as_of = as_of or timezone.now()
+    raw_hash = hashlib.sha1(raw_text.encode("utf-8")).hexdigest()
+
+    TreasuryLedgerEntry.objects.filter(
+        event_key=event_key, year=year, team_name=team_name, source=SHEET_SOURCE
+    ).delete()
+
+    batch = TreasuryImportBatch.objects.create(
+        event_key=event_key, year=year, team_name=team_name, created_by=created_by,
+        raw_hash=raw_hash, line_count=len(rows),
+    )
+
+    imported = 0
+    for row in rows:
+        for direction, qty in (
+            (TreasuryLedgerEntry.IN, int(row.get("donated") or 0)),
+            (TreasuryLedgerEntry.OUT, int(row.get("issued") or 0)),
+        ):
+            if qty <= 0:
+                continue
+            kwargs = _entry_kwargs(
+                {
+                    "direction": direction,
+                    "counterparty_name": SHEET_COUNTERPARTY,
+                    "item_name": row["item_name"],
+                    "quantity": qty,
+                    "occurred_at": as_of,
+                    "needs_review": bool(row.get("needs_review")),
+                },
+                team_name=team_name, event_key=event_key, year=year,
+                created_by=created_by, source=SHEET_SOURCE, source_ref=str(batch.id),
+            )
+            kwargs["line_fingerprint"] = ""  # replace-mode, no per-line dedup
+            TreasuryLedgerEntry(batch=batch, **kwargs).save()
+            imported += 1
+
+    batch.imported_count = imported
+    batch.save(update_fields=["imported_count"])
+    return batch
+
+
 def donor_totals(team_name, event_key, year):
     entries = TreasuryLedgerEntry.objects.filter(
         event_key=event_key, year=year, team_name=team_name,

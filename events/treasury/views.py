@@ -14,6 +14,7 @@ from events.models import (
 from events.roles import require_event_role
 from events.treasury import ledger
 from events.treasury.log_parser import parse_log
+from events.treasury.sheet import parse_sheet
 
 EVENT_KEY = "elimination"
 
@@ -50,6 +51,7 @@ def treasury_home(request):
     }
 
     if _is_treasurer(request):
+        ctx["summary"] = ledger.item_summary(team, EVENT_KEY, year)
         ctx["entries"] = TreasuryLedgerEntry.objects.filter(
             event_key=EVENT_KEY, year=year, team_name=team
         ).select_related("item", "created_by").order_by("-occurred_at")[:200]
@@ -98,6 +100,68 @@ def treasury_import(request):
         })
     return render(request, "events/treasury/import.html", {
         "page_title": "Import Torn log - Torn Exchange", "raw_text": "", "previewed": False,
+    })
+
+
+@require_event_role(EVENT_KEY, EventRole.TREASURY_ROLES)
+def treasury_export(request):
+    """Download the team's supplier inventory as CSV (Item/Donated/Issued/Current)."""
+    from main.api import export_to_csv
+
+    summary = ledger.item_summary(request.event_team, EVENT_KEY, request.event_year)
+    data = [
+        {
+            "Item": r["item_name"],
+            "Donated": r["donated"],
+            "Issued": r["issued"],
+            "Current Inventory": r["current"],
+        }
+        for r in summary
+    ]
+    safe_team = "".join(c for c in request.event_team if c.isalnum() or c in " -_").strip() or "team"
+    return export_to_csv(data, f"{safe_team}-treasury")
+
+
+@require_event_role(EVENT_KEY, EventRole.TREASURY_ROLES)
+def treasury_import_sheet(request):
+    """Import a team supplier sheet (Google Sheets / Excel, pasted or CSV upload).
+
+    Summary rows only -- creates one 'in' and one 'out' baseline entry per item
+    and REPLACES any previous spreadsheet import for the team.
+    """
+    if request.method == "POST":
+        raw_text = request.POST.get("raw_text", "") or ""
+        upload = request.FILES.get("csv_file")
+        if upload:
+            raw_text = upload.read().decode("utf-8", errors="replace")
+        rows, skipped = parse_sheet(raw_text)
+
+        if request.POST.get("action") == "confirm":
+            batch = ledger.import_sheet_rows(
+                rows, team_name=request.event_team, event_key=EVENT_KEY,
+                year=request.event_year, created_by=request.event_profile,
+                raw_text=raw_text,
+            )
+            messages.success(
+                request,
+                f"Imported {len(rows)} item rows ({batch.imported_count} ledger entries). "
+                "Previous spreadsheet import replaced.",
+            )
+            return redirect("treasury_home")
+
+        # annotate rows with item-match info for the preview
+        from events.treasury.ledger import resolve_item
+        for r in rows:
+            item, _v, unmatched = resolve_item(r["item_name"])
+            r["matched"] = not unmatched
+            r["current"] = r["donated"] - r["issued"]
+        return render(request, "events/treasury/import_sheet.html", {
+            "page_title": "Import spreadsheet - Torn Exchange",
+            "raw_text": raw_text, "rows": rows, "skipped": skipped, "previewed": True,
+        })
+
+    return render(request, "events/treasury/import_sheet.html", {
+        "page_title": "Import spreadsheet - Torn Exchange", "raw_text": "", "previewed": False,
     })
 
 
