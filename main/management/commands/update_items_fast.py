@@ -1,24 +1,22 @@
 import concurrent.futures
+import json
 import os
 import random
+import sys
 import threading
 import time
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+import requests
 from django.conf import settings as project_settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from main.models import Item
-from main.management.commands.update_items2 import (
-    Command as LegacyUpdateItemsCommand,
-    create_or_update_sets,
-    get_lowest_market_price,
-    recalculate_listings_for_item,
-    sanitize_numbers,
-)
+from main.models import Item, Listing
 from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 from users.models import Profile
 
@@ -39,6 +37,152 @@ MAX_RETRIES_PER_ITEM = 3
 # concurrency). Capping concurrent DB-write sections separately from the
 # API-fetch concurrency keeps the pool from being overwhelmed.
 MAX_CONCURRENT_DB_WRITERS = 8
+
+
+def fetch_items_dataframe():
+    system_api_key = os.getenv('SYSTEM_API_KEY')
+    comment = os.getenv("API_COMMENT")
+    url = f'https://api.torn.com/torn/?selections=items&key={system_api_key}{comment}'
+    req = requests.get(url)
+    data = json.loads(req.content)['items']
+    return pd.DataFrame(data).transpose()
+
+
+def get_points_market_value():
+    system_api_key = os.getenv('SYSTEM_API_KEY')
+    comment = os.getenv("API_COMMENT")
+    req = requests.get(
+        f'https://api.torn.com/market/?selections=pointsmarket&key={system_api_key}{comment}')
+    data = json.loads(req.content)
+    points_cost = int(round(np.nanmean(
+        [data['pointsmarket'][a]['cost'] for a in data['pointsmarket']][0:5])))
+    return points_cost
+
+
+def create_or_update_sets():
+    points_cost = get_points_market_value()
+    Item.objects.update_or_create(
+        name='Plushie Set',
+        defaults=dict(
+            item_id=9998,
+            description='A set of plushies',
+            requirement='',
+            item_type='Plushie',
+            weapon_type='',
+            buy_price=450000,
+            sell_price=450000,
+            market_value=10*points_cost,
+            circulation=10000,
+            image_url='https://i.imgur.com/AwOwIe9.png',
+            TE_value=10*points_cost
+        ),
+    )
+    Item.objects.update_or_create(
+        name='Flower Set',
+        defaults=dict(
+            item_id=9999,
+            description='A set of flowers',
+            requirement='',
+            item_type='Flower',
+            weapon_type='',
+            buy_price=450000,
+            sell_price=450000,
+            market_value=10*points_cost,
+            circulation=100000,
+            image_url='https://i.imgur.com/ASKbyVY.png',
+            TE_value=10*points_cost
+        ),
+    )
+
+
+def recalculate_listings_for_item(item):
+    for listing in Listing.objects.filter(item=item).select_related('owner__settings', 'item'):
+        listing.save(update_fields=['effective_price'])
+
+
+def sanitize_numbers(number):
+    # Dirty Bomb is most expensive thing in Torn and it costs around 50B
+    # so let 100B be the most expensive price possible
+    if number == None:
+        return 0
+
+    max_price = 100000000000
+    if number >= sys.maxsize - 1:
+        number = max_price
+
+    return number
+
+
+def weighted_itemmarket_price(listings):
+    """
+    Torn's itemmarket listings come back sorted cheapest-first. A single
+    low-quantity "throwaway" listing at a scam/troll price is nearly free to
+    post and used to dominate a flat top-3 mean, which was crashing
+    Item.TE_value (and, via recalculate_listings_for_item, every trader's
+    effective_price for that item) on a single bad data point -- see the
+    "prices dropping suddenly" trader reports.
+
+    To reduce that: look at the first 10 listings, drop the single cheapest
+    one outright (the easiest one to manipulate), then take a
+    quantity-weighted average of the remaining (up to 9) listings so a lone
+    low-quantity outlier among them can't dominate the way a flat mean would.
+    """
+    window = listings[:10]
+    if len(window) == 1:
+        return window[0].get('price')
+
+    remaining = window[1:]
+    prices = np.array([listing.get('price') for listing in remaining], dtype=float)
+    quantities = np.array(
+        [listing.get('amount') or 1 for listing in remaining], dtype=float)
+    return np.average(prices, weights=quantities)
+
+
+def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_average=None):
+    if api_key == '':
+        return None
+
+    time.sleep(0.05)
+    comment = os.getenv("API_COMMENT")
+    url = f'https://api.torn.com/v2/market/?selections=itemmarket&id={item_id}&key={api_key}{comment}'
+    req = requests.get(url)
+    data = json.loads(req.content)
+
+    if data.get('error'):
+        print("update_items_fast ERROR", data, item_id)
+
+        if "Too many requests" in data["error"].get("error", ""):
+            print("Rate limit hit. Waiting 30 seconds before retrying...")
+            time.sleep(30)  # wait before retry
+            return None  # retry the same request
+        return None
+    else:
+        itemmarket_data = data.get('itemmarket')
+        if (itemmarket_data is not None and itemmarket_data["listings"]):
+            try:
+                itemmarket_min = weighted_itemmarket_price(itemmarket_data["listings"])
+            except Exception as e:
+                print("ERROR", e, "itemID:", item_id)
+                itemmarket_min = avg_market_price
+        else:
+            itemmarket_min = np.nan
+
+        bazaar_average = bazaar_average or np.nan
+
+        # error handling to avoid "cannot convert float NaN to integer" error
+        if all(x in [None, np.nan, 0] for x in [itemmarket_min, avg_market_price, bazaar_average]):
+            return 0
+
+        try:
+            pricing_data = np.array([itemmarket_min, avg_market_price, bazaar_average])
+
+            TE_price = int(
+                round(np.nanmin(pricing_data[np.nonzero(pricing_data)])))
+        except Exception as e:
+            print("update_items_fast ERROR", str(e), item_id)
+            TE_price = 0
+
+        return TE_price
 
 
 def _load_api_keys():
@@ -94,7 +238,7 @@ class _SharedRateLimiter:
 
 
 class _Benchmark:
-    """TEMPORARY instrumentation for comparing runtime against update_items2.
+    """TEMPORARY instrumentation for comparing runtime across changes to this command.
 
     Not meant to be committed - strip before merging.
     """
@@ -376,16 +520,16 @@ def _populate(df):
 
 class Command(BaseCommand):
     help = (
-        'Faster, thread-parallelized replacement for update_items2 that '
-        'fetches Torn itemmarket prices concurrently instead of sequentially, '
-        'while honoring Torn\'s rate limit via a shared limiter.'
+        'Updates items in the database, fetching Torn itemmarket prices '
+        'concurrently across a thread pool while honoring Torn\'s rate limit '
+        'via a shared limiter.'
     )
 
     def add_arguments(self, parser):
         parser.add_argument('item_name', nargs='?', type=str)
 
     def handle(self, *args, **options):
-        df = LegacyUpdateItemsCommand.df
+        df = fetch_items_dataframe()
         if options['item_name']:
             df = df[df['name'] == options['item_name']]
             # print(df.to_string())
