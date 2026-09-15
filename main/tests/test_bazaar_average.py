@@ -1,18 +1,18 @@
+import json
 from unittest.mock import patch, Mock
 from django.test import TestCase
 
-from main.management.commands.update_items2 import get_lowest_market_price
+from main.management.commands.update_items2 import get_lowest_market_price, weighted_itemmarket_price
 from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 
 
-def make_itemmarket_response(listing_prices):
-    return Mock(
-        content=(
-            '{"itemmarket": {"listings": '
-            + str([{"price": p} for p in listing_prices]).replace("'", '"')
-            + '}}'
-        ).encode(),
-    )
+def make_itemmarket_response(listing_prices=None, listings=None):
+    # listing_prices: shorthand for a flat list of prices, each treated as
+    # amount=1 (uniform weighting) -- listings: full [{"price", "amount"}, ...]
+    # for tests that need to control quantities directly.
+    if listings is None:
+        listings = [{"price": p, "amount": 1} for p in listing_prices]
+    return Mock(content=json.dumps({"itemmarket": {"listings": listings}}).encode())
 
 
 # ---------------------------------------------------------------------------
@@ -48,6 +48,51 @@ class GetLowestMarketPriceBazaarAverageTests(TestCase):
         mock_get.return_value = make_itemmarket_response([100, 100, 100])
         result = get_lowest_market_price('1', 'key', avg_market_price=90, bazaar_average=0)
         self.assertEqual(result, 90)
+
+    @patch('main.management.commands.update_items2.requests.get')
+    def test_single_lowball_itemmarket_listing_no_longer_craters_te_price(self, mock_get):
+        # Regression test for the "prices dropping suddenly" reports: a lone
+        # 1-unit troll listing at price 1 used to dominate a flat top-3 mean
+        # and crash TE_value; it must no longer win over real prices.
+        mock_get.return_value = make_itemmarket_response(
+            listings=[{"price": 1, "amount": 1}] + [{"price": 1000, "amount": 10}] * 9
+        )
+        result = get_lowest_market_price('1', 'key', avg_market_price=1050, bazaar_average=None)
+        self.assertGreater(result, 990)
+
+
+# ---------------------------------------------------------------------------
+# weighted_itemmarket_price() — drop the cheapest listing, then a
+# quantity-weighted average of the rest, over the first 10 listings
+# ---------------------------------------------------------------------------
+
+class WeightedItemmarketPriceTests(TestCase):
+
+    def test_drops_cheapest_listing_before_averaging(self):
+        # cheapest (1@1) is dropped entirely; remaining are equal price/amount
+        listings = [{"price": 1, "amount": 1}] + [{"price": 100, "amount": 10}] * 9
+        self.assertEqual(weighted_itemmarket_price(listings), 100)
+
+    def test_low_quantity_outlier_barely_moves_weighted_average(self):
+        # A 1-unit troll listing at price 1 sitting among 9 real listings at
+        # 1000 (10 units each) should barely move the average, unlike a flat
+        # mean which would be dragged down proportionally to 1/9th.
+        listings = [{"price": 1, "amount": 1}] + [{"price": 1000, "amount": 10}] * 9
+        result = weighted_itemmarket_price(listings)
+        self.assertGreater(result, 990)
+
+    def test_only_considers_first_ten_listings(self):
+        # An 11th, cheaper listing outside the window must not affect the result
+        listings = [{"price": 100, "amount": 10}] * 10 + [{"price": 1, "amount": 1000}]
+        self.assertEqual(weighted_itemmarket_price(listings), 100)
+
+    def test_single_listing_has_nothing_to_drop_against(self):
+        listings = [{"price": 500, "amount": 1}]
+        self.assertEqual(weighted_itemmarket_price(listings), 500)
+
+    def test_missing_amount_defaults_to_uniform_weighting(self):
+        listings = [{"price": 1}, {"price": 100}, {"price": 100}]
+        self.assertEqual(weighted_itemmarket_price(listings), 100)
 
 
 # ---------------------------------------------------------------------------

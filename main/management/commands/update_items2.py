@@ -177,9 +177,7 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_av
         itemmarket_data = data.get('itemmarket')
         if (itemmarket_data is not None and itemmarket_data["listings"]):
             try:
-                first_three = list(
-                    map(lambda x: x.get('price'), itemmarket_data["listings"][:3]))
-                itemmarket_min = np.nanmean(first_three)
+                itemmarket_min = weighted_itemmarket_price(itemmarket_data["listings"])
             except Exception as e:
                 print("ERROR", e, "itemID:", item_id)
                 itemmarket_min = avg_market_price
@@ -202,6 +200,31 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_av
             TE_price = 0
 
         return TE_price
+
+
+def weighted_itemmarket_price(listings):
+    """
+    Torn's itemmarket listings come back sorted cheapest-first. A single
+    low-quantity "throwaway" listing at a scam/troll price is nearly free to
+    post and used to dominate a flat top-3 mean, which was crashing
+    Item.TE_value (and, via recalculate_listings_for_item, every trader's
+    effective_price for that item) on a single bad data point -- see the
+    "prices dropping suddenly" trader reports.
+
+    To reduce that: look at the first 10 listings, drop the single cheapest
+    one outright (the easiest one to manipulate), then take a
+    quantity-weighted average of the remaining (up to 9) listings so a lone
+    low-quantity outlier among them can't dominate the way a flat mean would.
+    """
+    window = listings[:10]
+    if len(window) == 1:
+        return window[0].get('price')
+
+    remaining = window[1:]
+    prices = np.array([listing.get('price') for listing in remaining], dtype=float)
+    quantities = np.array(
+        [listing.get('amount') or 1 for listing in remaining], dtype=float)
+    return np.average(prices, weights=quantities)
 
 
 def get_points_market_value():
