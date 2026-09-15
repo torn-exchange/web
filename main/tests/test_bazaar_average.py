@@ -2,7 +2,7 @@ import json
 from unittest.mock import patch, Mock
 from django.test import TestCase
 
-from main.management.commands.update_items2 import get_lowest_market_price, weighted_itemmarket_price
+from main.management.commands.update_items_fast import get_lowest_market_price, weighted_itemmarket_price
 from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 
 
@@ -21,35 +21,35 @@ def make_itemmarket_response(listing_prices=None, listings=None):
 
 class GetLowestMarketPriceBazaarAverageTests(TestCase):
 
-    @patch('main.management.commands.update_items2.requests.get')
+    @patch('main.management.commands.update_items_fast.requests.get')
     def test_bazaar_average_lowers_te_value(self, mock_get):
         # itemmarket listings average to 100, avg_market_price=90, bazaar_average=80 -> 80 wins
         mock_get.return_value = make_itemmarket_response([100, 100, 100])
         result = get_lowest_market_price('1', 'key', avg_market_price=90, bazaar_average=80)
         self.assertEqual(result, 80)
 
-    @patch('main.management.commands.update_items2.requests.get')
+    @patch('main.management.commands.update_items_fast.requests.get')
     def test_bazaar_average_ignored_when_higher(self, mock_get):
         # bazaar_average is the highest of the three -> doesn't change the result
         mock_get.return_value = make_itemmarket_response([100, 100, 100])
         result = get_lowest_market_price('1', 'key', avg_market_price=90, bazaar_average=200)
         self.assertEqual(result, 90)
 
-    @patch('main.management.commands.update_items2.requests.get')
+    @patch('main.management.commands.update_items_fast.requests.get')
     def test_bazaar_average_none_falls_back_to_two_source(self, mock_get):
         # No bazaar_average available for this item -> identical to pre-task 2-source behaviour
         mock_get.return_value = make_itemmarket_response([100, 100, 100])
         result = get_lowest_market_price('1', 'key', avg_market_price=90, bazaar_average=None)
         self.assertEqual(result, 90)
 
-    @patch('main.management.commands.update_items2.requests.get')
+    @patch('main.management.commands.update_items_fast.requests.get')
     def test_bazaar_average_zero_is_ignored(self, mock_get):
         # A falsy/zero bazaar_average must not win over real prices
         mock_get.return_value = make_itemmarket_response([100, 100, 100])
         result = get_lowest_market_price('1', 'key', avg_market_price=90, bazaar_average=0)
         self.assertEqual(result, 90)
 
-    @patch('main.management.commands.update_items2.requests.get')
+    @patch('main.management.commands.update_items_fast.requests.get')
     def test_single_lowball_itemmarket_listing_no_longer_craters_te_price(self, mock_get):
         # Regression test for the "prices dropping suddenly" reports: a lone
         # 1-unit troll listing at price 1 used to dominate a flat top-3 mean

@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from users.models import Profile, Settings
 from main.models import Item, Listing
-from main.management.commands.update_items2 import recalculate_listings_for_item
+from main.management.commands.update_items_fast import recalculate_listings_for_item
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +143,7 @@ class EffectivePriceCalculationTests(TestCase):
 
     def test_effective_price_reflects_updated_te_value(self):
         """
-        After migration, when update_items2 changes Item.TE_value,
+        After migration, when the item-update command changes Item.TE_value,
         a follow-up script must update Listing.effective_price for all
         listings of that item.
         """
