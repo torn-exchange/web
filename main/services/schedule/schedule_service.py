@@ -7,8 +7,11 @@ from main.models import Schedule, Job
 class ScheduleService:
 
     @classmethod
-    def handle(cls):
-        for schedule in cls.get_runnable():
+    def handle(cls, runnable=None):
+        if runnable is None:
+            runnable = cls.get_runnable()
+
+        for schedule in runnable:
             if schedule.unique:
                 existing = Job.objects.filter(job=schedule.job, payload=schedule.payload).first()
                 if existing is not None:
