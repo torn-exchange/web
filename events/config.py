@@ -8,5 +8,5 @@ DB model could replace this without touching any caller.
 
 # --- Elimination -----------------------------------------------------------
 # Torn's yearly team competition. Runs September 2026 (12 teams).
-ELIMINATION_ENABLED = True
+ELIMINATION_ENABLED = False
 ELIMINATION_YEAR = 2026
