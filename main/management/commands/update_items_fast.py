@@ -7,7 +7,7 @@ import threading
 import time
 from collections import defaultdict
 from contextlib import contextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ from django.conf import settings as project_settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from main.models import Item, Listing
+from main.models import Item, ItemPriceLog, Listing
 from main.services.api.weav3r.marketplace_api_service import Weav3rMarketplaceApiService
 from users.models import Profile
 
@@ -37,6 +37,8 @@ MAX_RETRIES_PER_ITEM = 3
 # concurrency). Capping concurrent DB-write sections separately from the
 # API-fetch concurrency keeps the pool from being overwhelmed.
 MAX_CONCURRENT_DB_WRITERS = 8
+
+ITEM_PRICE_LOG_RETENTION_DAYS = 30
 
 
 def fetch_items_dataframe():
@@ -139,6 +141,11 @@ def weighted_itemmarket_price(listings):
 
 
 def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_average=None):
+    """Returns a dict of {te_price, itemmarket_price, itemmarket_listings} or None on
+    a failed/retryable fetch. itemmarket_price/itemmarket_listings are the intermediate
+    values behind te_price -- kept in the return value (rather than discarded, as before)
+    so callers can log them for historical price modeling.
+    """
     if api_key == '':
         return None
 
@@ -158,7 +165,12 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_av
         return None
     else:
         itemmarket_data = data.get('itemmarket')
+        itemmarket_listings = None
         if (itemmarket_data is not None and itemmarket_data["listings"]):
+            itemmarket_listings = [
+                {'price': listing.get('price'), 'amount': listing.get('amount')}
+                for listing in itemmarket_data["listings"][:10]
+            ]
             try:
                 itemmarket_min = weighted_itemmarket_price(itemmarket_data["listings"])
             except Exception as e:
@@ -171,7 +183,11 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_av
 
         # error handling to avoid "cannot convert float NaN to integer" error
         if all(x in [None, np.nan, 0] for x in [itemmarket_min, avg_market_price, bazaar_average]):
-            return 0
+            return {
+                'te_price': 0,
+                'itemmarket_price': None,
+                'itemmarket_listings': itemmarket_listings,
+            }
 
         try:
             pricing_data = np.array([itemmarket_min, avg_market_price, bazaar_average])
@@ -182,7 +198,14 @@ def get_lowest_market_price(item_id, api_key, avg_market_price=np.nan, bazaar_av
             print("update_items_fast ERROR", str(e), item_id)
             TE_price = 0
 
-        return TE_price
+        return {
+            'te_price': TE_price,
+            'itemmarket_price': (
+                None if itemmarket_min is None or np.isnan(itemmarket_min)
+                else int(round(itemmarket_min))
+            ),
+            'itemmarket_listings': itemmarket_listings,
+        }
 
 
 def _load_api_keys():
@@ -331,6 +354,7 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
     item_id = row['image'].replace(
         'https://www.torn.com/images/items/', '').replace('/large.png', '')
     bazaar_average = bazaar_by_item_id.get(int(item_id))
+    torn_market_value = row['market_value']
 
     if benchmark is not None:
         benchmark.note_thread_start()
@@ -338,15 +362,15 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
 
     def _call(key):
         call_start = time.perf_counter()
-        result = get_lowest_market_price(item_id, key, row['market_value'], bazaar_average)
+        result = get_lowest_market_price(item_id, key, torn_market_value, bazaar_average)
         if benchmark is not None:
             benchmark.note_api_call(time.perf_counter() - call_start)
         return result
 
     rate_limiter.wait_for_slot()
-    TE_price = _call(api_key)
+    result = _call(api_key)
     retries = 0
-    while bool(TE_price) is not True and retries < MAX_RETRIES_PER_ITEM:
+    while (result is None or result['te_price'] == 0) and retries < MAX_RETRIES_PER_ITEM:
         # get_lowest_market_price already sleeps 30s internally on a genuine
         # "too many requests" hit, so it doesn't need extra global backoff
         # layered on top here - that was compounding into an effectively
@@ -357,14 +381,14 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
         print(f"Repeating request for item: {item_id} (retry {retries}/{MAX_RETRIES_PER_ITEM})")
         api_key = random.choice(api_keys)
         rate_limiter.wait_for_slot()
-        TE_price = _call(api_key)
-        if TE_price == 0:
+        result = _call(api_key)
+        if result is not None and result['te_price'] == 0:
             break
 
     if benchmark is not None:
         benchmark.note_item_done(item_id, time.perf_counter() - item_start)
 
-    if TE_price is None:
+    if result is None:
         # Every attempt errored out (rate limit, bad key, network hiccup) --
         # leave the existing TE_value alone rather than writing a price. Left
         # unguarded, sanitize_numbers(None) below coerces this into 0, which
@@ -373,7 +397,18 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
         # next hourly run happens to succeed.
         print(f'Skipping update for {row["name"]} [{item_id}]: no valid price after '
               f'{MAX_RETRIES_PER_ITEM} retries')
-        return
+        return None
+
+    TE_price = result['te_price']
+    log_entry = ItemPriceLog(
+        item_id=int(item_id),
+        captured_at=timezone.now(),
+        torn_market_value=sanitize_numbers(torn_market_value),
+        itemmarket_price=result['itemmarket_price'],
+        itemmarket_listings=result['itemmarket_listings'],
+        bazaar_average=bazaar_average,
+        te_value=TE_price,
+    )
 
     # DB writes (esp. recalculate_listings_for_item's N+1 per-listing saves)
     # get throttled to MAX_CONCURRENT_DB_WRITERS at a time, decoupled from
@@ -460,6 +495,8 @@ def _process_item_row(row, api_key, bazaar_by_item_id, rate_limiter, api_keys, d
                 print(e)
                 print(f'Did NOT save item: {row["name"]} [{item_id}]', row)
 
+    return log_entry
+
 
 def _populate(df):
     print('Updating items (fast)...')
@@ -491,6 +528,7 @@ def _populate(df):
     # are still being submitted.
     executor = concurrent.futures.ThreadPoolExecutor(
         max_workers=MAX_THREADS, thread_name_prefix='update-items-fast')
+    log_entries = []
     try:
         futures = [
             executor.submit(_process_item_row, row, random.choice(api_keys),
@@ -499,7 +537,9 @@ def _populate(df):
         ]
         for future in concurrent.futures.as_completed(futures):
             try:
-                future.result()
+                log_entry = future.result()
+                if log_entry is not None:
+                    log_entries.append(log_entry)
             except Exception as e:
                 print("update_items_fast ERROR", e)
     except KeyboardInterrupt:
@@ -514,6 +554,23 @@ def _populate(df):
         os._exit(1)
 
     executor.shutdown(wait=True)
+
+    # One bulk insert after all worker threads have finished, rather than a
+    # per-item write inside _process_item_row -- MAX_CONCURRENT_DB_WRITERS
+    # above exists because concurrent per-item writes already exhaust the
+    # PgBouncer pool; a second per-item write path would make that worse.
+    with _timed(benchmark, 'db_price_log_bulk_create'):
+        ItemPriceLog.objects.bulk_create(log_entries, batch_size=500)
+    print(f'[bench] logged {len(log_entries)} ItemPriceLog rows')
+
+    with _timed(benchmark, 'db_price_log_retention_cleanup'):
+        deleted_count, _ = ItemPriceLog.objects.filter(
+            captured_at__lt=timezone.now() - timedelta(days=ITEM_PRICE_LOG_RETENTION_DAYS)
+        ).delete()
+    if deleted_count:
+        print(f'[bench] pruned {deleted_count} ItemPriceLog rows older than '
+              f'{ITEM_PRICE_LOG_RETENTION_DAYS} days')
+
     benchmark.summary()
     print('Done!')
 

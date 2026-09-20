@@ -60,6 +60,28 @@ class Company(models.Model):
         return f"{self.name} by {self.owner.name}"
 
 
+# Per-run snapshot of the pricing inputs update_items_fast fetched for an
+# item, kept for a rolling window so TE_value modeling has real history to
+# work from instead of just the current Item.TE_value. Not a FK to Item:
+# item_id (Torn's stable identifier) is logged even on runs where the Item
+# upsert itself is skipped.
+class ItemPriceLog(models.Model):
+    item_id = models.IntegerField(db_index=True)
+    captured_at = models.DateTimeField(db_index=True)
+    torn_market_value = models.BigIntegerField(null=True)
+    itemmarket_price = models.BigIntegerField(null=True)
+    # Lowest 10 raw itemmarket listings this run: [{"price": int, "amount": int}, ...]
+    itemmarket_listings = models.JSONField(null=True, blank=True)
+    bazaar_average = models.BigIntegerField(null=True)
+    te_value = models.BigIntegerField(null=True)
+
+    class Meta:
+        indexes = [models.Index(fields=['item_id', 'captured_at'])]
+
+    def __str__(self):
+        return f"ItemPriceLog({self.item_id} @ {self.captured_at})"
+
+
 # Torn item
 class Item(models.Model):
     name = models.CharField(max_length=250)
