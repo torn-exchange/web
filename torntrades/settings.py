@@ -331,7 +331,7 @@ if ERROR_LOG != "":
             },
             'cron': {
                 'handlers': ['cron_file'],
-                'level': 'INFO',
+                'level': 'WARNING',
                 'propagate': False,
             },
         },
