@@ -1,8 +1,13 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth.models import User
 from users.models import Profile, Settings
 from main.models import Item, Listing
-from main.management.commands.update_items_fast import recalculate_listings_for_item
+from main.management.commands.update_items_fast import (
+    create_or_update_sets,
+    recalculate_listings_for_item,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -157,3 +162,41 @@ class EffectivePriceCalculationTests(TestCase):
 
         # 10% off 200_000 = 180_000
         self.assertEqual(listing.effective_price, 180_000)
+
+
+class CreateOrUpdateSetsRecalculatesListingsTests(TestCase):
+    """
+    Plushie Set (item_id 9998) and Flower Set (item_id 9999) get their
+    TE_value from the points market rather than from _process_item_row's
+    normal update path, so create_or_update_sets() must itself trigger
+    recalculate_listings_for_item -- otherwise traders' stored
+    effective_price for these two items goes stale until they manually
+    re-save their listing (see trader reports of Plushie/Flower Set prices
+    not updating).
+    """
+
+    def setUp(self):
+        self.user, self.profile = make_user('trader1')
+
+    @patch('main.management.commands.update_items_fast.get_points_market_value')
+    def test_plushie_and_flower_set_effective_price_updates_with_points_price(self, mock_points):
+        mock_points.return_value = 30_000
+        create_or_update_sets()
+
+        plushie = Item.objects.get(item_id=9998)
+        flower = Item.objects.get(item_id=9999)
+        plushie_listing = make_listing(self.profile, plushie, price=None, discount=0.25)
+        flower_listing = make_listing(self.profile, flower, price=None, discount=0.25)
+
+        # 0.25% off 300_000 = 299_250
+        self.assertEqual(plushie_listing.effective_price, 299_250)
+        self.assertEqual(flower_listing.effective_price, 299_250)
+
+        mock_points.return_value = 31_000
+        create_or_update_sets()
+        plushie_listing.refresh_from_db()
+        flower_listing.refresh_from_db()
+
+        # 0.25% off 310_000 = 309_225
+        self.assertEqual(plushie_listing.effective_price, 309_225)
+        self.assertEqual(flower_listing.effective_price, 309_225)
