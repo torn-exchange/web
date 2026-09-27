@@ -180,6 +180,14 @@
     box-shadow: none;
 }
 
+[data-bs-theme=light] .price-edit:disabled {
+    color: #8a8a8a;
+    background-color: #d9d9d9;
+    border-color: #999999;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 [data-bs-theme=light] .btn-primary {
     --bs-btn-color: #000000;
     --bs-btn-bg: #40961a;
@@ -358,6 +366,14 @@
     background-color: #000000;
     border: 1px solid #ffffff !important;
     box-shadow: 0 0 0 0 transparent;
+}
+
+[data-bs-theme=dark] .price-edit:disabled {
+    color: #7a7a7a;
+    background-color: #2a2a2a;
+    border: 1px solid #555555 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 [data-bs-theme=dark] .btn-primary {
