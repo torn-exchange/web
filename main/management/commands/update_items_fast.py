@@ -63,7 +63,7 @@ def get_points_market_value():
 
 def create_or_update_sets():
     points_cost = get_points_market_value()
-    Item.objects.update_or_create(
+    plushie_set, _ = Item.objects.update_or_create(
         name='Plushie Set',
         defaults=dict(
             item_id=9998,
@@ -79,7 +79,7 @@ def create_or_update_sets():
             TE_value=10*points_cost
         ),
     )
-    Item.objects.update_or_create(
+    flower_set, _ = Item.objects.update_or_create(
         name='Flower Set',
         defaults=dict(
             item_id=9999,
@@ -95,6 +95,14 @@ def create_or_update_sets():
             TE_value=10*points_cost
         ),
     )
+    # Unlike every other item (handled in _process_item_row), TE_value here
+    # is set directly rather than going through the item_in_our_db.TE_value
+    # != TE_price branch that calls recalculate_listings_for_item -- without
+    # this, traders' stored Listing.effective_price for these two items never
+    # picks up a new points-derived TE_value until they manually edit their
+    # price/discount (see trader reports of stale Plushie/Flower Set prices).
+    recalculate_listings_for_item(plushie_set)
+    recalculate_listings_for_item(flower_set)
 
 
 def recalculate_listings_for_item(item):
