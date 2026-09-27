@@ -234,11 +234,29 @@ class EffectivePriceBoundsTests(TestCase):
         )
         self.assertEqual(listing.calculate_effective_price(), 800_000)
 
-    def test_price_only_listing_still_respects_bounds(self):
+    def test_price_only_listing_is_not_clamped_by_bounds(self):
+        """
+        A fixed price is authoritative: bounds never clamp it, even when
+        they conflict (that's flagged separately by bounds_conflict(), see
+        BoundsConflictTests below -- calculate_effective_price() itself
+        always trusts the fixed price).
+        """
         listing = make_listing(
             self.profile, self.item, price=1_500_000, lower_bound=None, upper_bound=1_000_000
         )
-        self.assertEqual(listing.effective_price, 1_000_000)
+        self.assertEqual(listing.effective_price, 1_500_000)
+
+    def test_price_and_discount_combo_is_not_clamped_by_bounds(self):
+        """When both price and discount are set, min(price, discount_price)
+        is still authoritative -- bounds validate it but never clamp it."""
+        # 10% off 1_000_000 = 900_000; min(900_000, 70_000) = 70_000, which
+        # falls below the 500_000 lower bound -- would be clamped up under
+        # the old behavior, but must stay 70_000 now.
+        listing = make_listing(
+            self.profile, self.item, price=70_000, discount=10.0,
+            lower_bound=500_000,
+        )
+        self.assertEqual(listing.effective_price, 70_000)
 
     def test_te_value_zero_with_lower_bound_floor_wins(self):
         item = make_item(name='ZeroItemBounded', te_value=0, item_id=4)
@@ -265,6 +283,74 @@ class EffectivePriceBoundsTests(TestCase):
         listing.refresh_from_db()
         # back to 500_000 raw, floor re-engages
         self.assertEqual(listing.effective_price, 600_000)
+
+
+class BoundsConflictTests(TestCase):
+    """Tests for Listing.bounds_conflict(), the validation used at write
+    time to reject bounds that are inconsistent with price/discount instead
+    of silently overriding a fixed price or leaving orphaned bounds."""
+
+    def setUp(self):
+        self.user, self.profile = make_user('trader1')
+        self.item = make_item(name='Xanax', te_value=1_000_000, item_id=1)
+
+    def test_no_bounds_set_is_never_a_conflict(self):
+        listing = make_listing(self.profile, self.item, price=30_000)
+        self.assertIsNone(listing.bounds_conflict())
+
+    def test_negative_lower_bound_is_a_conflict(self):
+        listing = Listing(owner=self.profile, item=self.item, price=30_000, lower_bound=-1)
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_negative_upper_bound_is_a_conflict(self):
+        listing = Listing(owner=self.profile, item=self.item, price=30_000, upper_bound=-1)
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_lower_greater_than_upper_is_a_conflict(self):
+        listing = Listing(
+            owner=self.profile, item=self.item, price=30_000,
+            lower_bound=900_000, upper_bound=800_000,
+        )
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_bounds_without_price_or_discount_is_a_conflict(self):
+        """Orphaned bounds -- nothing for them to bound -- must be cleared
+        before the trader can remove price/discount entirely."""
+        listing = Listing(owner=self.profile, item=self.item, lower_bound=500_000)
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_fixed_price_below_lower_bound_is_a_conflict(self):
+        listing = Listing(owner=self.profile, item=self.item, price=30_000, lower_bound=50_000)
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_fixed_price_above_upper_bound_is_a_conflict(self):
+        listing = Listing(owner=self.profile, item=self.item, price=100_000, upper_bound=50_000)
+        self.assertIsNotNone(listing.bounds_conflict())
+
+    def test_fixed_price_within_bounds_is_not_a_conflict(self):
+        listing = Listing(
+            owner=self.profile, item=self.item, price=60_000,
+            lower_bound=50_000, upper_bound=70_000,
+        )
+        self.assertIsNone(listing.bounds_conflict())
+
+    def test_discount_only_never_conflicts_since_bounds_clamp_it(self):
+        """A purely discount-driven price is always clamped to fit, so it
+        never conflicts regardless of the raw value."""
+        listing = Listing(
+            owner=self.profile, item=self.item, discount=90.0,
+            lower_bound=500_000, upper_bound=950_000,
+        )
+        self.assertIsNone(listing.bounds_conflict())
+
+    def test_price_and_discount_combo_checked_against_final_min(self):
+        # 10% off 1_000_000 = 900_000; min(900_000, 70_000) = 70_000, below
+        # the 500_000 floor -> conflict, since price is authoritative here.
+        listing = Listing(
+            owner=self.profile, item=self.item, price=70_000, discount=10.0,
+            lower_bound=500_000,
+        )
+        self.assertIsNotNone(listing.bounds_conflict())
 
 
 class CreateOrUpdateSetsRecalculatesListingsTests(TestCase):

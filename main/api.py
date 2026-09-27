@@ -703,22 +703,17 @@ def modify_listing(request):
                         if 'lower_bound' in entry or 'upper_bound' in entry:
                             lower_bound = entry.get('lower_bound')
                             upper_bound = entry.get('upper_bound')
-                            lower_bound = int(lower_bound) if lower_bound is not None and lower_bound != '' else None
-                            upper_bound = int(upper_bound) if upper_bound is not None and upper_bound != '' else None
-
-                            if lower_bound is not None and lower_bound < 0:
-                                failed.append(item_id)
-                                continue
-                            if upper_bound is not None and upper_bound < 0:
-                                failed.append(item_id)
-                                continue
-                            if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
-                                failed.append(item_id)
-                                continue
-
-                            listing.lower_bound = lower_bound
-                            listing.upper_bound = upper_bound
+                            listing.lower_bound = (
+                                int(lower_bound) if lower_bound is not None and lower_bound != '' else None
+                            )
+                            listing.upper_bound = (
+                                int(upper_bound) if upper_bound is not None and upper_bound != '' else None
+                            )
                             update_fields.extend(['lower_bound', 'upper_bound'])
+
+                        if listing.bounds_conflict():
+                            failed.append(item_id)
+                            continue
 
                         listing.effective_price = listing.calculate_effective_price()
                         listing.save(update_fields=update_fields)

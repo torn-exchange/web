@@ -82,3 +82,35 @@ class ModifyListingBoundsTests(TestCase):
         self.listing.refresh_from_db()
         self.assertEqual(self.listing.lower_bound, 400_000)
         self.assertEqual(self.listing.upper_bound, 900_000)
+
+    def test_fixed_price_conflicting_with_bounds_is_rejected(self):
+        response = self.post([
+            {'item_id': self.item.item_id, 'action': 'update', 'fixed_price': 30_000,
+             'lower_bound': 50_000},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['data']['failed_listings'], [self.item.item_id])
+
+        self.listing.refresh_from_db()
+        self.assertEqual(self.listing.discount, 10.0)
+        self.assertIsNone(self.listing.lower_bound)
+
+    def test_new_fixed_price_conflicting_with_existing_bounds_is_rejected(self):
+        """Existing bounds that were fine for the old price/discount must be
+        re-validated against a newly submitted fixed price."""
+        self.listing.lower_bound = 500_000
+        self.listing.save()
+
+        response = self.post([
+            {'item_id': self.item.item_id, 'action': 'update', 'fixed_price': 30_000},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['data']['failed_listings'], [self.item.item_id])
+
+        self.listing.refresh_from_db()
+        self.assertEqual(self.listing.discount, 10.0)
+        self.assertIsNone(self.listing.price)

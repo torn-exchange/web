@@ -148,6 +148,53 @@ class EditPriceListSaveItemsTests(TestCase):
         self.assertEqual(self.listing_a.lower_bound, 80000)
         self.assertIsNone(self.listing_a.upper_bound)
 
+    def test_fixed_price_below_lower_bound_is_rejected(self):
+        """A fixed price is authoritative -- a bound that conflicts with it
+        must be rejected, not silently overridden."""
+        response = self.post_items([
+            {'item_id': self.item_b.item_id, 'price': '30000', 'discount': None,
+             'lower_bound': '50000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['failed'], [self.item_b.item_id])
+
+        self.listing_b.refresh_from_db()
+        self.assertEqual(self.listing_b.price, 150_000)
+        self.assertIsNone(self.listing_b.lower_bound)
+
+    def test_fixed_price_within_bounds_is_accepted_unclamped(self):
+        response = self.post_items([
+            {'item_id': self.item_b.item_id, 'price': '150000', 'discount': None,
+             'lower_bound': '100000', 'upper_bound': '200000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['updated'], [self.item_b.item_id])
+
+        self.listing_b.refresh_from_db()
+        self.assertEqual(self.listing_b.effective_price, 150_000)
+
+    def test_orphaned_bounds_block_clearing_price_and_discount(self):
+        """The trader can't clear price+discount entirely while bounds are
+        still set -- they must clear the bounds first."""
+        self.listing_b.lower_bound = 100_000
+        self.listing_b.save()
+
+        response = self.post_items([
+            {'item_id': self.item_b.item_id, 'price': None, 'discount': None,
+             'lower_bound': '100000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['failed'], [self.item_b.item_id])
+
+        self.listing_b.refresh_from_db()
+        self.assertEqual(self.listing_b.price, 150_000)
+
     def test_deleting_a_bounded_listing_still_works(self):
         self.listing_b.lower_bound = 100_000
         self.listing_b.save()

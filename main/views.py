@@ -616,34 +616,22 @@ def edit_price_list_save_items(request):
             raw_upper_bound = re.sub(r'[$,]', '', raw_upper_bound)
         upper_bound = safe_int(raw_upper_bound)
 
-        if lower_bound is not None and lower_bound < 0:
-            failed.append(item.item_id)
-            continue
-        if upper_bound is not None and upper_bound < 0:
-            failed.append(item.item_id)
-            continue
-        if lower_bound is not None and upper_bound is not None and lower_bound > upper_bound:
+        candidate = listing or Listing(owner=profile, item=item)
+        candidate.price = price
+        candidate.discount = discount
+        candidate.lower_bound = lower_bound
+        candidate.upper_bound = upper_bound
+
+        if candidate.bounds_conflict():
             failed.append(item.item_id)
             continue
 
+        candidate.effective_price = candidate.calculate_effective_price()
+
         if listing:
-            listing.price = price
-            listing.discount = discount
-            listing.lower_bound = lower_bound
-            listing.upper_bound = upper_bound
-            listing.effective_price = listing.calculate_effective_price()
-            listings_to_update.append(listing)
+            listings_to_update.append(candidate)
         else:
-            obj = Listing(
-                owner=profile,
-                item=item,
-                price=price,
-                discount=discount,
-                lower_bound=lower_bound,
-                upper_bound=upper_bound,
-            )
-            obj.effective_price = obj.calculate_effective_price()
-            new_listings.append(obj)
+            new_listings.append(candidate)
 
         updated.append(item.item_id)
 

@@ -160,10 +160,12 @@ class Listing(models.Model):
     # teammate) discount percentage. Applied at display/API time only by
     # events.pricing.event_effective_price -- never folded into effective_price.
     event_discount_pct = models.IntegerField(null=True, blank=True)
-    # Fixed-dollar floor/ceiling clamps a trader can set on top of price/discount,
-    # e.g. "99% of TE_value, but never below $820k". Applied as the final step of
-    # calculate_effective_price() regardless of which of price/discount produced
-    # the raw value, so the clamp still holds as TE_value drifts.
+    # Fixed-dollar floor/ceiling clamps a trader can set on top of a discount-
+    # driven price, e.g. "99% of TE_value, but never below $820k". Only apply
+    # when there is no fixed `price` -- an explicit fixed price is always
+    # authoritative over the bounds (see bounds_conflict() below, which is
+    # used at write time to reject a fixed price that falls outside the
+    # bounds instead of silently overriding it).
     lower_bound = models.BigIntegerField(null=True, blank=True)
     upper_bound = models.BigIntegerField(null=True, blank=True)
 
@@ -173,21 +175,58 @@ class Listing(models.Model):
 
         # special case where we want user-set price to prevail
         if (self.discount is None) and (self.price is not None):
-            raw = round(self.price)
-        else:
-            discount_fraction = (100.0 - (self.discount or 0)) / 100.0
-            discount_price = discount_fraction * round(self.item.TE_value or 0)
+            return round(self.price)
 
-            if self.price is None:
-                raw = round(discount_price or 0)
-            else:
-                raw = round(np.nan_to_num(np.nanmin([discount_price, self.price])))
+        discount_fraction = (100.0 - (self.discount or 0)) / 100.0
+        discount_price = discount_fraction * round(self.item.TE_value or 0)
 
+        if self.price is not None:
+            return round(np.nan_to_num(np.nanmin([discount_price, self.price])))
+
+        raw = round(discount_price or 0)
         if self.lower_bound is not None:
             raw = max(raw, self.lower_bound)
         if self.upper_bound is not None:
             raw = min(raw, self.upper_bound)
         return raw
+
+    def bounds_conflict(self):
+        """Returns an error message if lower_bound/upper_bound are set in a
+        way that's inconsistent with this listing's price/discount, else
+        None.
+
+        Bounds only clamp a purely discount-driven price (see
+        calculate_effective_price()); whenever a fixed `price` is set it's
+        authoritative, so a bound that would have to override it is a
+        trader-facing configuration error, not something to silently fix by
+        moving the price -- and bounds with no price/discount at all to
+        bound are meaningless "orphans" that must be cleared first.
+        """
+        if self.lower_bound is None and self.upper_bound is None:
+            return None
+
+        if self.lower_bound is not None and self.lower_bound < 0:
+            return "Lower bound must not be negative."
+        if self.upper_bound is not None and self.upper_bound < 0:
+            return "Upper bound must not be negative."
+        if (
+            self.lower_bound is not None
+            and self.upper_bound is not None
+            and self.lower_bound > self.upper_bound
+        ):
+            return "Lower bound must not exceed the upper bound."
+
+        if self.discount is None and self.price is None:
+            return "Clear the bounds before removing the price and profit margin."
+
+        if self.price is not None:
+            raw = self.calculate_effective_price()
+            if self.lower_bound is not None and raw < self.lower_bound:
+                return "The fixed price is below the lower bound."
+            if self.upper_bound is not None and raw > self.upper_bound:
+                return "The fixed price is above the upper bound."
+
+        return None
 
     def save(self, *args, **kwargs):
         self.effective_price = self.calculate_effective_price()
