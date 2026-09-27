@@ -20,7 +20,7 @@
             title="The price that shows on the Price List (TE Market Value - Profit Margin)">
             Effective Price
         </th>
-        <th scope="col" class='text-center'><i class="fas fa-trash-alt"></i> Delete</th>
+        <th scope="col" class='text-center'><i class="fas fa-cog"></i> Actions</th>
     </tr>
     </thead>
     <tbody>
@@ -61,10 +61,41 @@
             </td>
             <td style='width:13%;' class='text-center effective_price' data-label="Effective Price">
                 ${{ item.effective_price|intcomma }}</td>
-            <td style='width:1%;' class='text-center' data-label="Delete">
-                <div class="form-check d-flex justify-content-center align-items-center">
-                    <input type="checkbox"
-                           class="form-check-input listing_delete">
+            <td style='width:1%;' class='text-center' data-label="Actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary row-expand-toggle" aria-expanded="false">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </td>
+        </tr>
+        <tr class="m-0 p-0 row-expanded d-none">
+            <td colspan="9" class="expanded-row-body">
+                <div class="row g-2 align-items-center">
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">Lower Bound ($)</label>
+                        <input type="text"
+                               class="form-control price-edit listing_lower_bound text-responsive"
+                               value="{{ item.lower_bound }}"
+                               onkeypress="return isNumber(event)"
+                               onpaste="return true;"/>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small mb-0">Upper Bound ($)</label>
+                        <input type="text"
+                               class="form-control price-edit listing_upper_bound text-responsive"
+                               value="{{ item.upper_bound }}"
+                               onkeypress="return isNumber(event)"
+                               onpaste="return true;"/>
+                    </div>
+                    <div class="col-12 col-md-3 d-flex align-items-center">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   class="form-check-input listing_delete"
+                                   id="delete_{{ item.item_id }}">
+                            <label class="form-check-label small" for="delete_{{ item.item_id }}">
+                                <i class="fas fa-trash-alt"></i> Remove this item
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </td>
         </tr>

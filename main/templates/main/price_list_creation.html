@@ -190,26 +190,39 @@
         $row.addClass('row-dirty');
       }
 
-      $('body').on('change', '.listing_price', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        var listing_price = numberWOCommas($(this).val());
-        var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+      function recomputeEffectivePrice($row) {
+        var $expanded = $row.next('.row-expanded');
+        var listing_price = numberWOCommas($row.find('.listing_price').val());
+        var profit_margin = numberWOCommas($row.find('.listing_discount').val());
+        var market_value = numberWOCommas(removeDollar($row.find('.market_value').html()));
+        var lower_bound = numberWOCommas($expanded.find('.listing_lower_bound').val());
+        var upper_bound = numberWOCommas($expanded.find('.listing_upper_bound').val());
+        $row.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value, lower_bound, upper_bound)))
+      }
+
+      $('body').on('change', '.listing_price, .listing_discount', function () {
+        var $row = $(this).closest('tr');
+        markDirty($row);
+        recomputeEffectivePrice($row);
       });
-      $('body').on('change', '.listing_discount', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        var listing_price = numberWOCommas(parent.find('.listing_price').val());
-        var profit_margin = numberWOCommas($(this).val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+      $('body').on('change', '.listing_lower_bound, .listing_upper_bound', function () {
+        var $row = $(this).closest('tr.row-expanded').prev('tr[data-item-id]');
+        markDirty($row);
+        recomputeEffectivePrice($row);
       });
       $('body').on('change', '.listing_delete', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        parent.toggleClass('marked-for-delete', $(this).is(':checked'));
+        var $row = $(this).closest('tr.row-expanded').prev('tr[data-item-id]');
+        markDirty($row);
+        $row.toggleClass('marked-for-delete', $(this).is(':checked'));
+      });
+      $('body').on('click', '.row-expand-toggle', function () {
+        var $btn = $(this);
+        var $row = $btn.closest('tr');
+        var $expanded = $row.next('.row-expanded');
+        var isOpen = !$expanded.hasClass('d-none');
+        $expanded.toggleClass('d-none', isOpen);
+        $btn.attr('aria-expanded', String(!isOpen));
+        $btn.find('i').toggleClass('fa-chevron-down', isOpen).toggleClass('fa-chevron-up', !isOpen);
       });
 
       $('#submit-prices').click(function (e) {
@@ -256,11 +269,14 @@
             return;
           }
           var $row = $(row);
-          var isDelete = $row.find('.listing_delete').is(':checked');
+          var $expanded = $row.next('.row-expanded');
+          var isDelete = $expanded.find('.listing_delete').is(':checked');
           items.push({
             item_id: itemId,
             price: isDelete ? null : $row.find('.listing_price').val(),
             discount: isDelete ? null : $row.find('.listing_discount').val(),
+            lower_bound: isDelete ? null : $expanded.find('.listing_lower_bound').val(),
+            upper_bound: isDelete ? null : $expanded.find('.listing_upper_bound').val(),
             delete: isDelete
           });
         });
@@ -312,22 +328,33 @@
         return (!str || /^\s*$/.test(str));
       }
 
-      function effective_price(price, discount, market_value) {
+      function applyBounds(value, lower_bound, upper_bound) {
+        if (!isNaN(lower_bound)) {
+          value = Math.max(value, lower_bound);
+        }
+        if (!isNaN(upper_bound)) {
+          value = Math.min(value, upper_bound);
+        }
+        return value;
+      }
+
+      function effective_price(price, discount, market_value, lower_bound, upper_bound) {
         if ((isNaN(discount)) && (isNaN(price))) {
           return '';
         }
         if ((isNaN(discount)) && (!isNaN(price))) {
-          return Math.round(price);
+          return applyBounds(Math.round(price), lower_bound, upper_bound);
         }
         if ((!isNaN(discount)) && (isNaN(price))) {
           var discount_fraction = (100.0 - parseFloat(discount)) / 100;
           var discount_price = Math.round(discount_fraction * market_value);
-          return Math.round(discount_price);
+          return applyBounds(Math.round(discount_price), lower_bound, upper_bound);
         }
         if ((!isNaN(discount)) && (!isNaN(price))) {
           var discount_fraction = (100.0 - parseFloat(discount)) / 100;
           var discount_price = discount_fraction * Math.round(market_value);
-          return Math.min.apply(null, [price, Math.round(discount_price)]);
+          var raw = Math.min.apply(null, [price, Math.round(discount_price)]);
+          return applyBounds(raw, lower_bound, upper_bound);
         }
       }
 

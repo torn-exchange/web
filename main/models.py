@@ -160,6 +160,12 @@ class Listing(models.Model):
     # teammate) discount percentage. Applied at display/API time only by
     # events.pricing.event_effective_price -- never folded into effective_price.
     event_discount_pct = models.IntegerField(null=True, blank=True)
+    # Fixed-dollar floor/ceiling clamps a trader can set on top of price/discount,
+    # e.g. "99% of TE_value, but never below $820k". Applied as the final step of
+    # calculate_effective_price() regardless of which of price/discount produced
+    # the raw value, so the clamp still holds as TE_value drifts.
+    lower_bound = models.BigIntegerField(null=True, blank=True)
+    upper_bound = models.BigIntegerField(null=True, blank=True)
 
     def calculate_effective_price(self):
         if (self.discount is None) and (self.price is None):
@@ -167,15 +173,21 @@ class Listing(models.Model):
 
         # special case where we want user-set price to prevail
         if (self.discount is None) and (self.price is not None):
-            return round(self.price)
+            raw = round(self.price)
+        else:
+            discount_fraction = (100.0 - (self.discount or 0)) / 100.0
+            discount_price = discount_fraction * round(self.item.TE_value or 0)
 
-        discount_fraction = (100.0 - (self.discount or 0)) / 100.0
-        discount_price = discount_fraction * round(self.item.TE_value or 0)
+            if self.price is None:
+                raw = round(discount_price or 0)
+            else:
+                raw = round(np.nan_to_num(np.nanmin([discount_price, self.price])))
 
-        if self.price is None:
-            return round(discount_price or 0)
-
-        return round(np.nan_to_num(np.nanmin([discount_price, self.price])))
+        if self.lower_bound is not None:
+            raw = max(raw, self.lower_bound)
+        if self.upper_bound is not None:
+            raw = min(raw, self.upper_bound)
+        return raw
 
     def save(self, *args, **kwargs):
         self.effective_price = self.calculate_effective_price()
@@ -183,6 +195,16 @@ class Listing(models.Model):
 
     class Meta:
         unique_together = (("owner", "item"),)
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(lower_bound__isnull=True)
+                    | models.Q(upper_bound__isnull=True)
+                    | models.Q(lower_bound__lte=models.F("upper_bound"))
+                ),
+                name="listing_lower_bound_lte_upper_bound",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.item} - ${self.effective_price} | {self.owner.name}"

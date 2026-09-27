@@ -80,6 +80,87 @@ class EditPriceListSaveItemsTests(TestCase):
         self.listing_a.refresh_from_db()
         self.assertEqual(self.listing_a.discount, 5.0)
 
+    def test_valid_bounds_saved_and_reflected_in_effective_price(self):
+        response = self.post_items([
+            {'item_id': self.item_a.item_id, 'price': None, 'discount': '90.0',
+             'lower_bound': '50000', 'upper_bound': '95000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['updated'], [self.item_a.item_id])
+
+        self.listing_a.refresh_from_db()
+        self.assertEqual(self.listing_a.lower_bound, 50000)
+        self.assertEqual(self.listing_a.upper_bound, 95000)
+        # 90% off 100_000 = 10_000, clamped up to the 50_000 floor
+        self.assertEqual(self.listing_a.effective_price, 50000)
+
+    def test_lower_bound_greater_than_upper_bound_is_rejected(self):
+        response = self.post_items([
+            {'item_id': self.item_a.item_id, 'price': None, 'discount': '10.0',
+             'lower_bound': '90000', 'upper_bound': '80000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['failed'], [self.item_a.item_id])
+
+        self.listing_a.refresh_from_db()
+        self.assertIsNone(self.listing_a.lower_bound)
+        self.assertIsNone(self.listing_a.upper_bound)
+
+    def test_negative_bound_is_rejected(self):
+        response = self.post_items([
+            {'item_id': self.item_a.item_id, 'price': None, 'discount': '10.0',
+             'lower_bound': '-5000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['failed'], [self.item_a.item_id])
+
+        self.listing_a.refresh_from_db()
+        self.assertIsNone(self.listing_a.lower_bound)
+
+    def test_dollar_and_comma_formatted_bounds_are_parsed(self):
+        response = self.post_items([
+            {'item_id': self.item_a.item_id, 'price': None, 'discount': '10.0',
+             'lower_bound': '$80,000', 'upper_bound': '$95,000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['updated'], [self.item_a.item_id])
+
+        self.listing_a.refresh_from_db()
+        self.assertEqual(self.listing_a.lower_bound, 80000)
+        self.assertEqual(self.listing_a.upper_bound, 95000)
+
+    def test_only_one_bound_provided_leaves_other_none(self):
+        response = self.post_items([
+            {'item_id': self.item_a.item_id, 'price': None, 'discount': '10.0',
+             'lower_bound': '80000'},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        self.listing_a.refresh_from_db()
+        self.assertEqual(self.listing_a.lower_bound, 80000)
+        self.assertIsNone(self.listing_a.upper_bound)
+
+    def test_deleting_a_bounded_listing_still_works(self):
+        self.listing_b.lower_bound = 100_000
+        self.listing_b.save()
+
+        response = self.post_items([
+            {'item_id': self.item_b.item_id, 'delete': True},
+        ])
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['deleted'], [self.item_b.item_id])
+        self.assertFalse(Listing.objects.filter(owner=self.profile, item=self.item_b).exists())
+
     def test_unknown_item_id_is_reported_as_failed(self):
         response = self.post_items([{'item_id': 999999, 'price': '100'}])
 
