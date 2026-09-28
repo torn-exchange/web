@@ -24,7 +24,7 @@ def remove_changelog_entry(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('main', '0058_receipt_total_amount'),
+        ('main', '0001_initial_squashed_0058_receipt_total_amount'),
     ]
 
     operations = [

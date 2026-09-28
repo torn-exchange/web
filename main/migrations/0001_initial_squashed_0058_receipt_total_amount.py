@@ -133,16 +133,8 @@ class Migration(migrations.Migration):
 
     atomic = False
 
-    replaces = [('main', '0001_initial'), ('main', '0002_auto_20200719_1417'), ('main', '0003_listing'), ('main', '0004_listing_price'), ('main', '0005_auto_20200719_2100'), ('main', '0006_auto_20200719_2123'), ('main', '0007_listing_discount'), ('main', '0008_item_last_updated'), ('main', '0009_auto_20200722_2211'), ('main', '0010_item_last_updated'), ('main', '0011_listing_effective_price'), ('main', '0012_itemtrade_tradereceipt'), ('main', '0013_auto_20200727_2315'), ('main', '0014_auto_20200728_0009'), ('main', '0015_itemtrade_market_value_at_save'), ('main', '0016_settings'), ('main', '0017_auto_20200817_0038'), ('main', '0018_changelog'), ('main', '0019_settings_tutorial'), ('main', '0020_delete_settings'), ('main', '0021_auto_20200817_1836'), ('main', '0022_auto_20200819_1544'), ('main', '0023_tradereceipt_receipt_url_string'), ('main', '0024_auto_20200823_1425'), ('main', '0025_auto_20200823_1425'), ('main', '0026_auto_20200823_2239'), ('main', '0027_auto_20200823_2300'), ('main', '0028_auto_20200825_2052'), ('main', '0029_auto_20200825_2207'), ('main', '0030_company'), ('main', '0031_auto_20201110_1443'), ('main', '0032_company_company_id'), ('main', '0033_company_looking_to_hire'), ('main', '0034_auto_20210309_2005'), ('main', '0035_remove_listing_effective_price'), ('main', '0036_service_services'), ('main', '0037_auto_20241013_2307'), ('main', '0038_auto_20241114_0015'), ('main', '0039_listing_hidden'), ('main', '0040_auto_20250310_2044'), ('main', '0041_alter_itemvariation_price'), ('main', '0042_alter_itemvariation_owner'), ('main', '0043_auto_20250311_2121'), ('main', '0044_itemvariationbonuses_description'), ('main', '0045_itemvariation_market_type'), ('main', '0046_job_joblog_schedule'), ('main', '0047_schedule_unique'), ('main', '0048_listing_effective_price'), ('main', '0049_populate_effective_price'), ('main', '0050_populate_effective_price'), ('main', '0051_listing_hidden_reasons'), ('main', '0052_add_trade_id_to_receipt'), ('main', '0053_item_bazaar_average'), ('main', '0054_item_item_id_unique_constraint'), ('main', '0055_bazaar_mv_changelog_entry'), ('main', '0056_receipt_search_indexes'), ('main', '0057_receipt_seller_upper_index'), ('main', '0058_receipt_total_amount')]
-
     dependencies = [
-        ('users', '0030_auto_20250310_0917'),
-        ('users', '0023_auto_20210309_1948'),
-        ('users', '0031_alter_profile_api_key'),
-        ('users', '0001_initial'),
-        ('users', '0020_settings_selling_company'),
-        ('users', '0007_profile_name'),
-        ('users', '0004_auto_20200726_1505'),
+        ('users', '0001_initial_squashed_0034_profile_on_vacation'),
     ]
 
     operations = [
