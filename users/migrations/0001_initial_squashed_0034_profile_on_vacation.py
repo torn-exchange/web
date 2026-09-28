@@ -7,8 +7,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [('users', '0001_initial'), ('users', '0002_profile_torn_id'), ('users', '0003_auto_20200721_1854'), ('users', '0004_auto_20200726_1505'), ('users', '0005_auto_20200731_1911'), ('users', '0006_profile_api_key'), ('users', '0007_profile_name'), ('users', '0008_auto_20200817_0043'), ('users', '0009_settings'), ('users', '0010_auto_20200817_1830'), ('users', '0011_auto_20200820_2055'), ('users', '0012_auto_20200820_2157'), ('users', '0013_auto_20200820_2321'), ('users', '0014_auto_20200820_2350'), ('users', '0015_auto_20200823_1537'), ('users', '0016_auto_20200824_1540'), ('users', '0017_settings_job_post_start_date'), ('users', '0018_profile_work_stats_total'), ('users', '0019_auto_20201109_1617'), ('users', '0020_settings_selling_company'), ('users', '0021_auto_20201110_1443'), ('users', '0022_auto_20201110_1452'), ('users', '0023_auto_20210309_1948'), ('users', '0024_settings_service_list_description'), ('users', '0025_profile_active_trader'), ('users', '0026_settings_trade_enable_sets'), ('users', '0027_profile_hidden_categories'), ('users', '0028_profile_order_categories'), ('users', '0029_settings_trade_global_fee'), ('users', '0030_auto_20250310_0917'), ('users', '0031_alter_profile_api_key'), ('users', '0032_profile_monthly_trades'), ('users', '0033_alter_settings_receipt_paste_text'), ('users', '0034_profile_on_vacation')]
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
