@@ -606,15 +606,32 @@ def edit_price_list_save_items(request):
             raw_price = re.sub(r'[$,]', '', raw_price)
         price = safe_int(raw_price)
 
+        raw_lower_bound = entry.get('lower_bound')
+        if isinstance(raw_lower_bound, str):
+            raw_lower_bound = re.sub(r'[$,]', '', raw_lower_bound)
+        lower_bound = safe_int(raw_lower_bound)
+
+        raw_upper_bound = entry.get('upper_bound')
+        if isinstance(raw_upper_bound, str):
+            raw_upper_bound = re.sub(r'[$,]', '', raw_upper_bound)
+        upper_bound = safe_int(raw_upper_bound)
+
+        candidate = listing or Listing(owner=profile, item=item)
+        candidate.price = price
+        candidate.discount = discount
+        candidate.lower_bound = lower_bound
+        candidate.upper_bound = upper_bound
+
+        if candidate.bounds_conflict():
+            failed.append(item.item_id)
+            continue
+
+        candidate.effective_price = candidate.calculate_effective_price()
+
         if listing:
-            listing.price = price
-            listing.discount = discount
-            listing.effective_price = listing.calculate_effective_price()
-            listings_to_update.append(listing)
+            listings_to_update.append(candidate)
         else:
-            obj = Listing(owner=profile, item=item, price=price, discount=discount)
-            obj.effective_price = obj.calculate_effective_price()
-            new_listings.append(obj)
+            new_listings.append(candidate)
 
         updated.append(item.item_id)
 
@@ -632,7 +649,10 @@ def _update_listings(profile, new_listings, listings_to_update, to_delete):
             Listing.objects.bulk_create(new_listings)
 
         if listings_to_update:
-            Listing.objects.bulk_update(listings_to_update, ['price', 'discount', 'effective_price'])
+            Listing.objects.bulk_update(
+                listings_to_update,
+                ['price', 'discount', 'lower_bound', 'upper_bound', 'effective_price'],
+            )
 
         if to_delete:
             Listing.objects.filter(owner=profile, item__in=to_delete).delete()

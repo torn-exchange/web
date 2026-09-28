@@ -700,6 +700,21 @@ def modify_listing(request):
                             )
                             update_fields.append('event_discount_pct')
 
+                        if 'lower_bound' in entry or 'upper_bound' in entry:
+                            lower_bound = entry.get('lower_bound')
+                            upper_bound = entry.get('upper_bound')
+                            listing.lower_bound = (
+                                int(lower_bound) if lower_bound is not None and lower_bound != '' else None
+                            )
+                            listing.upper_bound = (
+                                int(upper_bound) if upper_bound is not None and upper_bound != '' else None
+                            )
+                            update_fields.extend(['lower_bound', 'upper_bound'])
+
+                        if listing.bounds_conflict():
+                            failed.append(item_id)
+                            continue
+
                         listing.effective_price = listing.calculate_effective_price()
                         listing.save(update_fields=update_fields)
                         updated.append(item_id)

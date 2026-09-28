@@ -180,6 +180,14 @@
     box-shadow: none;
 }
 
+[data-bs-theme=light] .price-edit:disabled {
+    color: #8a8a8a;
+    background-color: #d9d9d9;
+    border-color: #999999;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 [data-bs-theme=light] .btn-primary {
     --bs-btn-color: #000000;
     --bs-btn-bg: #40961a;
@@ -358,6 +366,14 @@
     background-color: #000000;
     border: 1px solid #ffffff !important;
     box-shadow: 0 0 0 0 transparent;
+}
+
+[data-bs-theme=dark] .price-edit:disabled {
+    color: #7a7a7a;
+    background-color: #2a2a2a;
+    border: 1px solid #555555 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 [data-bs-theme=dark] .btn-primary {
@@ -1256,20 +1272,37 @@ th {
         line-height: 1.2;
     }
 
-    .edit_table td[data-label="Delete"] {
+    .edit_table td[data-label="Actions"] {
         grid-area: del;
         display: flex;
         justify-content: flex-end;
         align-items: center;
     }
 
-    .edit_table td[data-label="Delete"]::before {
-        content: "Remove";
+    .edit_table td[data-label="Actions"]::before {
+        content: "Details";
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.02em;
         color: rgba(255, 255, 255, 0.5);
         margin-right: 0.4rem;
+    }
+
+    /* the expanded row is a separate block-level <tr> below the card, not one
+       of the card's own grid areas — style it to read as a continuation of
+       the same card instead of a new one. */
+    .edit_table tr.row-expanded {
+        display: block;
+        margin: -1.25rem 0 1.25rem !important;
+        padding: 0 0.85rem 0.85rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-top: none;
+        border-radius: 0 0 0.65rem 0.65rem;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .edit_table tr.row-expanded td {
+        display: block;
     }
 
     .edit_table td.market_value {
@@ -1371,6 +1404,56 @@ th {
 .edit_table tr.marked-for-delete {
     box-shadow: inset 3px 0 0 var(--bs-danger, #dc3545);
     opacity: 0.6;
+}
+
+/* EDIT PRICE LIST — expandable Lower/Upper Bound sub-row, any viewport. */
+.edit_table td.expanded-row-body {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.75rem 1rem !important;
+}
+
+.row-expand-toggle i {
+    transition: transform 0.15s ease;
+}
+
+/* desktop only: the delete checkbox sits in its own unused 3/12 columns
+   right after the Upper Bound input with only the row's g-2 gutter between
+   them, which reads as cramped -- give it some breathing room. Mobile's
+   .col-12 already stacks it on its own line, so no fix needed there. */
+@media (min-width: 768px) {
+    .expanded-row-body .delete-col {
+        margin-left: 2.5rem;
+    }
+}
+
+.edit_table .price-info-icon {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.edit_table .price-info-icon:hover,
+.edit_table .price-info-icon:focus {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* a row that failed to save (or, while collapsed, whose category contains
+   a failed row) any time after Submit. */
+.edit_table tr.row-error {
+    box-shadow: inset 3px 0 0 var(--bs-danger, #dc3545);
+}
+
+.edit_table tr.row-error td.effective_price {
+    outline: 1px solid var(--bs-danger, #dc3545);
+}
+
+a.btn-secondary.category-has-error {
+    box-shadow: inset 0 0 0 2px var(--bs-danger, #dc3545);
+}
+
+/* a row whose bounds currently conflict with its price/discount, checked
+   live as the trader types rather than only at submit time. */
+.edit_table tr.row-invalid {
+    box-shadow: inset 3px 0 0 var(--bs-danger, #dc3545);
 }
 
 /* END APEX CHARTS */

@@ -222,12 +222,16 @@ def merge_items(all_relevant_items: QuerySet, traders_items: QuerySet):
         item.price = ""
         item.discount = ""
         item.effective_price = ""
-        
+        item.lower_bound = ""
+        item.upper_bound = ""
+
         for trader_item in traders_items:
             if trader_item.item.item_id == item.item_id:
                 item.price = trader_item.price if trader_item.price is not None else ''
                 item.discount = trader_item.discount if trader_item.discount is not None else ''
                 item.effective_price = trader_item.effective_price if trader_item.effective_price is not None else ''
+                item.lower_bound = trader_item.lower_bound if trader_item.lower_bound is not None else ''
+                item.upper_bound = trader_item.upper_bound if trader_item.upper_bound is not None else ''
                 break
         
     return all_relevant_items

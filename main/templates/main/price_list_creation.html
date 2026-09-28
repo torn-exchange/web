@@ -150,6 +150,7 @@
       function registerRows(container) {
         container.querySelectorAll('tr[data-item-id]').forEach(function (tr) {
           rowsById.set(tr.getAttribute('data-item-id'), tr);
+          updateRowDisplay($(tr));
         });
       }
 
@@ -190,26 +191,79 @@
         $row.addClass('row-dirty');
       }
 
-      $('body').on('change', '.listing_price', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        var listing_price = numberWOCommas($(this).val());
-        var profit_margin = numberWOCommas(parent.find('.listing_discount').val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+      function updateRowDisplay($row) {
+        var $expanded = $row.next('.row-expanded');
+        var price = numberWOCommas($row.find('.listing_price').val());
+        var discount = numberWOCommas($row.find('.listing_discount').val());
+        var market_value = numberWOCommas(removeDollar($row.find('.market_value').html()));
+        var $lowerInput = $expanded.find('.listing_lower_bound');
+        var $upperInput = $expanded.find('.listing_upper_bound');
+        var lower_bound = numberWOCommas($lowerInput.val());
+        var upper_bound = numberWOCommas($upperInput.val());
+
+        var result = computePricing(price, discount, market_value, lower_bound, upper_bound);
+
+        var $effCell = $row.find('.effective_price');
+        var $effValue = $effCell.find('.effective_price_value');
+        var $infoIcon = $effCell.find('.price-info-icon');
+
+        if (result.value === null || result.value === undefined || isNaN(result.value)) {
+          $effValue.text('$');
+        } else {
+          $effValue.text('$' + numberWithCommas(result.value));
+        }
+
+        if (result.breakdown) {
+          $infoIcon.removeClass('d-none');
+          setTooltipContent($infoIcon, result.breakdown);
+        } else {
+          $infoIcon.addClass('d-none');
+          disposeTooltip($infoIcon);
+        }
+
+        var hasEffectiveInput = !isNaN(price) || !isNaN(discount);
+        var hasBoundsSet = !isNaN(lower_bound) || !isNaN(upper_bound);
+        var shouldDisableBounds = !hasEffectiveInput && !hasBoundsSet;
+        $lowerInput.prop('disabled', shouldDisableBounds);
+        $upperInput.prop('disabled', shouldDisableBounds);
+
+        var $errorBox = $expanded.find('.bounds-error');
+        if (result.error) {
+          $errorBox.text(result.error).removeClass('d-none');
+          $row.addClass('row-invalid');
+          $lowerInput.add($upperInput).addClass('is-invalid');
+        } else {
+          $errorBox.addClass('d-none').text('');
+          $row.removeClass('row-invalid');
+          $lowerInput.add($upperInput).removeClass('is-invalid');
+        }
+
+        return result;
+      }
+
+      $('body').on('change', '.listing_price, .listing_discount', function () {
+        var $row = $(this).closest('tr');
+        markDirty($row);
+        updateRowDisplay($row);
       });
-      $('body').on('change', '.listing_discount', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        var listing_price = numberWOCommas(parent.find('.listing_price').val());
-        var profit_margin = numberWOCommas($(this).val());
-        var market_value = numberWOCommas(removeDollar(parent.find('.market_value').html()));
-        parent.find('.effective_price').html('$' + numberWithCommas(effective_price(listing_price, profit_margin, market_value)))
+      $('body').on('change', '.listing_lower_bound, .listing_upper_bound', function () {
+        var $row = $(this).closest('tr.row-expanded').prev('tr[data-item-id]');
+        markDirty($row);
+        updateRowDisplay($row);
       });
       $('body').on('change', '.listing_delete', function () {
-        var parent = $(this).closest('tr');
-        markDirty(parent);
-        parent.toggleClass('marked-for-delete', $(this).is(':checked'));
+        var $row = $(this).closest('tr.row-expanded').prev('tr[data-item-id]');
+        markDirty($row);
+        $row.toggleClass('marked-for-delete', $(this).is(':checked'));
+      });
+      $('body').on('click', '.row-expand-toggle', function () {
+        var $btn = $(this);
+        var $row = $btn.closest('tr');
+        var $expanded = $row.next('.row-expanded');
+        var isOpen = !$expanded.hasClass('d-none');
+        $expanded.toggleClass('d-none', isOpen);
+        $btn.attr('aria-expanded', String(!isOpen));
+        $btn.find('i').toggleClass('fa-chevron-down', isOpen).toggleClass('fa-chevron-up', !isOpen);
       });
 
       $('#submit-prices').click(function (e) {
@@ -243,27 +297,66 @@
         el.classList.add(isError ? 'alert-danger' : 'alert-success');
       }
 
+      function clearErrorHighlights() {
+        $('.edit_table tr.row-error').removeClass('row-error');
+        $('a.btn-secondary.category-has-error').removeClass('category-has-error');
+      }
+
+      function highlightFailedItems(itemIds) {
+        itemIds.forEach(function (itemId) {
+          var row = rowsById.get(itemId + '');
+          if (!row) {
+            return;
+          }
+          var $row = $(row);
+          $row.addClass('row-error');
+
+          var $collapse = $row.closest('.collapse');
+          if ($collapse.length && !$collapse.hasClass('show')) {
+            $collapse.closest('.col-sm-12').find('a.btn-secondary').addClass('category-has-error');
+          }
+        });
+      }
+
       function submitChanges() {
         if (dirtyItemIds.size === 0) {
           showSaveStatus('No changes to save.', false);
           return;
         }
 
+        clearErrorHighlights();
+
         var items = [];
+        var invalidItemIds = [];
         dirtyItemIds.forEach(function (itemId) {
           var row = rowsById.get(itemId);
           if (!row) {
             return;
           }
           var $row = $(row);
-          var isDelete = $row.find('.listing_delete').is(':checked');
+          var $expanded = $row.next('.row-expanded');
+          var isDelete = $expanded.find('.listing_delete').is(':checked');
+
+          if (!isDelete && updateRowDisplay($row).error) {
+            invalidItemIds.push(itemId);
+            return;
+          }
+
           items.push({
             item_id: itemId,
             price: isDelete ? null : $row.find('.listing_price').val(),
             discount: isDelete ? null : $row.find('.listing_discount').val(),
+            lower_bound: isDelete ? null : $expanded.find('.listing_lower_bound').val(),
+            upper_bound: isDelete ? null : $expanded.find('.listing_upper_bound').val(),
             delete: isDelete
           });
         });
+
+        if (invalidItemIds.length > 0) {
+          highlightFailedItems(invalidItemIds);
+          showSaveStatus('Fix ' + invalidItemIds.length + ' invalid item(s) (highlighted below) before submitting.', true);
+          return;
+        }
 
         document.body.style.cursor = 'wait';
         var submitBtn = document.getElementById('submit-prices');
@@ -280,7 +373,8 @@
           .then(function (resp) { return resp.json(); })
           .then(function (data) {
             if (data.failed && data.failed.length > 0) {
-              showSaveStatus('Saved, but ' + data.failed.length + ' item(s) failed to update.', true);
+              highlightFailedItems(data.failed);
+              showSaveStatus('Saved, but ' + data.failed.length + ' item(s) failed to update (highlighted below).', true);
             } else {
               showSaveStatus('Your price list has been updated!', false);
             }
@@ -312,22 +406,110 @@
         return (!str || /^\s*$/.test(str));
       }
 
-      function effective_price(price, discount, market_value) {
-        if ((isNaN(discount)) && (isNaN(price))) {
-          return '';
+      /**
+       * Mirrors Listing.calculate_effective_price() / bounds_conflict() on
+       * the backend: a fixed price is always authoritative over the bounds
+       * (they validate it, never clamp it); bounds only clamp a purely
+       * discount-driven price; and bounds with no price/discount to attach
+       * to are an "orphan" error. Returns {value, breakdown, error}.
+       */
+      function computePricing(price, discount, market_value, lower_bound, upper_bound) {
+        var hasPrice = !isNaN(price);
+        var hasDiscount = !isNaN(discount);
+        var hasLower = !isNaN(lower_bound);
+        var hasUpper = !isNaN(upper_bound);
+
+        if (hasLower && lower_bound < 0) {
+          return {value: null, breakdown: '', error: 'Lower bound cannot be negative.'};
         }
-        if ((isNaN(discount)) && (!isNaN(price))) {
-          return Math.round(price);
+        if (hasUpper && upper_bound < 0) {
+          return {value: null, breakdown: '', error: 'Upper bound cannot be negative.'};
         }
-        if ((!isNaN(discount)) && (isNaN(price))) {
-          var discount_fraction = (100.0 - parseFloat(discount)) / 100;
-          var discount_price = Math.round(discount_fraction * market_value);
-          return Math.round(discount_price);
+        if (hasLower && hasUpper && lower_bound > upper_bound) {
+          return {value: null, breakdown: '', error: 'Lower bound cannot exceed the upper bound.'};
         }
-        if ((!isNaN(discount)) && (!isNaN(price))) {
-          var discount_fraction = (100.0 - parseFloat(discount)) / 100;
-          var discount_price = discount_fraction * Math.round(market_value);
-          return Math.min.apply(null, [price, Math.round(discount_price)]);
+
+        if (!hasPrice && !hasDiscount) {
+          if (hasLower || hasUpper) {
+            return {value: null, breakdown: '', error: 'Clear the bounds before removing the price and profit margin.'};
+          }
+          return {value: null, breakdown: '', error: null};
+        }
+
+        if (!hasDiscount) {
+          // fixed price only -- bounds are validated against it, never applied
+          var fixedRaw = Math.round(price);
+          var fixedBreakdown = 'Fixed price of $' + numberWithCommas(fixedRaw) + '.';
+          if (hasLower && fixedRaw < lower_bound) {
+            return {value: fixedRaw, breakdown: fixedBreakdown, error: 'The fixed price is below the lower bound.'};
+          }
+          if (hasUpper && fixedRaw > upper_bound) {
+            return {value: fixedRaw, breakdown: fixedBreakdown, error: 'The fixed price is above the upper bound.'};
+          }
+          return {value: fixedRaw, breakdown: fixedBreakdown, error: null};
+        }
+
+        var discount_fraction = (100.0 - parseFloat(discount)) / 100;
+        var discount_price = Math.round(discount_fraction * Math.round(market_value));
+
+        if (!hasPrice) {
+          // purely discount-driven -- bounds clamp it
+          var value = discount_price;
+          var breakdown = parseFloat(discount) + '% off TE Value ($' + numberWithCommas(Math.round(market_value)) + ') = $' + numberWithCommas(discount_price) + '.';
+          if (hasLower && value < lower_bound) {
+            breakdown += ' Clamped up to the $' + numberWithCommas(lower_bound) + ' lower bound.';
+            value = lower_bound;
+          } else if (hasUpper && value > upper_bound) {
+            breakdown += ' Clamped down to the $' + numberWithCommas(upper_bound) + ' upper bound.';
+            value = upper_bound;
+          }
+          return {value: value, breakdown: breakdown, error: null};
+        }
+
+        // both price and discount set -- the lower of the two wins, and is
+        // authoritative over the bounds just like the fixed-price-only case
+        var comboRaw = Math.min(Math.round(price), discount_price);
+        var comboBreakdown;
+        if (comboRaw === Math.round(price)) {
+          comboBreakdown = 'Fixed price ($' + numberWithCommas(Math.round(price)) + ') is lower than ' +
+            parseFloat(discount) + '% off TE Value ($' + numberWithCommas(discount_price) + '), so the fixed price is used.';
+        } else {
+          comboBreakdown = parseFloat(discount) + '% off TE Value ($' + numberWithCommas(discount_price) +
+            ') is lower than the fixed price ($' + numberWithCommas(Math.round(price)) + '), so the discounted price is used.';
+        }
+        if (hasLower && comboRaw < lower_bound) {
+          return {value: comboRaw, breakdown: comboBreakdown, error: 'The price is below the lower bound.'};
+        }
+        if (hasUpper && comboRaw > upper_bound) {
+          return {value: comboRaw, breakdown: comboBreakdown, error: 'The price is above the upper bound.'};
+        }
+        return {value: comboRaw, breakdown: comboBreakdown, error: null};
+      }
+
+      function setTooltipContent($el, breakdownText) {
+        var el = $el.get(0);
+        if (!el) {
+          return;
+        }
+        var html = '<strong>How is the price calculated?</strong><br>' + breakdownText;
+        var instance = bootstrap.Tooltip.getInstance(el);
+        if (instance) {
+          instance.setContent({'.tooltip-inner': html});
+        } else {
+          el.setAttribute('data-bs-html', 'true');
+          el.setAttribute('title', html);
+          new bootstrap.Tooltip(el, {html: true, trigger: 'hover focus click'});
+        }
+      }
+
+      function disposeTooltip($el) {
+        var el = $el.get(0);
+        if (!el) {
+          return;
+        }
+        var instance = bootstrap.Tooltip.getInstance(el);
+        if (instance) {
+          instance.dispose();
         }
       }
 
