@@ -617,6 +617,10 @@ paths:
         - For `update`, at least one of `fixed_price` or `discount` must be provided.
         - `discount` must be between -100 and 100.
         - `fixed_price` must be a positive integer (in Torn currency).
+        - `lower_bound`/`upper_bound` are optional fixed-dollar floor/ceiling clamps on top of `fixed_price`/`discount` (e.g. "99% of TE value, but never below 820000"). Both must be non-negative, and `lower_bound` must not exceed `upper_bound`.
+        - A fixed price is always authoritative over the bounds: if `fixed_price` (or the discount-derived price, whichever is lower) would fall outside `lower_bound`/`upper_bound`, the listing is rejected rather than having its price silently overridden. Bounds only clamp a price derived purely from `discount` (no `fixed_price` set).
+        - `lower_bound`/`upper_bound` are only touched when included in the request; omitting them leaves the listing's existing bounds unchanged. Send an empty string to clear one.
+        - Bounds can't be set on a listing with neither `fixed_price` nor `discount` — clear the bounds before removing both.
       requestBody:
         required: true
         content:
@@ -666,6 +670,18 @@ paths:
                         examples: [5]
                         minimum: -100
                         maximum: 100
+                      event_discount_pct:
+                        type: integer
+                        description: Optional per-listing override of your event (e.g. Elimination teammate) discount percentage, clamped to 0–90. Only applied for eligible viewers at display time — never folded into the listing's own price. Send an empty string to clear it.
+                        examples: [10]
+                      lower_bound:
+                        type: integer
+                        description: Optional fixed-dollar floor. Only clamps a purely discount-driven price; a fixed price below this is rejected instead. Send an empty string to clear it.
+                        examples: [820000]
+                      upper_bound:
+                        type: integer
+                        description: Optional fixed-dollar ceiling. Only clamps a purely discount-driven price; a fixed price above this is rejected instead. Send an empty string to clear it.
+                        examples: [840000]
             examples:
               update_price:
                 summary: Set a fixed price
@@ -683,6 +699,16 @@ paths:
                   listings:
                     - item_id: 206
                       discount: 5
+              update_discount_with_bounds:
+                summary: Set a discount with a floor and ceiling
+                value:
+                  key: "192XXXXXXXX931XX"
+                  action: update
+                  listings:
+                    - item_id: 206
+                      discount: 1
+                      lower_bound: 820000
+                      upper_bound: 840000
               delete_item:
                 summary: Delete a listing
                 value:
